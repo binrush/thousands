@@ -1,0 +1,18 @@
+<ul class="nav navbar-nav navbar-right">
+  <li><a href="/admin/summits/new">Добавить</a></li>
+  <li><a href="/">Карта</a></li>
+  <li><a href="/summits">Таблица</a></li>
+  <li><a href="/about">О проекте</a></li>
+  <li><a href="/profile">Профиль</a></li>
+  <li><a href="/logout">Выход ()</a></li>
+  <li class="dropdown">
+      <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Вход<span class="caret"></span></a>
+      <ul class="dropdown-menu" role="menu">
+          {% for l in g.get('auth_links') %}
+          {# <li><a href="https://oauth.vk.com/authorize?client_id={{ vk_client_id }}&scope=email&redirect_uri={{ urlparts()[0] }}://{{ urlparts()[1] }}/vk_login&response_type=code&v=5.32&state=state">vk.com</a></li> #}
+          <li><a href="{{ l.href}}">{{ l.title }}</a></li>
+          {% endfor %}
+      </ul>
+  </li>
+</ul>
+

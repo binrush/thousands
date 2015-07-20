@@ -1,6 +1,9 @@
 from thousands import app
-from flask import render_template, g, jsonify
-import dao
+from flask import request, render_template, g, jsonify, redirect, url_for
+from flask.ext.login import login_user, logout_user, current_user
+import dao, auth
+import httplib, json
+from urllib import urlencode
 
 @app.route('/about')
 def about():
@@ -14,10 +17,19 @@ def map():
 def summits_get():
     return jsonify(g.summits_dao.get_all())
 
+@app.route('/register')
+def register():
+    return make_response(None)
+
+@app.route('/logout')
+def logout():
+    logout_user()
+    return redirect(url_for('map'))
+
 @app.route('/vk_login')
 def vk_login():
     if 'error' in request.args.keys():
-        return request.query['error_description']
+        return make_response(request.args.get('error_description'))
 
     code = request.args.get('code')
     conn = httplib.HTTPSConnection('oauth.vk.com')
@@ -34,21 +46,17 @@ def vk_login():
     if 'error' in response:
         return response['error_description']
     
-    #s = request.environ.get('beaker.session')
     oauth_id = response['user_id']
-    user = users.get(oauth_id, const.AUTH_SRC_VK)
+    # TODO remove magic number
+    user = g.users_dao.get(oauth_id, 1)
 
     if user is None:
         at = response['access_token']
-        user = vk_get_profile(oauth_id, at)
-        user['email'] = response['email'] if 'email' in response else None
-        s['registering_user'] = user
-        s.save()
-        redirect("/register", 302)
-    else:
-        s['user'] = user
-        s.save()
-        redirect("/", 302)
+        profile = auth.vk_get_profile(oauth_id, at)
+        profile['email'] = response['email'] if 'email' in response else None
 
-    return response
+        return render_template('register.html', registering_user=profile)
+    else:
+        login_user(user)
+        return redirect(url_for('map'))
 

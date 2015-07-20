@@ -1,0 +1,30 @@
+{% extends "layout.html" %}
+{% block content %}
+<h3>Регистрация</h3>
+<p>Для завершения регистрации, отредактируйте форму и нажмите "Сохранить"</p>
+<div id="form-errors" class="alert alert-danger">
+    <ul id="form-error-list">
+    </ul>
+</div>
+<form action="/register" method="post" id="register_form" class="form">
+  <div class="form-group">
+    <label for="name">Имя</label>
+    <input type="text" name="name" class="form-control" value="{{ registering_user['name'] }}"/>
+  </div>
+  <div class="form-group">
+    <label for="email">E-mail</label>
+    <input type="email" name="email" class="form-control" value="{{ registering_user['email'] }}"/>
+  </div>
+  <div class="checkbox">
+    <label>
+    <input type="checkbox" name="pub" />
+    Публичный профиль?
+    </label>
+  </div>
+  <input type="submit" value="Сохранить" class="btn btn-default" />
+</form>
+
+<script>
+    //document.getElementById('register_form').addEventListener("submit", createUser, false);
+</script>
+{% endblock %}

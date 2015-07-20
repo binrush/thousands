@@ -1,5 +1,6 @@
 from contextlib import contextmanager
 import psycopg2.extras 
+from flask.ext.login import UserMixin
 
 class Dao(object):
     pool = None
@@ -104,30 +105,43 @@ class SummitsDao(Dao):
         return ret
 
 class UsersDao(Dao):
-    
+
+    def _fromrow(self, row):
+        user = UserMixin()
+        for k in row.keys():
+            setattr(user, k, row[k])
+        return user
+
     def get(self, oauth_id, src):
         with self.get_cursor() as cur:
             cur.execute("SELECT * FROM users WHERE oauth_id='%s' AND src=%s", (oauth_id, src))
             if cur.rowcount < 1:
                 return None
-            row = cur.fetchone()
-            user = {}
-            for k in row.keys():
-                user[k] = row[k]
-            return user
+            return self._fromrow(cur.fetchone())
     
+    def get_by_id(self, id_):
+        try:
+            user_id = int(id_)
+        except ValueError:
+            return None
+        with self.get_cursor() as cur:
+            cur.execute("SELECT * FROM users WHERE id=%s", (user_id, ))
+            if cur.rowcount < 1:
+                return None
+            return self._fromrow(cur.fetchone())
+   
     def create(user):
-        fd = urllib.urlopen(user['image'])
-        if fd.getcode() == 200:
-            img_id = images.store(fd.read(), fd.info().gettype())
-        else:
-            img_id = None
+        #fd = urllib.urlopen(user['image'])
+        #if fd.getcode() == 200:
+        #    img_id = images.store(fd.read(), fd.info().gettype())
+        #else:
+        #    img_id = None
         
         sql = """INSERT INTO users (src, oauth_id, name, email, img_id, pub)
             VALUES (%s, %s, %s, %s, %s, %s) RETURNING id;
         """
         with database.get_cursor() as cur:
-            cur.execute(sql, (user['src'], user['oauth_id'], user['name'], user['email'], img_id, user['pub']))
+            cur.execute(sql, (user.src, user['oauth_id'], user['name'], user['email'], img_id, user['pub']))
             if cur.rowcount < 1:
                 return None
             return cur.fetchone()['id']

@@ -1,0 +1,62 @@
+{% extends "layout.html" %}
+{% block content %}
+<h2 id="summit_name">
+    {{ summit['properties']['name'] }}
+    {% if summit['properties']['name_alt'] %}
+    <small>({{summit['properties']['name_alt']}})</small>
+    {% endif %}
+</h2>
+<div class="row">
+    <div class="col-md-12">
+        <p><strong>Высота:</strong> <span id="summit_height">{{summit['properties']['height']}}</span></p>
+        <p><strong>Хребет:</strong> <span id="summit_ridge">{{summit['properties']['ridge']}}</span></p>
+        <div id="summit_description">{{summit['properties']['description']}}</div>
+        <a id="summit_edit_button" href="{{url_for('summit_edit', summit_id=summit.id)}}" class="btn btn-default" role="button">Редактировать</a>
+        {#
+        <!-- Button trigger modal -->
+        <button type="button" class="btn btn-default" data-toggle="modal" data-target="#myModal">
+        </button>
+        
+        <!-- Modal -->
+        <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="myModalLabel">Отметить восхождение</h4>
+              </div>
+              <form id="climb_form" action="/api/climbs" method="post">
+              <input type="hidden" name="sid" value="{{ sid }}" />
+
+              <div class="modal-body">
+                 <div id="form-errors" class="alert alert-danger">
+                   <ul id="form-error-list">
+                   </ul>
+                 </div>
+
+                <div class="form-group">
+                    <label for="ts">Дата восхождения</label>
+                    <input type="text" class="form-control" name="ts">
+                </div>
+                <div class="form-group">
+                    <label for="comment">Комментарий</label>
+                    <textarea name="comment" rows="10" class="form-control"></textarea>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Отмена</button>
+                <button type="submit" class="btn btn-primary">Сохранить</button>
+              </div>
+              </form>
+            </div>
+          </div>
+        </div>
+        #}
+
+    </div>
+</div>
+<script>
+    //document.body.onload = loadSummit;
+    document.getElementById('climb_form').addEventListener("submit", submitForm, false);
+</script>
+{% endblock %}

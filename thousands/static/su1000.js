@@ -44,7 +44,7 @@ function createMap(center, zoom) {
 
 function pointPopupCode(feature) {
     name_alt = feature.properties.name_alt == "" ? "" : "<br/>(" + feature.properties.name_alt + ")";
-    name = "<a href=\"/summits/" + feature.id + "\">" + feature.properties.name + "</a>";
+    name = "<a href=\"/summit/" + feature.id + "\">" + feature.properties.name + "</a>";
     return name + name_alt +
         "<br/>Высота: " + feature.properties.height + 
         "<br/>Хребет:" + feature.properties.ridge;
@@ -66,7 +66,7 @@ function fillSummitsTable(data) {
         var tr = document.createElement("tr");
         var name_alt = f.properties.name_alt == "" ? "" : " (" + f.properties.name_alt + ")";
         tr.innerHTML = "<td>" + f.properties.number + "</td>" +
-            "<td class=\"text-left\"><a href=\"/summits/" + f.id + "\">" + f.properties.name + name_alt + "</a></td>" +
+            "<td class=\"text-left\"><a href=\"/summit/" + f.id + "\">" + f.properties.name + name_alt + "</a></td>" +
             "<td>" + f.properties.height + "</td>" +
             "<td>" + f.properties.ridge + "</td>" 
         tb.appendChild(tr);
@@ -96,32 +96,6 @@ function loadSummit() {
     var sid = parseInt(window.location.href.substr(window.location.href.lastIndexOf('/') + 1));
     apiCall('/api/summits/' + sid + '?html', fillSummitPage);
 }
-
-function fillSummitPage(data) {
-    if ( data.properties.name ) {
-        name = data.properties.name;
-    } else {
-        name = data.properties.height;
-    }
-    if ( data.properties.name_alt ) {
-        name += " <small>(" + data.properties.name_alt + ")</small>";
-    }
-    document.getElementById('summit_name').innerHTML = name;
-    document.getElementById('summit_height').innerHTML = data.properties.height;
-    document.getElementById('summit_ridge').innerHTML = data.properties.ridge;
-    document.getElementById('summit_description').innerHTML = data.properties.description;
-    var edit_button = document.getElementById('summit_edit_button');
-    if ( edit_button != null ) {
-        edit_button.setAttribute('href', '/admin/summits/edit/' + data.id);
-    }
-    document.getElementById('map').style.height = "400px";
-    map = createMap([ data.geometry.coordinates[1], data.geometry.coordinates[0] ], 12);
-    marker = L.geoJson(data).addTo(map);
-}
-/*
-function loadRidgesTable() {
-    apiCall('/api/ridges/', fillRidgesTable)
-}*/
 
 function loadSummitEditForm() {
     var sid = document.getElementById('summit_edit_form').elements.sid.value;

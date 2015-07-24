@@ -1,5 +1,5 @@
 from thousands import app
-from flask import request, render_template, g, jsonify, redirect, url_for
+from flask import request, render_template, g, jsonify, redirect, url_for, make_response, abort
 from flask.ext.login import login_user, logout_user, current_user
 import dao, auth
 import httplib, json
@@ -16,6 +16,20 @@ def map():
 @app.route('/table')
 def table():
     return render_template('table.html')
+
+@app.route('/summit/<int:summit_id>')
+def summit(summit_id):
+    s = g.summits_dao.get(summit_id)
+    if s is None:
+        return abort(404)
+    return render_template('summit.html', summit=s)
+
+@app.route('/summit/edit/<int:summit_id>')
+def summit_edit(summit_id):
+    s = g.summits_dao.get(summit_id)
+    if s is None:
+        return abort(404)
+    return render_template('summit_edit.html', summit=s)
 
 @app.route('/api/summits')
 def summits_get():

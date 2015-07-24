@@ -1,0 +1,50 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="row">
+<div class="col-md-6">
+<div id="form-errors" class="alert alert-danger">
+    <ul id="form-error-list">
+    </ul>
+</div>
+<form action="/summit" method="post" id="summit_edit_form">
+  <input type="hidden" name="sid" value="{{summit.id}}">
+
+  <div class="form-group">
+    <label for="name">Название, зафиксированное на картах</label>
+    <input type="text" name="name" class="form-control" value="{{ summit['properties']['name'] }}"/>
+  </div>
+  <div class="form-group">
+    <label for="name_alt">Варианты названий, употребляемые местными жителями, туристами</label>
+    <input type="text" name="name_alt" class="form-control" value="{{ summit['properties']['name_alt']}}"/>
+  </div>
+  <div class="form-group">
+    <label for="height">Высота</label>
+    <input type="text" name="height" class="form-control" value="{{ summit['properties']['height']}}"/>
+  </div>
+  <div class="form-group">
+    <label for="coordinates">Координаты (укажите точку на карте)</label>
+    <input type="text" name="coordinates" class="form-control" value="{{ summit['geometry']['coordinates'][0]}}, {{ summit['geometry']['coordinates'][1]}}" />
+  </div>
+  <div class="form-group">
+    <label for="rid">Хребет</label>
+    <select name="rid" class="form-control">
+        <option value="0">---</option>
+    </select>
+  </div>
+  <div class="form-group">
+    <label for="description">Дополнительная информация</label>
+    <textarea name="description" rows="10" class="form-control"></textarea>
+  </div>
+  <button type="submit" value="Сохранить" class="btn btn-default">Сохранить</button>
+</form>
+</div>
+<div class="col-md-6">
+  <div id="map"></div>
+</div>
+
+<script>
+    var editedSummit = null;
+    var marker = null;
+    //document.body.onload = loadSummitEditForm;
+    document.getElementById('summit_edit_form').addEventListener("submit", saveSummit, false);
+</script>

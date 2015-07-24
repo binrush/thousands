@@ -37,21 +37,21 @@ class SummitsDao(Dao):
                 i += 1
             return { 'type': 'FeatureCollection', 'features': features }
     
-    def get_ridges():
-        with get_cursor() as cur:
+    def get_ridges(self):
+        with self.get_cursor() as cur:
             cur.execute("SELECT id, name FROM ridges ORDER BY name")
             ridges = [ {"id": row['id'], "name": row['name']} for row in cur ]
             return { "ridges": ridges }
     
-    def get(sid):
-        with get_cursor() as cur:
+    def get(self, sid):
+        with self.get_cursor() as cur:
             cur.execute(
                     """SELECT s.id, s.name, name_alt, height, s.description, rid, r.name AS ridge, lng, lat
                     FROM summits s LEFT JOIN ridges r
                     ON s.rid = r.id
                     WHERE s.id=%s""", (sid, ))
             if cur.rowcount < 1:
-                raise ValueError("Incorrect summit id requested")
+                return None
             row = cur.fetchone()
             geometry = { 'type': 'Point', 'coordinates': [ row['lng'], row['lat'] ] }
             properties = {} 
@@ -59,7 +59,7 @@ class SummitsDao(Dao):
                 properties[p] = row[p]
             return { 'type': 'Feature', 'id': row['id'], 'geometry': geometry, 'properties': properties }
     
-    def create(data):
+    def create(self, data):
         with get_cursor() as cur:
             query = """INSERT INTO summits
                 (name, name_alt, height, description, rid, lat, lng) VALUES
@@ -75,7 +75,7 @@ class SummitsDao(Dao):
                 'lng': data['geometry']['coordinates'][0]})
             return cur.fetchone()['id']
     
-    def update(sid, data):
+    def update(self, sid, data):
         with get_cursor() as cur:
             query = """UPDATE summits SET 
                 name=%(name)s, name_alt=%(name_alt)s, height=%(height)s, description=%(description)s,

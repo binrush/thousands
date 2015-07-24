@@ -13,9 +13,13 @@ def about():
 def map():
     return render_template('map.html')
 
+@app.route('/table')
+def table():
+    return render_template('table.html')
+
 @app.route('/api/summits')
 def summits_get():
-    return jsonify(g.summits_dao.get_all())
+    return jsonify(g.summits_dao.get_all(request.args.has_key('orderByHeight')))
 
 @app.route('/register')
 def register():

@@ -82,11 +82,11 @@ function createMainMap() {
 
 function reorderSummitsTable() {
     if ( window.location.hash == '#orderByHeight' ) {
-        apiCall('/api/summits/?orderByHeight', fillSummitsTable);
+        apiCall('/api/summits?orderByHeight', fillSummitsTable);
         $('#orderSummitsByRidge').parent('li').removeClass('active');
         $('#orderSummitsByHeight').parent('li').addClass('active');
     } else {
-        apiCall('/api/summits/', fillSummitsTable);
+        apiCall('/api/summits', fillSummitsTable);
         $('#orderSummitsByRidge').parent('li').addClass('active');
         $('#orderSummitsByHeight').parent('li').removeClass('active');
     }     

@@ -1,0 +1,22 @@
+{% extends "layout.html" %}
+{% block content %}
+<ul class="nav nav-pills">
+  <li role="presentation"><a id="orderSummitsByRidge" href="#orderByRidges">Сортировать по хребтам</a></li>
+  <li role="presentation"><a id="orderSummitsByHeight" href="#orderByHeight">Сортировать по высоте</a></li>
+</ul>
+<table id='summitsTable' class="table">
+<thead>
+    <tr>
+        <th>Номер</th>
+        <th>Название</th>
+        <th>Высота</th>
+        <th>Хребет</th>
+    </tr>
+</thead>
+<tbody></tbody>
+</table>
+<script>
+    document.body.onload = reorderSummitsTable;
+    window.onhashchange = reorderSummitsTable;
+</script>
+{% endblock %}

@@ -1,7 +1,7 @@
 from thousands import app
 from flask import request, render_template, g, jsonify, redirect, url_for, make_response, abort
 from flask.ext.login import login_user, logout_user, current_user
-import dao, auth
+import dao, auth, forms
 import httplib, json
 from urllib import urlencode
 
@@ -24,12 +24,23 @@ def summit(summit_id):
         return abort(404)
     return render_template('summit.html', summit=s)
 
+@app.route('/summit/new', methods=['GET', 'POST'])
+def summit_new():
+    f = forms.SummitForm(request.form)
+    f.rid.choices = [ (r['id'], r['name']) for r in g.summits_dao.get_ridges() ]
+    if request.method == 'POST' and f.validate():
+        summit = Summit()
+        return redirect(url_for('summit', g.summits_dao.create(summit)))
+    return render_template('summit_edit.html', form=f)
+
 @app.route('/summit/edit/<int:summit_id>')
 def summit_edit(summit_id):
     s = g.summits_dao.get(summit_id)
     if s is None:
         return abort(404)
-    return render_template('summit_edit.html', summit=s)
+    f = forms.SummitForm(None, s, coordinates='{} {}'.format(s.lat, s.lng))
+    f.rid.choices = [ (r['id'], r['name']) for r in g.summits_dao.get_ridges() ]
+    return render_template('summit_edit.html', form=f)
 
 @app.route('/api/summits')
 def summits_get():

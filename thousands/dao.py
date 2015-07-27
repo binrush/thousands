@@ -17,6 +17,9 @@ class Dao(object):
         finally:
             self.pool.putconn(conn)
 
+class Summit(object):
+    pass
+
 class SummitsDao(Dao):
 
     def get_all(self, orderByHeight=False):
@@ -40,8 +43,7 @@ class SummitsDao(Dao):
     def get_ridges(self):
         with self.get_cursor() as cur:
             cur.execute("SELECT id, name FROM ridges ORDER BY name")
-            ridges = [ {"id": row['id'], "name": row['name']} for row in cur ]
-            return { "ridges": ridges }
+            return [ {"id": row['id'], "name": row['name']} for row in cur ]
     
     def get(self, sid):
         with self.get_cursor() as cur:
@@ -53,11 +55,12 @@ class SummitsDao(Dao):
             if cur.rowcount < 1:
                 return None
             row = cur.fetchone()
-            geometry = { 'type': 'Point', 'coordinates': [ row['lng'], row['lat'] ] }
-            properties = {} 
-            for p in ['name', 'name_alt', 'height', 'description', 'rid', 'ridge' ]:
-                properties[p] = row[p]
-            return { 'type': 'Feature', 'id': row['id'], 'geometry': geometry, 'properties': properties }
+            #geometry = { 'type': 'Point', 'coordinates': [ row['lng'], row['lat'] ] }
+            #properties = {} 
+            summit = Summit()
+            for k in row.keys():
+                setattr(summit, k, row[k])
+            return summit
     
     def create(self, data):
         with get_cursor() as cur:

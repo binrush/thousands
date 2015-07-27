@@ -1,4 +1,5 @@
 #map { height: 700px; }
-
-#form-errors { display: none; }
-
+#coordinates-pick-map { 
+    margin-top: 15px;
+    height: 300px; 
+}

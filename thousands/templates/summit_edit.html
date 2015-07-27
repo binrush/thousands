@@ -1,50 +1,63 @@
 {% extends "layout.html" %}
 {% block content %}
-<div class="row">
-<div class="col-md-6">
+{% if form.errors %}
 <div id="form-errors" class="alert alert-danger">
     <ul id="form-error-list">
+        {% for field_name, field_errors in form.errors|dictsort if field_errors %}
+            {% for error in field_errors %}
+                <li>{{ form[field_name].label }}: {{ error }}</li>
+            {% endfor %}
+        {% endfor %}
     </ul>
 </div>
-<form action="/summit" method="post" id="summit_edit_form">
-  <input type="hidden" name="sid" value="{{summit.id}}">
-
+{% endif %}
+<form id="summit_edit_form" method="post" class="form-horizontal">
+  {{ form.id_ }}
   <div class="form-group">
-    <label for="name">Название, зафиксированное на картах</label>
-    <input type="text" name="name" class="form-control" value="{{ summit['properties']['name'] }}"/>
+    <label for="name" class="col-md-3 control-label">Название</label>
+    <div class="col-md-6">
+    {{ form.name(class_='form-control') }}
+    </div>
   </div>
   <div class="form-group">
-    <label for="name_alt">Варианты названий, употребляемые местными жителями, туристами</label>
-    <input type="text" name="name_alt" class="form-control" value="{{ summit['properties']['name_alt']}}"/>
+    <label for="name_alt" class="col-md-3 control-label">Варианты названий</label>
+    <div class="col-md-6">
+    {{ form.name_alt(class_='form-control') }}
+    </div>
   </div>
   <div class="form-group">
-    <label for="height">Высота</label>
-    <input type="text" name="height" class="form-control" value="{{ summit['properties']['height']}}"/>
+    <label for="height" class="col-md-3 control-label">Высота</label>
+    <div class="col-md-6">
+    {{ form.height(class_='form-control') }}
+    </div>
   </div>
   <div class="form-group">
-    <label for="coordinates">Координаты (укажите точку на карте)</label>
-    <input type="text" name="coordinates" class="form-control" value="{{ summit['geometry']['coordinates'][0]}}, {{ summit['geometry']['coordinates'][1]}}" />
+    <label for="coordinates" class="col-md-3 control-label">Координаты</label>
+    <div class="col-md-6">
+    {{ form.coordinates(class_='form-control') }}
+    <div id="coordinates-pick-map"></div>
+    </div>
   </div>
   <div class="form-group">
-    <label for="rid">Хребет</label>
-    <select name="rid" class="form-control">
-        <option value="0">---</option>
-    </select>
+    <label for="rid" class="col-md-3 control-label">Хребет</label>
+    <div class="col-md-6">
+    {{ form.rid(class_='form-control') }}
+    </div>
   </div>
   <div class="form-group">
-    <label for="description">Дополнительная информация</label>
-    <textarea name="description" rows="10" class="form-control"></textarea>
+    <label for="description" class="col-md-3 control-label">Дополнительная информация</label>
+    <div class="col-md-6">
+    {{ form.description(class_='form-control', rows=10) }}
+    </div>
   </div>
-  <button type="submit" value="Сохранить" class="btn btn-default">Сохранить</button>
+   <div class="form-group">
+    <div class="col-md-offset-3 col-md-6">
+      <button type="submit" class="btn btn-default">Сохранить</button>
+    </div>
+  </div>
 </form>
-</div>
-<div class="col-md-6">
-  <div id="map"></div>
-</div>
-
 <script>
-    var editedSummit = null;
-    var marker = null;
-    //document.body.onload = loadSummitEditForm;
-    document.getElementById('summit_edit_form').addEventListener("submit", saveSummit, false);
+  var marker = null;
+  document.body.onload = setupCoordinatesPickMap;
 </script>
+{% endblock %}

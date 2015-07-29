@@ -45,19 +45,6 @@ def summit_edit(summit_id):
 def summits_get():
     return jsonify(g.summits_dao.get_all(request.args.has_key('orderByHeight')))
 
-@app.route('/register', methods=('GET', 'POST'))
-def register():
-    if request.method == 'POST':
-        pass
-    
-    registering_user = session.pop('registering_user', None)
-    if registering_user is None:
-        # TODO make it user-friendly
-        return make_response('You should use social menu')
-    else:
-        form = forms.RegistrationForm(registering_user)
-        return render_template('register.html', form=form)
-
 @app.route('/logout')
 def logout():
     logout_user()

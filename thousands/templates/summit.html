@@ -1,17 +1,30 @@
 {% extends "layout.html" %}
 {% block content %}
 <h2 id="summit_name">
-    {{ summit['properties']['name'] }}
-    {% if summit['properties']['name_alt'] %}
-    <small>({{summit['properties']['name_alt']}})</small>
+    {{ summit.name }}
+    {% if summit.name_alt %}
+    <small>({{ summit.name_alt }})</small>
     {% endif %}
 </h2>
 <div class="row">
-    <div class="col-md-12">
-        <p><strong>Высота:</strong> <span id="summit_height">{{summit['properties']['height']}}</span></p>
-        <p><strong>Хребет:</strong> <span id="summit_ridge">{{summit['properties']['ridge']}}</span></p>
-        <div id="summit_description">{{summit['properties']['description']}}</div>
-        <a id="summit_edit_button" href="{{url_for('summit_edit', summit_id=summit.id)}}" class="btn btn-default" role="button">Редактировать</a>
+    <div class="col-md-3 text-right"><strong>Высота:</strong></div>
+    <div class="col-md-6">{{ summit.height }}</div>
+</div>
+<div class="row">
+    <div class="col-md-3"><strong>Хребет:</strong></div>
+    <div class="col-md-6">{{ summit.ridge }}</div>
+</div>
+<div class="row">
+    <div class="col-md-3"><strong>Координаты:</strong></div>
+    <div class="col-md-6">{{ summit.lat }} {{ summit.lng }}</div>
+</div>
+<div class="row">
+    <div class="col-md-3"><strong>Дополнительная информация:</strong></div>
+    <div class="col-md-6">{{ summit.description }}</div>
+</div>
+{# <a id="summit_edit_button" href="{{ url_for('summit_edit', summit_id=summit.id) }}" class="btn btn-default" role="button">Редактировать</a> #}
+       
+       
         {#
         <!-- Button trigger modal -->
         <button type="button" class="btn btn-default" data-toggle="modal" data-target="#myModal">
@@ -53,8 +66,6 @@
         </div>
         #}
 
-    </div>
-</div>
 <script>
     //document.body.onload = loadSummit;
     document.getElementById('climb_form').addEventListener("submit", submitForm, false);

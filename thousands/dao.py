@@ -133,18 +133,24 @@ class UsersDao(Dao):
                 return None
             return self._fromrow(cur.fetchone())
    
-    def create(user):
-        #fd = urllib.urlopen(user['image'])
-        #if fd.getcode() == 200:
-        #    img_id = images.store(fd.read(), fd.info().gettype())
-        #else:
-        #    img_id = None
-        
-        sql = """INSERT INTO users (src, oauth_id, name, email, img_id, pub)
-            VALUES (%s, %s, %s, %s, %s, %s) RETURNING id;
+    def create(self, user):
+        sql = """INSERT INTO users (src, oauth_id, name, email, img_id)
+            VALUES (%s, %s, %s, %s, %s) RETURNING id;
         """
-        with database.get_cursor() as cur:
-            cur.execute(sql, (user.src, user['oauth_id'], user['name'], user['email'], img_id, user['pub']))
+        with self.get_cursor() as cur:
+            cur.execute(sql, (user.src, user.oauth_id, user.name, user.email, user.img_id))
             if cur.rowcount < 1:
                 return None
             return cur.fetchone()['id']
+
+class ImagesDao(Dao):
+
+    def create(self, data, fmt):
+        sql = "INSERT INTO images (type, payload) VALUES (%s, %s) RETURNING id"
+        with self.get_cursor() as cur:
+            cur.execute(sql, (fmt, psycopg2.Binary(data)))
+            if cur.rowcount < 1:
+                return None
+            else:
+                return cur.fetchone()['id']
+

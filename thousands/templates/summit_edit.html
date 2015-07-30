@@ -12,7 +12,7 @@
 </div>
 {% endif %}
 <form id="summit_edit_form" method="post" class="form-horizontal">
-  {{ form.id_ }}
+  {{ form.id }}
   <div class="form-group">
     <label for="name" class="col-md-3 control-label">Название</label>
     <div class="col-md-6">
@@ -42,6 +42,12 @@
     <label for="rid" class="col-md-3 control-label">Хребет</label>
     <div class="col-md-6">
     {{ form.rid(class_='form-control') }}
+    </div>
+  </div>
+  <div class="form-group">
+    <label for="description" class="col-md-3 control-label">Расшифровка названия</label>
+    <div class="col-md-6">
+    {{ form.interpretation(class_='form-control', rows=10) }}
     </div>
   </div>
   <div class="form-group">

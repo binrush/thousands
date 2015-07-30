@@ -48,7 +48,7 @@ class SummitsDao(Dao):
     def get(self, sid):
         with self.get_cursor() as cur:
             cur.execute(
-                    """SELECT s.id, s.name, name_alt, height, s.description, rid, r.name AS ridge, lng, lat
+                    """SELECT s.id, s.name, name_alt, height, interpretation, s.description, rid, r.name AS ridge, lng, lat
                     FROM summits s LEFT JOIN ridges r
                     ON s.rid = r.id
                     WHERE s.id=%s""", (sid, ))
@@ -78,22 +78,24 @@ class SummitsDao(Dao):
                 'lng': data['geometry']['coordinates'][0]})
             return cur.fetchone()['id']
     
-    def update(self, sid, data):
-        with get_cursor() as cur:
+    def update(self, summit):
+        with self.get_cursor() as cur:
             query = """UPDATE summits SET 
-                name=%(name)s, name_alt=%(name_alt)s, height=%(height)s, description=%(description)s,
+                name=%(name)s, name_alt=%(name_alt)s, height=%(height)s,
+                description=%(description)s, interpretation=%(interpretation)s,
                 rid=%(rid)s, lat=%(lat)s, lng=%(lng)s
                 WHERE id=%(id)s"""
             cur.execute(query, {
-                'name': data['properties']['name'],
-                'name_alt': data['properties']['name_alt'],
-                'height': data['properties']['height'],
-                'description': data['properties']['description'],
-                'rid': data['properties']['rid'],
-                'lat': data['geometry']['coordinates'][1],
-                'lng': data['geometry']['coordinates'][0],
-                'id': sid})
-            return data['id']
+                'name': summit.name,
+                'name_alt': summit.name_alt,
+                'height': summit.height,
+                'description': summit.description,
+                'interpretation': summit.interpretation,
+                'rid': summit.rid,
+                'lat': summit.lat,
+                'lng': summit.lng,
+                'id': summit.id})
+            return summit
     
     def row2feature(self, row):
         ret = { 'type': 'Feature', 'geometry': { "type": "Point" }, 'properties': {} }

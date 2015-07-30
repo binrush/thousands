@@ -8,10 +8,11 @@ CREATE TABLE IF NOT EXISTS ridges (
 CREATE TABLE IF NOT EXISTS summits (
     id serial PRIMARY KEY,
     rid smallint REFERENCES ridges,
-    name varchar,
-    name_alt varchar,
+    name varchar DEFAULT NULL,
+    name_alt varchar DEFAULT NULL,
     height smallint NOT NULL,
-    description text,
+    description text DEFAULT NULL,
+    interpretation text DEFAULT NULL,
     lng double precision NOT NULL,
     lat double precision NOT NULL
 );

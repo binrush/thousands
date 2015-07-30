@@ -1,7 +1,11 @@
 {% extends "layout.html" %}
 {% block content %}
 <h2 id="summit_name">
+    {% if summit.name %}
     {{ summit.name }}
+    {% else %}
+    {{ summit.height }}
+    {% endif %}
     {% if summit.name_alt %}
     <small>({{ summit.name_alt }})</small>
     {% endif %}
@@ -11,18 +15,28 @@
     <div class="col-md-6">{{ summit.height }}</div>
 </div>
 <div class="row">
-    <div class="col-md-3"><strong>Хребет:</strong></div>
+    <div class="col-md-3 text-right"><strong>Хребет:</strong></div>
     <div class="col-md-6">{{ summit.ridge }}</div>
 </div>
 <div class="row">
-    <div class="col-md-3"><strong>Координаты:</strong></div>
+    <div class="col-md-3 text-right"><strong>Координаты:</strong></div>
     <div class="col-md-6">{{ summit.lat }} {{ summit.lng }}</div>
 </div>
+{% if summit.interpretation %}
 <div class="row">
-    <div class="col-md-3"><strong>Дополнительная информация:</strong></div>
-    <div class="col-md-6">{{ summit.description }}</div>
+    <div class="col-md-3 text-right"><strong>Расшифровка названия:</strong></div>
+    <div class="col-md-6">{{ summit.interpretation | safe }}</div>
 </div>
-{# <a id="summit_edit_button" href="{{ url_for('summit_edit', summit_id=summit.id) }}" class="btn btn-default" role="button">Редактировать</a> #}
+{% endif %}
+{% if summit.description %}
+<div class="row">
+    <div class="col-md-3 text-right"><strong>Дополнительная информация:</strong></div>
+    <div class="col-md-6">{{ summit.description | safe }}</div>
+</div>
+{% endif %}
+<div class="row">
+    <div class="col-md-offset-3 col-md-6"><a id="summit_edit_button" href="{{ url_for('summit_edit', summit_id=summit.id) }}" class="btn btn-default" role="button">Редактировать</a></div>
+</div>
        
        
         {#

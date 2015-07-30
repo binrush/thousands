@@ -9,7 +9,7 @@ def about():
     return render_template('about.html')
 
 @app.route('/')
-def map():
+def index():
     return render_template('map.html')
 
 @app.route('/table')
@@ -32,13 +32,23 @@ def summit_new():
         return redirect(url_for('summit', g.summits_dao.create(summit)))
     return render_template('summit_edit.html', form=f)
 
-@app.route('/summit/edit/<int:summit_id>')
+@app.route('/summit/edit/<int:summit_id>', methods=['GET', 'POST'])
 def summit_edit(summit_id):
-    s = g.summits_dao.get(summit_id)
-    if s is None:
-        return abort(404)
-    f = forms.SummitForm(None, s, coordinates='{} {}'.format(s.lat, s.lng))
-    f.rid.choices = [ (r['id'], r['name']) for r in g.summits_dao.get_ridges() ]
+    if request.method == 'POST':
+        f = forms.SummitForm(request.form)
+        f.rid.choices = [ (r['id'], r['name']) for r in g.summits_dao.get_ridges() ]
+        if f.validate():
+            summit = dao.Summit()
+            f.populate_obj(summit)
+            summit.lat, summit.lng = map(float, f.coordinates.data.split(' '))
+            g.summits_dao.update(summit)
+            return redirect(url_for('summit', summit_id=summit.id))
+    else:
+        s = g.summits_dao.get(summit_id)
+        if s is None:
+            return abort(404)
+        f = forms.SummitForm(None, s, coordinates='{} {}'.format(s.lat, s.lng))
+        f.rid.choices = [ (r['id'], r['name']) for r in g.summits_dao.get_ridges() ]
     return render_template('summit_edit.html', form=f)
 
 @app.route('/api/summits')
@@ -48,7 +58,7 @@ def summits_get():
 @app.route('/logout')
 def logout():
     logout_user()
-    return redirect(url_for('map'))
+    return redirect(url_for('index'))
 
 @app.route('/vk_login')
 def vk_login():
@@ -90,3 +100,6 @@ def vk_login():
     login_user(user)
     return redirect(url_for('profile'))
 
+@app.route('/profile')
+def profile():
+    return render_template('profile.html')

@@ -15,12 +15,13 @@ def validate_coordinates(form, field):
         raise validators.ValidationError('Longtitude should be between 0 and 180 degrees')
 
 class SummitForm(Form):
-    id_ = HiddenField('id')
+    id = HiddenField('id')
     name = TextField('name')
     name_alt = TextField('name_alt')
     height = IntegerField('height', [ validators.NumberRange(1000, 1640) ])
     rid = SelectField('rid', coerce=int, choices=[(0, '---')])
     coordinates = TextField('coordinates', validators=[ validators.DataRequired(), validate_coordinates ])
+    interpretation = TextAreaField('interpretation')
     description = TextAreaField('description')
 
 

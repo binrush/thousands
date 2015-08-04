@@ -1,8 +1,8 @@
 {% extends "layout.html" %}
 {% block content %}
 <ul class="nav nav-pills">
-  <li role="presentation"><a id="orderSummitsByRidge" href="#orderByRidges">Сортировать по хребтам</a></li>
-  <li role="presentation"><a id="orderSummitsByHeight" href="#orderByHeight">Сортировать по высоте</a></li>
+  <li role="presentation"><a id="orderSummitsByRidge" href="/table">Сортировать по хребтам</a></li>
+  <li role="presentation"><a id="orderSummitsByHeight" href="/table?orderByHeight">Сортировать по высоте</a></li>
 </ul>
 <table id='summitsTable' class="table">
 <thead>
@@ -11,12 +11,29 @@
         <th>Название</th>
         <th>Высота</th>
         <th>Хребет</th>
+        <th>Восхождение</th>
     </tr>
 </thead>
-<tbody></tbody>
+<tbody>
+    {% for s in summits %}
+    <tr>
+        <td>{{ s.number }}</td>
+        <td class="text-left">
+            <a href="/summit/{{ s.id }}">{{s.format_name() }} {{ s.format_name_alt() }}</a>
+        </td>
+        <td>{{ s.height }}</td>
+        <td>{{ s.ridge }}</td>
+        <td><a href="/api/climbs/register/{{s.id}}" type="button" class="btn btn-default">Отметить</a></td>
+    </tr>
+    {% endfor %}
+</tbody>
 </table>
 <script>
-    document.body.onload = reorderSummitsTable;
-    window.onhashchange = reorderSummitsTable;
+    document.getElementById('summitsTable').addEventListener('click', function (e) {
+        if ( e.toElement.type === 'button' ) {
+            e.preventDefault();
+            registerClimb(e.toElement.href);
+        }
+    });
 </script>
 {% endblock %}

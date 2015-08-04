@@ -18,11 +18,28 @@ class Dao(object):
             self.pool.putconn(conn)
 
 class Summit(object):
-    pass
+
+    def format_name(self):
+        return self.name if self.name else str(self.height)
+
+    def format_name_alt(self):
+        return '(' + self.name_alt + ')' if self.name_alt else ''
+    
+    def to_geojson(self):
+        ret = { 'type': 'Feature', 'geometry': { "type": "Point" }, 'properties': {} }
+        ret['id'] = self.id
+        ret['geometry']['coordinates'] = [ self.lng, self.lat ]
+        ret['properties']['height'] = self.height
+        ret['properties']['name'] = self.format_name()
+        ret['properties']['name_alt'] = self.format_name_alt()
+        ret['properties']['ridge'] = self.ridge
+        ret['properties']['color'] = self.color
+
+        return ret
 
 class SummitsDao(Dao):
 
-    def get_all(self, orderByHeight=False):
+    def get_all(self, user=None, orderByHeight=False):
         with self.get_cursor() as cur:
             if orderByHeight:
                 order = "ORDER BY s.height DESC"
@@ -31,14 +48,15 @@ class SummitsDao(Dao):
             cur.execute(
                 """SELECT s.id, s.name, s.name_alt, s.height, s.lng, s.lat, r.name AS ridge, r.color
                 FROM summits s LEFT JOIN ridges r ON s.rid=r.id """ + order)
-            features = map(self.row2feature, cur)
-            sortkey = lambda f: f[1]['properties']['height']
-            index = [ elem[0] for elem in sorted(enumerate(features), key=sortkey, reverse=True) ]
+            summits = map(self.row2summit, cur)
+            sortkey = lambda f: f[1].height
+            index = [ elem[0] for elem in sorted(enumerate(summits), key=sortkey, reverse=True) ]
             i = 0
             for pos in index:
-                features[pos]['properties']['number'] = i + 1
+                summits[pos].number = i + 1
                 i += 1
-            return { 'type': 'FeatureCollection', 'features': features }
+            #return { 'type': 'FeatureCollection', 'features': features }
+            return summits
     
     def get_ridges(self):
         with self.get_cursor() as cur:
@@ -97,15 +115,13 @@ class SummitsDao(Dao):
                 'id': summit.id})
             return summit
     
+    def row2summit(self, row):
+        s = Summit()
+        for k in row.keys():
+            setattr(s, k, row[k])
+        return s
+
     def row2feature(self, row):
-        ret = { 'type': 'Feature', 'geometry': { "type": "Point" }, 'properties': {} }
-        ret['id'] = row['id']
-        ret['geometry']['coordinates'] = [ row['lng'], row['lat'] ]
-        ret['properties']['height'] = row['height']
-        ret['properties']['name'] = row['name'] if row['name'] else str(row['height'])
-        ret['properties']['name_alt'] = row['name_alt']
-        ret['properties']['ridge'] = row['ridge']
-        ret['properties']['color'] = row['color']
     
         return ret
 

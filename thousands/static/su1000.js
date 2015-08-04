@@ -1,4 +1,4 @@
-var INITIAL_COORDINATES = [ 54.6829976, 59.2835566 ]
+var INITIAL_COORDINATES = [ 54.480, 59.041 ]
 var MSG_SERVER_ERROR = "Невозможно выполнить операцию: ошибка сервера"
 
 function apiCall(uri, callback) {
@@ -43,11 +43,12 @@ function createMap(container, center, zoom) {
 }
 
 function pointPopupCode(feature) {
-    name_alt = feature.properties.name_alt == "" ? "" : "<br/>(" + feature.properties.name_alt + ")";
+    name_alt = feature.properties.name_alt == "" ? "" : "<br/>" + feature.properties.name_alt;
     name = "<a href=\"/summit/" + feature.id + "\">" + feature.properties.name + "</a>";
     return name + name_alt +
-        "<br/>Высота: " + feature.properties.height + 
-        "<br/>Хребет:" + feature.properties.ridge;
+        "<br>Высота: " + feature.properties.height + 
+        "<br>Хребет:" + feature.properties.ridge + 
+        "<br><button type=\"button\" class=\"btn btn-default btn-sm btn-block\">Отметить восхождение</button>";
 }
 
 function placePoints(data) {
@@ -59,38 +60,12 @@ function placePoints(data) {
     }).addTo(map);
 }
 
-function fillSummitsTable(data) {
-    var tb = document.getElementById("summitsTable").getElementsByTagName("tbody")[0];
-    tb.innerHTML = '';
-    data.features.forEach(function(f) {
-        var tr = document.createElement("tr");
-        var name_alt = f.properties.name_alt == "" ? "" : " (" + f.properties.name_alt + ")";
-        tr.innerHTML = "<td>" + f.properties.number + "</td>" +
-            "<td class=\"text-left\"><a href=\"/summit/" + f.id + "\">" + f.properties.name + name_alt + "</a></td>" +
-            "<td>" + f.properties.height + "</td>" +
-            "<td>" + f.properties.ridge + "</td>" 
-        tb.appendChild(tr);
-    });
-}
-
 function createMainMap() {
     map = createMap('map', INITIAL_COORDINATES, 8);
     var hash = new L.Hash(map);
     apiCall('/api/summits', placePoints);
 }
 
-
-function reorderSummitsTable() {
-    if ( window.location.hash == '#orderByHeight' ) {
-        apiCall('/api/summits?orderByHeight', fillSummitsTable);
-        $('#orderSummitsByRidge').parent('li').removeClass('active');
-        $('#orderSummitsByHeight').parent('li').addClass('active');
-    } else {
-        apiCall('/api/summits', fillSummitsTable);
-        $('#orderSummitsByRidge').parent('li').addClass('active');
-        $('#orderSummitsByHeight').parent('li').removeClass('active');
-    }     
-}
 
 function setupCoordinatesPickMap() {
     map = createMap('coordinates-pick-map', INITIAL_COORDINATES, 8);

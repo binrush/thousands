@@ -14,7 +14,9 @@ def index():
 
 @app.route('/table')
 def table():
-    return render_template('table.html')
+    return render_template('table.html', 
+            summits=g.summits_dao.get_all(current_user, 
+                request.args.has_key('orderByHeight')))
 
 @app.route('/summit/<int:summit_id>')
 def summit(summit_id):
@@ -25,6 +27,8 @@ def summit(summit_id):
 
 @app.route('/summit/new', methods=['GET', 'POST'])
 def summit_new():
+    if current_user.is_anonymous or not current_user.admin:
+        abort(401)
     f = forms.SummitForm(request.form)
     f.rid.choices = [ (r['id'], r['name']) for r in g.summits_dao.get_ridges() ]
     if request.method == 'POST' and f.validate():
@@ -34,6 +38,8 @@ def summit_new():
 
 @app.route('/summit/edit/<int:summit_id>', methods=['GET', 'POST'])
 def summit_edit(summit_id):
+    if current_user.is_anonymous or not current_user.admin:
+        abort(401)
     if request.method == 'POST':
         f = forms.SummitForm(request.form)
         f.rid.choices = [ (r['id'], r['name']) for r in g.summits_dao.get_ridges() ]
@@ -53,7 +59,8 @@ def summit_edit(summit_id):
 
 @app.route('/api/summits')
 def summits_get():
-    return jsonify(g.summits_dao.get_all(request.args.has_key('orderByHeight')))
+    return jsonify({ 'type': 'FeatureCollection', 
+        'features': [ s.to_geojson() for s in g.summits_dao.get_all()] })
 
 @app.route('/logout')
 def logout():

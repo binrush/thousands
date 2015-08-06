@@ -61,7 +61,7 @@ def summit_edit(summit_id):
 @login_required
 def climb_new(summit_id):
     f = forms.ClimbForm(request.form)
-    if form.method == 'POST' and form.validate():
+    if request.method == 'POST' and form.validate():
         g.climbs_dao.create(current_user, f.date.summit, f.date.data, f.comment.data)
         return redirect(url_for('summit', f.id))
     return render_template('climb_edit.html', 

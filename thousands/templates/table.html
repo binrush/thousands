@@ -11,7 +11,6 @@
         <th>Название</th>
         <th>Высота</th>
         <th>Хребет</th>
-        <th>Восхождение</th>
     </tr>
 </thead>
 <tbody>
@@ -23,17 +22,8 @@
         </td>
         <td>{{ s.height }}</td>
         <td>{{ s.ridge }}</td>
-        <td><a href="/api/climbs/register/{{s.id}}" type="button" class="btn btn-default">Отметить</a></td>
     </tr>
     {% endfor %}
 </tbody>
 </table>
-<script>
-    document.getElementById('summitsTable').addEventListener('click', function (e) {
-        if ( e.toElement.type === 'button' ) {
-            e.preventDefault();
-            registerClimb(e.toElement.href);
-        }
-    });
-</script>
 {% endblock %}

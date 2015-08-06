@@ -1,0 +1,52 @@
+{% extends "layout.html" %}
+{% block content %}
+<h2>Отметить восхождение</h2>
+{% if form.errors %}
+<div id="form-errors" class="alert alert-danger">
+    <ul id="form-error-list">
+        {% for field_name, field_errors in form.errors|dictsort if field_errors %}
+            {% for error in field_errors %}
+                <li>{{ form[field_name].label }}: {{ error }}</li>
+            {% endfor %}
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+<form id="summit_edit_form" method="post" class="form-horizontal">
+  {{ form.summit_id }}
+  <div class="row">
+    <h5 class="col-md-offset-3 col-md-6">
+        <a  href="{{ url_for('summit', summit_id=summit.id) }}">
+        {{ summit.format_name() }} {{  summit.format_name_alt() }}, {{ summit.height }}, хребет {{ summit.ridge }}
+        </a>
+    </h5>
+  </div>
+  <div class="form-group">
+    <label for="name_alt" class="col-md-3 control-label">Дата</label>
+    <div class="col-md-6">
+    {{ form.date(class_='form-control datepicker') }}
+    </div>
+  </div>
+  <div class="form-group">
+    <label for="height" class="col-md-3 control-label">Комментарий</label>
+    <div class="col-md-6">
+    {{ form.comment(class_='form-control') }}
+    </div>
+  </div>
+   <div class="form-group">
+    <div class="col-md-offset-3 col-md-6">
+      <button type="submit" class="btn btn-default">Сохранить</button>
+    </div>
+  </div>
+</form>
+<script>
+$('.datepicker').datepicker({
+    autoclose: true,
+    orientation: 'top',
+    format: 'dd.mm.yyyy',
+    endDate: '0d',
+    language: 'ru'
+});
+</script>
+{% endblock %}
+

@@ -1,14 +1,11 @@
 {% extends "layout.html" %}
 {% block content %}
-<h2 id="summit_name">
-    {% if summit.name %}
-    {{ summit.name }}
-    {% else %}
-    {{ summit.height }}
-    {% endif %}
-    {% if summit.name_alt %}
-    <small>({{ summit.name_alt }})</small>
-    {% endif %}
+<h2>
+{{ summit.format_name() }} <small>{{ summit.format_name_alt() }}
+{% if current_user.admin %}
+<a href="{{ url_for('summit_edit', summit_id=summit.id) }}"><span class="glyphicon glyphicon-edit"></span></a>
+{% endif %}
+</small>
 </h2>
 <div class="row">
     <div class="col-md-3 text-right"><strong>Высота:</strong></div>
@@ -35,53 +32,14 @@
 </div>
 {% endif %}
 <div class="row">
-    <div class="col-md-offset-3 col-md-6"><a id="summit_edit_button" href="{{ url_for('summit_edit', summit_id=summit.id) }}" class="btn btn-default" role="button">Редактировать</a></div>
+    <div class="col-md-3 text-right"><strong>Статус</strong></div>
+    <div class="col-md-6">
+        <a href="{{ url_for('climb_new', summit_id=summit.id) }}">Отметить восхождение</a>
+    </div>
 </div>
-       
-       
-        {#
-        <!-- Button trigger modal -->
-        <button type="button" class="btn btn-default" data-toggle="modal" data-target="#myModal">
-        </button>
-        
-        <!-- Modal -->
-        <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-          <div class="modal-dialog" role="document">
-            <div class="modal-content">
-              <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                <h4 class="modal-title" id="myModalLabel">Отметить восхождение</h4>
-              </div>
-              <form id="climb_form" action="/api/climbs" method="post">
-              <input type="hidden" name="sid" value="{{ sid }}" />
-
-              <div class="modal-body">
-                 <div id="form-errors" class="alert alert-danger">
-                   <ul id="form-error-list">
-                   </ul>
-                 </div>
-
-                <div class="form-group">
-                    <label for="ts">Дата восхождения</label>
-                    <input type="text" class="form-control" name="ts">
-                </div>
-                <div class="form-group">
-                    <label for="comment">Комментарий</label>
-                    <textarea name="comment" rows="10" class="form-control"></textarea>
-                </div>
-              </div>
-              <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">Отмена</button>
-                <button type="submit" class="btn btn-primary">Сохранить</button>
-              </div>
-              </form>
-            </div>
-          </div>
-        </div>
-        #}
-
-<script>
-    //document.body.onload = loadSummit;
-    document.getElementById('climb_form').addEventListener("submit", submitForm, false);
-</script>
+ <div class="row">
+    <div class="col-md-3 text-right"><strong>Восходители</strong></div>
+    <div class="col-md-6">
+    </div>
+</div>
 {% endblock %}

@@ -1,6 +1,6 @@
 from thousands import app
 from flask import request, render_template, g, jsonify, redirect, url_for, session, make_response, abort
-from flask.ext.login import login_user, logout_user, current_user, UserMixin
+from flask.ext.login import login_user, logout_user, current_user, UserMixin, login_required
 import dao, auth, forms
 import httplib, json, urllib
 
@@ -27,7 +27,7 @@ def summit(summit_id):
 
 @app.route('/summit/new', methods=['GET', 'POST'])
 def summit_new():
-    if current_user.is_anonymous or not current_user.admin:
+    if current_user.is_anonymous() or not current_user.admin:
         abort(401)
     f = forms.SummitForm(request.form)
     f.rid.choices = [ (r['id'], r['name']) for r in g.summits_dao.get_ridges() ]
@@ -38,7 +38,7 @@ def summit_new():
 
 @app.route('/summit/edit/<int:summit_id>', methods=['GET', 'POST'])
 def summit_edit(summit_id):
-    if current_user.is_anonymous or not current_user.admin:
+    if current_user.is_anonymous() or not current_user.admin:
         abort(401)
     if request.method == 'POST':
         f = forms.SummitForm(request.form)
@@ -56,6 +56,17 @@ def summit_edit(summit_id):
         f = forms.SummitForm(None, s, coordinates='{} {}'.format(s.lat, s.lng))
         f.rid.choices = [ (r['id'], r['name']) for r in g.summits_dao.get_ridges() ]
     return render_template('summit_edit.html', form=f)
+
+@app.route('/climb/new/<int:summit_id>')
+@login_required
+def climb_new(summit_id):
+    f = forms.ClimbForm(request.form)
+    if form.method == 'POST' and form.validate():
+        g.climbs_dao.create(current_user, f.date.summit, f.date.data, f.comment.data)
+        return redirect(url_for('summit', f.id))
+    return render_template('climb_edit.html', 
+            summit = g.summits_dao.get(summit_id),
+            form = f)
 
 @app.route('/api/summits')
 def summits_get():

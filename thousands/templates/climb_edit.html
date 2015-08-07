@@ -13,7 +13,7 @@
 </div>
 {% endif %}
 <form id="summit_edit_form" method="post" class="form-horizontal">
-  {{ form.summit_id }}
+  {{ form.summit_id(value=summit.id) }}
   <div class="row">
     <h5 class="col-md-offset-3 col-md-6">
         <a  href="{{ url_for('summit', summit_id=summit.id) }}">

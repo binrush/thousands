@@ -18,40 +18,29 @@ def validate_coordinates(form, field):
     if not (lng > 0 and lng < 180):
         raise validators.ValidationError('Longtitude should be between 0 and 180 degrees')
 
-def validate_date(form, field):
-    try:
-        d = datetime.datetime.strptime('%d.%m.%Y', field.data)
-    except ValueError:
-        raise validators.ValidationError('Неправильно указана дата')
-
-    if d > datetime.date.today():
-        raise validators.ValidationError('Указана дата в будущем')
-
 class ClimbDateField(Field):
 
-    _date_format = '%Y-%m-%d'
+    _date_format = '%d.%m.%Y'
 
     widget = TextInput()
 
     def _value(self):
         if self.data:
-            return unicode(datetime.datetime.strftime(self._date_format, self.data))
+            return unicode(datetime.datetime.strftime(self.data, self._date_format))
         else:
             return u''
 
     def process_formdata(self, valuelist):
-        if valuelist:
-            self.data = datetime.datetime.strptime(self._date_format, valuelist)
+        if valuelist and valuelist[0]:
+            try:
+                self.data = datetime.datetime.strptime(valuelist[0], self._date_format).date()
+            except ValueError:
+                raise validators.ValidationError(u'Неправильно указана дата')
         else:
             self.data = None
 
-    def pre_validate(form):
-        try:
-            d = datetime.datetime.strptime('%d.%m.%Y', self.data)
-        except ValueError:
-            raise validators.ValidationError('Неправильно указана дата')
-
-        if d > datetime.date.today():
+    def pre_validate(self, form):
+        if self.data is not None and self.data > datetime.date.today():
             raise validators.ValidationError('Указана дата в будущем')
 
 
@@ -66,6 +55,6 @@ class SummitForm(Form):
     description = TextAreaField('description')
 
 class ClimbForm(Form):
-    summit_id = HiddenField('sid')
-    date = ClimbDateField(u'Дата', validators=[ validate_date ])
+    summit_id = HiddenField('summit_id')
+    date = ClimbDateField(u'Дата')
     comment = TextAreaField(u'Комментарий')

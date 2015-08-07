@@ -36,9 +36,9 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 CREATE TABLE IF NOT EXISTS climbs (
-    climber integer NOT NULL,
-    summit integer NOT NULL,
+    user_id integer NOT NULL REFERENCES users,
+    summit_id integer NOT NULL REFERENCES summits,
     ts date,
     comment text,
-    PRIMARY KEY (climber, summit)
+    PRIMARY KEY (user_id, summit_id)
 );

@@ -172,3 +172,9 @@ class ImagesDao(Dao):
             else:
                 return cur.fetchone()['id']
 
+class ClimbsDao(Dao):
+
+    def create(self, user_id, summit_id, date=None, comment=None):
+        sql = "INSERT INTO climbs (user_id, summit_id, ts, comment) VALUES (%s, %s, %s, %s)"
+        with self.get_cursor() as cur:
+            cur.execute(sql, (user_id, summit_id, date, comment))

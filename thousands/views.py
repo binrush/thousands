@@ -57,13 +57,13 @@ def summit_edit(summit_id):
         f.rid.choices = [ (r['id'], r['name']) for r in g.summits_dao.get_ridges() ]
     return render_template('summit_edit.html', form=f)
 
-@app.route('/climb/new/<int:summit_id>')
+@app.route('/climb/new/<int:summit_id>', methods=['GET', 'POST'])
 @login_required
 def climb_new(summit_id):
     f = forms.ClimbForm(request.form)
-    if request.method == 'POST' and form.validate():
-        g.climbs_dao.create(current_user, f.date.summit, f.date.data, f.comment.data)
-        return redirect(url_for('summit', f.id))
+    if request.method == 'POST' and f.validate():
+        g.climbs_dao.create(current_user.get_id(), f.summit_id.data, f.date.data, f.comment.data)
+        return redirect(url_for('summit', summit_id=f.summit_id.data))
     return render_template('climb_edit.html', 
             summit = g.summits_dao.get(summit_id),
             form = f)

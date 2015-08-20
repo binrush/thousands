@@ -1,3 +1,7 @@
+from yoyo import step
+import os, sys
+
+sql = """
 CREATE TABLE IF NOT EXISTS ridges (
     id smallint PRIMARY KEY,
     name varchar NOT NULL,
@@ -42,3 +46,6 @@ CREATE TABLE IF NOT EXISTS climbs (
     comment text,
     PRIMARY KEY (user_id, summit_id)
 );
+"""
+
+step(sql)

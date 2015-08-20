@@ -1,8 +1,8 @@
 from thousands import app
-from flask import request, render_template, g, jsonify, redirect, url_for, session, make_response, abort
+from flask import request, render_template, g, jsonify, redirect, url_for, session, make_response, abort, send_file
 from flask.ext.login import login_user, logout_user, current_user, UserMixin, login_required
 import dao, auth, forms
-import httplib, json, urllib
+import httplib, json, urllib, io
 
 @app.route('/about')
 def about():
@@ -15,7 +15,7 @@ def index():
 @app.route('/table')
 def table():
     return render_template('table.html', 
-            summits=g.summits_dao.get_all(current_user, 
+            summits=g.summits_dao.get_all(current_user.get_id(), 
                 request.args.has_key('orderByHeight')))
 
 @app.route('/summit/<int:summit_id>')
@@ -23,7 +23,7 @@ def summit(summit_id):
     s = g.summits_dao.get(summit_id)
     if s is None:
         return abort(404)
-    return render_template('summit.html', summit=s)
+    return render_template('summit.html', summit=s, climbers=g.climbs_dao.climbers(summit_id))
 
 @app.route('/summit/new', methods=['GET', 'POST'])
 def summit_new():
@@ -71,7 +71,12 @@ def climb_new(summit_id):
 @app.route('/api/summits')
 def summits_get():
     return jsonify({ 'type': 'FeatureCollection', 
-        'features': [ s.to_geojson() for s in g.summits_dao.get_all()] })
+        'features': [ s.to_geojson() for s in g.summits_dao.get_all(current_user.get_id())] })
+
+@app.route('/api/images/<int:image_id>')
+def image_get(image_id):
+    img = g.images_dao.get(image_id)
+    return send_file(io.BytesIO(img.payload), mimetype=img.type)
 
 @app.route('/logout')
 def logout():
@@ -119,5 +124,11 @@ def vk_login():
     return redirect(url_for('profile'))
 
 @app.route('/profile')
+@login_required
 def profile():
-    return render_template('profile.html')
+    climbed = [ s for s in g.summits_dao.get_all(current_user.get_id()) if s.climbed ]
+    return render_template('profile.html', climbed = climbed)
+
+@app.route('/user/<int:user_id>')
+def user(user_id):
+    abort(404)

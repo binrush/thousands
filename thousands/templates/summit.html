@@ -32,14 +32,23 @@
 </div>
 {% endif %}
 <div class="row">
-    <div class="col-md-3 text-right"><strong>Статус</strong></div>
+    <div class="col-md-3 text-right"><strong>Статус:</strong></div>
     <div class="col-md-6">
-        <a href="{{ url_for('climb_new', summit_id=summit.id) }}">Отметить восхождение</a>
+    {% if current_user not in climbers %}
+        Вы не взошли на эту вершину <a href="{{ url_for('climb_new', summit_id=summit.id) }}">Отметить</a>
+    {% else %}
+        Вы совершили восхождение на эту вершину
+    {% endif %}
     </div>
 </div>
  <div class="row">
-    <div class="col-md-3 text-right"><strong>Восходители</strong></div>
+    <div class="col-md-3 text-right"><strong>Восходители:</strong></div>
     <div class="col-md-6">
+        <ul class="list-inline">
+            {% for c in climbers %}
+            <li><a href="{{ url_for('user', user_id=c.id) }}">{{ c.name }}</a></li>
+            {% endfor %}
+        </ul>
     </div>
 </div>
 {% endblock %}

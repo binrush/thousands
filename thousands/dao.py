@@ -34,20 +34,28 @@ class Summit(object):
         ret['properties']['name_alt'] = self.format_name_alt()
         ret['properties']['ridge'] = self.ridge
         ret['properties']['color'] = self.color
+        ret['properties']['climbed'] = self.climbed
 
         return ret
 
+class Image(object):
+    pass
+
 class SummitsDao(Dao):
 
-    def get_all(self, user=None, orderByHeight=False):
+    def get_all(self, user_id=None, orderByHeight=False):
         with self.get_cursor() as cur:
             if orderByHeight:
                 order = "ORDER BY s.height DESC"
             else:
                 order = "ORDER BY r.name, s.lat DESC"
             cur.execute(
-                """SELECT s.id, s.name, s.name_alt, s.height, s.lng, s.lat, r.name AS ridge, r.color
-                FROM summits s LEFT JOIN ridges r ON s.rid=r.id """ + order)
+                """SELECT s.id, s.name, s.name_alt, 
+                    s.height, s.lng, s.lat, r.name AS ridge, r.color,
+                    EXISTS (
+                        SELECT * FROM climbs 
+                        WHERE summit_id=s.id AND user_id=%s) AS climbed
+                FROM summits s LEFT JOIN ridges r ON s.rid=r.id """ + order, (user_id, ))
             summits = map(self.row2summit, cur)
             sortkey = lambda f: f[1].height
             index = [ elem[0] for elem in sorted(enumerate(summits), key=sortkey, reverse=True) ]
@@ -172,7 +180,35 @@ class ImagesDao(Dao):
             else:
                 return cur.fetchone()['id']
 
+    def get(self, image_id):
+        sql = "SELECT * FROM images WHERE id=%s"
+        with self.get_cursor() as cur:
+            cur.execute(sql, (image_id, ))
+            if cur.rowcount < 1:
+                return None
+            else:
+                row = cur.fetchone()
+                img = Image()
+                img.id = row['id']
+                img.type = row['type']
+                img.payload = row['payload']
+                return img
+
 class ClimbsDao(Dao):
+
+    def climbers(self, summit_id):
+        climbers = []
+        sql = """SELECT users.id, users.name
+                FROM users LEFT JOIN climbs ON climbs.user_id=users.id 
+                WHERE climbs.summit_id=%s;"""
+        with self.get_cursor() as cur:
+            cur.execute(sql, (summit_id, ))
+            for row in cur:
+                u = UserMixin()
+                u.id = row['id']
+                u.name = row['name']
+                climbers.append(u)
+        return climbers
 
     def create(self, user_id, summit_id, date=None, comment=None):
         sql = "INSERT INTO climbs (user_id, summit_id, ts, comment) VALUES (%s, %s, %s, %s)"

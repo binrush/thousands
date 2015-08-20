@@ -18,6 +18,9 @@
     <tr>
         <td>{{ s.number }}</td>
         <td class="text-left">
+            {% if s.climbed %}
+            <span class="glyphicon glyphicon-flag" aria-hidden="true"></span>
+            {% endif %}
             <a href="/summit/{{ s.id }}">{{s.format_name() }} {{ s.format_name_alt() }}</a>
         </td>
         <td>{{ s.height }}</td>

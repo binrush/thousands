@@ -47,14 +47,18 @@ function pointPopupCode(feature) {
     name = "<a href=\"/summit/" + feature.id + "\">" + feature.properties.name + "</a>";
     return name + name_alt +
         "<br>Высота: " + feature.properties.height + 
-        "<br>Хребет:" + feature.properties.ridge + 
-        "<br><button type=\"button\" class=\"btn btn-default btn-sm btn-block\">Отметить восхождение</button>";
+        "<br>Хребет:" + feature.properties.ridge;
 }
 
 function placePoints(data) {
     L.geoJson(data, {
         pointToLayer: function (feature, latlng) {
-            var icon = L.MakiMarkers.icon({icon: "marker", color: "#" + feature.properties.color, size: "s"});
+            if ( feature.properties.climbed ) {
+                icon = "embassy";
+            } else  {
+                icon = "marker";
+            }
+            var icon = L.MakiMarkers.icon({icon: icon, color: "#" + feature.properties.color, size: "s"});
             return L.marker(latlng, {icon: icon}).bindPopup(pointPopupCode(feature));
         }
     }).addTo(map);

@@ -17,8 +17,10 @@ VK_API_VERSION="5.32"
 
 app = Flask(__name__)
 app.config.from_object(__name__)
-app.config.from_envvar('THOUSANDS_CONF')
-
+if os.environ.has_key('THOUSANDS_CONF'):
+    app.config.from_envvar('THOUSANDS_CONF')
+if os.environ.has_key('OPENSHIFT_DATA_DIR'):
+    app.config.from_pyfile(os.path.join(os.environ['OPENSHIFT_DATA_DIR'], 'thousands.conf'))
 
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
 pool = psycopg2.pool.SimpleConnectionPool(1, 10, app.config['PG_DSN'])

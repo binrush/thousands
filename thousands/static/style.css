@@ -1,5 +1,6 @@
-#map { height: 700px; }
+html, body, .container, #map { height: 100%; }
 #coordinates-pick-map { 
     margin-top: 15px;
     height: 300px; 
 }
+body { padding-top: 70px;}

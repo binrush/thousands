@@ -6,24 +6,28 @@ import httplib, json, urllib, io
 
 @app.route('/about')
 def about():
-    return render_template('about.html')
+    return render_template('about.html', active_page='about')
 
 @app.route('/')
 def index():
-    return render_template('map.html')
+    return render_template('map.html', active_page='index')
 
 @app.route('/table')
 def table():
     return render_template('table.html', 
             summits=g.summits_dao.get_all(current_user.get_id(), 
-                request.args.has_key('orderByHeight')))
+                request.args.has_key('orderByHeight')),
+            active_page='table')
 
 @app.route('/summit/<int:summit_id>')
 def summit(summit_id):
     s = g.summits_dao.get(summit_id)
     if s is None:
         return abort(404)
-    return render_template('summit.html', summit=s, climbers=g.climbs_dao.climbers(summit_id))
+    return render_template('summit.html',
+            summit=s,
+            climbers=g.climbs_dao.climbers(summit_id),
+            active_page='table')
 
 @app.route('/summit/new', methods=['GET', 'POST'])
 def summit_new():
@@ -127,8 +131,12 @@ def vk_login():
 @login_required
 def profile():
     climbed = [ s for s in g.summits_dao.get_all(current_user.get_id()) if s.climbed ]
-    return render_template('profile.html', climbed = climbed)
+    return render_template('profile.html', climbed = climbed, active_page='profile')
 
 @app.route('/user/<int:user_id>')
 def user(user_id):
+    abort(404)
+
+@app.route('/top')
+def top():
     abort(404)

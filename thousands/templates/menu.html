@@ -1,9 +1,9 @@
 <ul class="nav navbar-nav navbar-right">
 <!-- <li><a href="/admin/summits/new">Добавить</a></li> -->
-  <li><a href="/">Карта</a></li>
-  <li><a href="/table">Таблица</a></li>
-  <li><a href="/about">О проекте</a></li>
-  <li><a href="/profile">Профиль</a></li>
+<li {%  if active_page == 'index' %} class="active"{% endif %}><a href="{{ url_for('index')}}">Карта</a></li>
+<li {%  if active_page == 'table' %} class="active"{% endif %}><a href="{{ url_for('table') }}">Вершины</a></li>
+<li {%  if active_page == 'top' %} class="active"{% endif %}><a href="{{ url_for('top') }}">Восходители</a></li>
+<li {%  if active_page == 'about' %} class="active"{% endif %}><a href="{{ url_for('about') }}">О проекте</a></li>
   {% if not current_user.is_authenticated() %}
   <li class="dropdown">
       <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Вход<span class="caret"></span></a>
@@ -14,7 +14,7 @@
       </ul>
   </li>
   {% else %}
-  <li><a href="/logout">Выход ({{ current_user.name }})</a></li>
+  <li {%  if active_page == 'profile' %} class="active"{% endif %}><a href="{{ url_for('profile') }}">{{ current_user.name }}</a></li>
   {% endif %}
 
 </ul>

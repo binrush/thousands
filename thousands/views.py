@@ -24,9 +24,16 @@ def summit(summit_id):
     s = g.summits_dao.get(summit_id)
     if s is None:
         return abort(404)
+    climbed = False
+    climbers = g.climbs_dao.climbers(summit_id)
+    if current_user in climbers:
+        climbers.remove(current_user)
+        climbed = True
+        print climbers
     return render_template('summit.html',
             summit=s,
-            climbers=g.climbs_dao.climbers(summit_id),
+            climbers=climbers,
+            climbed = climbed,
             active_page='table')
 
 @app.route('/summit/new', methods=['GET', 'POST'])

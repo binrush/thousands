@@ -31,23 +31,21 @@
     <div class="col-md-6">{{ summit.description | safe }}</div>
 </div>
 {% endif %}
-<div class="row">
-    <div class="col-md-3 text-right"><strong>Статус:</strong></div>
-    <div class="col-md-6">
-    {% if current_user not in climbers %}
-        Вы не взошли на эту вершину <a href="{{ url_for('climb_new', summit_id=summit.id) }}">Отметить</a>
-    {% else %}
-        Вы совершили восхождение на эту вершину
-    {% endif %}
-    </div>
-</div>
  <div class="row">
     <div class="col-md-3 text-right"><strong>Восходители:</strong></div>
     <div class="col-md-6">
         <ul class="list-inline">
+            {% if climbed %}
+            <li><a href="{{ url_for('profile') }}">{{ current_user.name }}</a></li>
+            {% endif %}
+
             {% for c in climbers %}
             <li><a href="{{ url_for('user', user_id=c.id) }}">{{ c.name }}</a></li>
             {% endfor %}
+
+            {% if not climbed %}
+            <li><a href="{{ url_for('climb_new', summit_id=summit.id) }}">Взошли на эту вершину?</a></li>
+            {% endif %}
         </ul>
     </div>
 </div>

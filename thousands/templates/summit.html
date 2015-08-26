@@ -9,46 +9,42 @@
 {% endif %}
 </small>
 </h2>
-<div class="row">
-    <div class="col-md-3 text-right"><strong>Высота:</strong></div>
-    <div class="col-md-6">{{ summit.height }}</div>
-</div>
-<div class="row">
-    <div class="col-md-3 text-right"><strong>Хребет:</strong></div>
-    <div class="col-md-6">{{ summit.ridge }}</div>
-</div>
-<div class="row">
-    <div class="col-md-3 text-right"><strong>Координаты:</strong></div>
-    <div class="col-md-6">{{ summit.coordinates[0] }} {{ summit.coordinates[1]}}</div>
-</div>
+<dl class="dl-horizontal">
+    <dt>Высота</dt>
+    <dd>{{ summit.height }}</dd>
+</dl>
+<dl class="dl-horizontal">
+    <dt>Хребет</dt>
+    <dd>{{ summit.ridge }}</dd>
+</dl>
+<dl class="dl-horizontal">
+    <dt>Координаты</dt>
+    <dd>{{ summit.coordinates[0] }} {{ summit.coordinates[1]}}</dd>
+</dl>
 {% if summit.interpretation %}
-<div class="row">
-    <div class="col-md-3 text-right"><strong>Расшифровка названия:</strong></div>
-    <div class="col-md-6">{{ summit.interpretation | safe }}</div>
-</div>
+<dl class="dl-horizontal">
+    <dt>Расшифровка названия</dt>
+    <dd>{{ summit.interpretation | safe }}</dd>
+</dl>
 {% endif %}
 {% if summit.description %}
-<div class="row">
-    <div class="col-md-3 text-right"><strong>Дополнительная информация:</strong></div>
-    <div class="col-md-6">{{ summit.description | safe }}</div>
-</div>
+<dl class="dl-horizontal">
+    <dt>Дополнительная информация</dt>
+    <dd>{{ summit.description | safe }}</dd>
+</dl>
 {% endif %}
- <div class="row">
-    <div class="col-md-3 text-right"><strong>Восходители:</strong></div>
-    <div class="col-md-6">
-        <ul class="list-inline">
-            {% if climbed %}
-            <li><a href="{{ url_for('profile') }}">{{ current_user.name }}</a></li>
-            {% endif %}
+<h3>Восходители <small>(<a href="{{ url_for('climb_new', summit_id=summit.id) }}">Взошли на эту вершину?</a>)</small></h3>
+<ul class="list-unstyled">
+    {% if climbed %}
+    <li>{{ current_user.name }}</li>
+    {% endif %}
 
-            {% for c in climbers %}
-            <li><a href="{{ url_for('user', user_id=c.id) }}">{{ c.name }}</a></li>
-            {% endfor %}
+    {% for c in climbers %}
+    <li>{{ c.name }}</li>
+    {% endfor %}
 
-            {% if not climbed %}
-            <li><a href="{{ url_for('climb_new', summit_id=summit.id) }}">Взошли на эту вершину?</a></li>
-            {% endif %}
-        </ul>
-    </div>
-</div>
+    {% if not climbed %}
+    <li><a href="{{ url_for('climb_new', summit_id=summit.id) }}">Взошли на эту вершину?</a></li>
+    {% endif %}
+</ul>
 {% endblock %}

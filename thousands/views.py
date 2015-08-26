@@ -60,14 +60,13 @@ def summit_edit(summit_id):
         if f.validate():
             summit = dao.Summit()
             f.populate_obj(summit)
-            summit.lat, summit.lng = f.coordinates.data
             g.summits_dao.update(summit)
             return redirect(url_for('summit', summit_id=summit.id))
     else:
         s = g.summits_dao.get(summit_id)
         if s is None:
             return abort(404)
-        f = forms.SummitForm(None, s, coordinates=(s.lat, s.lng))
+        f = forms.SummitForm(None, s)
         f.rid.choices = [ (r['id'], r['name']) for r in g.summits_dao.get_ridges() ]
     return render_template('summit_edit.html', form=f)
 

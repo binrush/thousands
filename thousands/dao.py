@@ -28,7 +28,7 @@ class Summit(object):
     def to_geojson(self):
         ret = { 'type': 'Feature', 'geometry': { "type": "Point" }, 'properties': {} }
         ret['id'] = self.id
-        ret['geometry']['coordinates'] = [ self.lng, self.lat ]
+        ret['geometry']['coordinates'] = [ self.coordinates[1], self.coordinates[0]]
         ret['properties']['height'] = self.height
         ret['properties']['name'] = self.format_name()
         ret['properties']['name_alt'] = self.format_name_alt()
@@ -44,6 +44,12 @@ class Image(object):
 class SummitsDao(Dao):
 
     def get_all(self, user_id=None, orderByHeight=False):
+        def row2summit(row):
+            s = Summit()
+            for k in [ 'id', 'name', 'name_alt', 'height', 'ridge', 'color', 'climbed' ]:
+                setattr(s, k, row[k])
+            s.coordinates = ( row['lat'], row['lng'] )
+            return s
         with self.get_cursor() as cur:
             if orderByHeight:
                 order = "ORDER BY s.height DESC"
@@ -56,7 +62,7 @@ class SummitsDao(Dao):
                         SELECT * FROM climbs 
                         WHERE summit_id=s.id AND user_id=%s) AS climbed
                 FROM summits s LEFT JOIN ridges r ON s.rid=r.id """ + order, (user_id, ))
-            summits = map(self.row2summit, cur)
+            summits = map(row2summit, cur)
             sortkey = lambda f: f[1].height
             index = [ elem[0] for elem in sorted(enumerate(summits), key=sortkey, reverse=True) ]
             i = 0
@@ -84,8 +90,9 @@ class SummitsDao(Dao):
             #geometry = { 'type': 'Point', 'coordinates': [ row['lng'], row['lat'] ] }
             #properties = {} 
             summit = Summit()
-            for k in row.keys():
+            for k in [ 'id', 'name', 'name_alt', 'height', 'interpretation', 'description', 'rid', 'ridge' ]:
                 setattr(summit, k, row[k])
+            summit.coordinates = (row['lat'], row['lng'])
             return summit
     
     def create(self, summit):
@@ -100,8 +107,8 @@ class SummitsDao(Dao):
                 'height': summit.height,
                 'description': summit.description,
                 'rid': summit.rid,
-                'lat': summit.lat,
-                'lng': summit.lng})
+                'lat': summit.coordinates[0],
+                'lng': summit.coordinates[1]})
             return cur.fetchone()['id']
     
     def update(self, summit):
@@ -118,8 +125,8 @@ class SummitsDao(Dao):
                 'description': summit.description,
                 'interpretation': summit.interpretation,
                 'rid': summit.rid,
-                'lat': summit.lat,
-                'lng': summit.lng,
+                'lat': summit.coordinates[0],
+                'lng': summit.coordinates[1],
                 'id': summit.id})
             return summit
     
@@ -128,11 +135,6 @@ class SummitsDao(Dao):
             cur.execute("DELETE FROM summits WHERE id=%s", (summit_id, ))
         
 
-    def row2summit(self, row):
-        s = Summit()
-        for k in row.keys():
-            setattr(s, k, row[k])
-        return s
 
     def row2feature(self, row):
     

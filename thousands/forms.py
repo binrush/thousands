@@ -42,7 +42,9 @@ class ClimbDateField(Field):
     widget = TextInput()
 
     def _value(self):
-        if self.data:
+        if self.raw_data:
+            return self.raw_data[0]
+        elif self.data:
             return unicode(datetime.datetime.strftime(self.data, self._date_format))
         else:
             return u''
@@ -57,6 +59,8 @@ class ClimbDateField(Field):
             self.data = None
 
     def pre_validate(self, form):
+        if self.process_errors:
+            raise validators.StopValidation()
         if self.data is not None and self.data > datetime.date.today():
             raise validators.ValidationError('Указана дата в будущем')
 

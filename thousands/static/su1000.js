@@ -1,6 +1,9 @@
 var INITIAL_COORDINATES = [ 54.480, 59.041 ]
 var MSG_SERVER_ERROR = "Невозможно выполнить операцию: ошибка сервера"
 
+
+window.addEventListener("load", addDeleteConfirmation);
+
 function apiCall(uri, callback) {
     xmlhttp = new XMLHttpRequest();
     xmlhttp.open('GET', uri, true);
@@ -17,19 +20,19 @@ function apiCall(uri, callback) {
 
 function createMap(container, center, zoom) {
     var topo = new L.TileLayer('http://maps.marshruty.ru/ml.ashx?al=1&i=1&x={x}&y={y}&z={z}', {
-        maxZoom: 15,
-        minZoom: 8,
-        attribution: "Генштабовские топокарты используют сервис <a href=\"http://www.marshruty.ru/Maps/Maps.aspx\">карты Маршруты.Ру</a>"
-    }); 
+            maxZoom: 15,
+            minZoom: 8,
+            attribution: "Генштабовские топокарты используют сервис <a href=\"http://www.marshruty.ru/Maps/Maps.aspx\">карты Маршруты.Ру</a>"
+            });
     var osm = new L.TileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 20,
-        minZoom: 8,
-        attribution: "&copy; Участники <a href=\"http://www.openstreetmap.org/copyright\">OpenStreetMaps</a>"
-    });
+            maxZoom: 20,
+            minZoom: 8,
+            attribution: "&copy; Участники <a href=\"http://www.openstreetmap.org/copyright\">OpenStreetMaps</a>"
+            });
     var gs = new L.Google('SATELLITE', {
-        maxZoom: 20,
-        minZoom: 8
-    });
+            maxZoom: 20,
+            minZoom: 8
+            });
 
     var map = L.map(container, { center: center, zoom: zoom, layers: osm  });
     var baseMaps = {
@@ -93,4 +96,12 @@ function getPointCoordinates(e) {
     }
     marker = L.marker(e.latlng);
     marker.addTo(map);
+}
+
+function addDeleteConfirmation() {
+    var confirmed_links = document.getElementsByClassName('simple-delete-confirm');
+    for (i = 0; i < confirmed_links.length; i++ ) { 
+        confirmed_links[i].onclick = function() { return confirm("Are you sure?"); 
+        };
+    }
 }

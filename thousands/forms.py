@@ -4,19 +4,36 @@ from wtforms import Form, TextField, IntegerField, HiddenField, TextAreaField, S
 from wtforms.widgets import TextInput
 import datetime
 
-def validate_coordinates(form, field):
-    try:
-        str_lat, str_lng = field.data.split()
-        lat = float(str_lat.strip())
-        lng = float(str_lat.strip())
-    except:
-        raise validators.ValidationError('Wrong format for coordinates field')
+class CoordinatesField(Field):
 
-    if not (lat > 0 and lat < 90):
-        raise validators.ValidationError('Latitude should be between 0 and 90 degrees')
+    widget = TextInput()
 
-    if not (lng > 0 and lng < 180):
-        raise validators.ValidationError('Longtitude should be between 0 and 180 degrees')
+    def _value(self):
+        if self.raw_data:
+            return self.raw_data[0]
+        elif self.data:
+            return u'%.10f %.10f' % self.data
+        else:
+            return u''
+
+    def process_formdata(self, valuelist):
+        if valuelist and valuelist[0]:
+            try:
+                self.data = tuple(map(float, valuelist[0].split(' ')))
+            except ValueError:
+                raise validators.ValidationError(u'Неправильно заданы координаты')
+        else:
+            self.data = None
+    
+    def pre_validate(self, form):
+        if self.process_errors:
+            raise validators.StopValidation()
+        if self.data is not None:
+            if not (self.data[0]> 0 and self.data[1] < 90):
+                raise validators.ValidationError('Latitude should be between 0 and 90 degrees')
+
+            if not (self.data[1]> 0 and self.data[1] < 180):
+                raise validators.ValidationError('Longtitude should be between 0 and 180 degrees')
 
 class ClimbDateField(Field):
 
@@ -50,7 +67,7 @@ class SummitForm(Form):
     name_alt = TextField('name_alt')
     height = IntegerField('height', [ validators.NumberRange(1000, 1640) ])
     rid = SelectField('rid', coerce=int, choices=[(0, '---')])
-    coordinates = TextField('coordinates', validators=[ validators.DataRequired(), validate_coordinates ])
+    coordinates = CoordinatesField('coordinates', validators=[ validators.DataRequired() ])
     interpretation = TextAreaField('interpretation')
     description = TextAreaField('description')
 

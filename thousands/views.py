@@ -43,13 +43,16 @@ def summit_new():
     f = forms.SummitForm(request.form)
     f.rid.choices = [ (r['id'], r['name']) for r in g.summits_dao.get_ridges() ]
     if request.method == 'POST' and f.validate():
-        summit = Summit()
-        return redirect(url_for('summit', g.summits_dao.create(summit)))
+        summit = dao.Summit()
+        f.populate_obj(summit)
+        summit.lat, summit.lng = f.coordinates.data
+        return redirect(url_for('summit', summit_id=g.summits_dao.create(summit)))
     return render_template('summit_edit.html', form=f)
 
 @app.route('/summit/edit/<int:summit_id>', methods=['GET', 'POST'])
+@login_required
 def summit_edit(summit_id):
-    if current_user.is_anonymous() or not current_user.admin:
+    if not current_user.admin:
         abort(401)
     if request.method == 'POST':
         f = forms.SummitForm(request.form)
@@ -57,16 +60,24 @@ def summit_edit(summit_id):
         if f.validate():
             summit = dao.Summit()
             f.populate_obj(summit)
-            summit.lat, summit.lng = map(float, f.coordinates.data.split(' '))
+            summit.lat, summit.lng = f.coordinates.data
             g.summits_dao.update(summit)
             return redirect(url_for('summit', summit_id=summit.id))
     else:
         s = g.summits_dao.get(summit_id)
         if s is None:
             return abort(404)
-        f = forms.SummitForm(None, s, coordinates='{} {}'.format(s.lat, s.lng))
+        f = forms.SummitForm(None, s, coordinates=(s.lat, s.lng))
         f.rid.choices = [ (r['id'], r['name']) for r in g.summits_dao.get_ridges() ]
     return render_template('summit_edit.html', form=f)
+
+@app.route('/summit/delete/<int:summit_id>')
+@login_required
+def summit_delete(summit_id):
+    if not current_user.admin:
+        abort(401)
+    g.summits_dao.delete(summit_id)
+    return redirect(url_for('index'))
 
 @app.route('/climb/new/<int:summit_id>', methods=['GET', 'POST'])
 @login_required

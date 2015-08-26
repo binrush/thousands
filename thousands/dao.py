@@ -88,20 +88,20 @@ class SummitsDao(Dao):
                 setattr(summit, k, row[k])
             return summit
     
-    def create(self, data):
-        with get_cursor() as cur:
+    def create(self, summit):
+        with self.get_cursor() as cur:
             query = """INSERT INTO summits
                 (name, name_alt, height, description, rid, lat, lng) VALUES
                 (%(name)s, %(name_alt)s, %(height)s, %(description)s, %(rid)s, %(lat)s, %(lng)s)
                 RETURNING id"""
             cur.execute(query, {
-                'name': data['properties']['name'],
-                'name_alt': data['properties']['name_alt'],
-                'height': data['properties']['height'],
-                'description': data['properties']['description'],
-                'rid': data['properties']['rid'],
-                'lat': data['geometry']['coordinates'][1],
-                'lng': data['geometry']['coordinates'][0]})
+                'name': summit.name,
+                'name_alt': summit.name_alt,
+                'height': summit.height,
+                'description': summit.description,
+                'rid': summit.rid,
+                'lat': summit.lat,
+                'lng': summit.lng})
             return cur.fetchone()['id']
     
     def update(self, summit):
@@ -123,6 +123,11 @@ class SummitsDao(Dao):
                 'id': summit.id})
             return summit
     
+    def delete(self, summit_id):
+        with self.get_cursor() as cur:
+            cur.execute("DELETE FROM summits WHERE id=%s", (summit_id, ))
+        
+
     def row2summit(self, row):
         s = Summit()
         for k in row.keys():

@@ -60,6 +60,16 @@ def vk_login():
     login_user(user)
     return redirect(url_for('profile'))
 
+def oauth_login(req, flow):
+     if 'error' in request.args.keys():
+        return make_response(request.args.get('error_description'))
+    
+    try:
+        credentials = g.vk_flow.step2_exchange(request.args.get('code'))
+    except FlowExchangeError, e:
+        logging.exception(e)
+        return make_response('Error getting access token')
+   
 
 def vk_get_profile(credentials):
 

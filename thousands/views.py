@@ -104,45 +104,6 @@ def logout():
     logout_user()
     return redirect(url_for('index'))
 
-@app.route('/vk_login')
-def vk_login():
-    if 'error' in request.args.keys():
-        return make_response(request.args.get('error_description'))
-    
-    params = {
-            'client_id'    : app.config['VK_CLIENT_ID'],
-            'client_secret': app.config['VK_CLIENT_SECRET'],
-            'code'         : request.args.get('code'),
-            'redirect_uri' : request.url_root + 'vk_login'
-        }
-
-    auth_data = auth.vk_get_access_token(params)
-    if auth_data is None:
-        return make_response('Error getting access token')
-
-    oauth_id, email, access_token = auth_data
-
-    # TODO remove magic number
-    user = g.users_dao.get(oauth_id, 1)
-    if user is None:
-        profile = auth.vk_get_profile(oauth_id, access_token)
-        user = UserMixin()
-        user.oauth_id = profile['oauth_id']
-        user.name = profile['name']
-        user.src = 1
-        user.email = email
-        
-        fd = urllib.urlopen(profile['image'])
-        if fd.getcode() == 200:
-            img_id = g.images_dao.create(fd.read(), fd.info().gettype())
-        else:
-            img_id = None
-
-        user.img_id = img_id
-        user.id = g.users_dao.create(user)
-
-    login_user(user)
-    return redirect(url_for('profile'))
 
 @app.route('/profile')
 @login_required

@@ -8,9 +8,8 @@
   <li class="dropdown">
       <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Вход<span class="caret"></span></a>
       <ul class="dropdown-menu" role="menu">
-          {% for l in g.get('auth_links') %}
-          <li><a href="{{ l.href}}">{{ l.title }}</a></li>
-          {% endfor %}
+          <li><a href="{{ g.vk_flow.step1_get_authorize_url() }}">vk.com</a></li>
+          <li><a href="{{ g.su_flow.step1_get_authorize_url() }}">southural.ru</a></li>
       </ul>
   </li>
   {% else %}

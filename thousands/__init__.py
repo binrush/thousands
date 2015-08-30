@@ -9,11 +9,13 @@ from yoyo import read_migrations
 import yoyo.exceptions
 import logging
 
+from oauth2client.client import OAuth2WebServerFlow
 #logging.basicConfig()
 
 PG_DSN="dbname=su user=rush"
 VK_CLIENT_ID="4890287"
 VK_API_VERSION="5.32"
+SU_CLIENT_ID="thousands"
 
 app = Flask(__name__)
 app.config.from_object(__name__)
@@ -43,6 +45,28 @@ climbs_dao = dao.ClimbsDao(pool)
 login_manager = LoginManager()
 login_manager.init_app(app)
 
+vk_flow = OAuth2WebServerFlow(
+        app.config['VK_CLIENT_ID'],
+        client_secret = app.config['VK_CLIENT_SECRET'],
+        scope = 'email',
+        redirect_uri = 'http://1000.southural.ru/login/vk',
+        auth_uri = 'https://oauth.vk.com/authorize',
+        token_uri = 'https://oauth.vk.com/access_token',
+        revoke_uri = None,
+        device_uri = None,
+        state = 'state'
+        )
+su_flow = OAuth2WebServerFlow(
+        app.config['SU_CLIENT_ID'],
+        client_secret = app.config['SU_CLIENT_SECRET'],
+        scope = 'openid email profile',
+        redirect_uri = 'http://1000.southural.ru/login/su',
+        auth_uri = 'http://www.southural.ru/oauth2/authorize',
+        token_uri = 'http://www.southural.ru/oauth2/token',
+        revoke_uri = None,
+        device_uri = None,
+        state = 'state'
+        )
 @login_manager.user_loader
 def load_user(userid):
     return users_dao.get_by_id(userid)
@@ -53,10 +77,8 @@ def before_request():
     g.users_dao = users_dao
     g.images_dao = images_dao
     g.climbs_dao = climbs_dao
-    g.auth_links = [{ 
-        'href': 
-            'https://oauth.vk.com/authorize?client_id=%s&scope=email&redirect_uri=%svk_login&response_type=code&v=%s&state=state' 
-                % ( app.config['VK_CLIENT_ID'], request.url_root, app.config['VK_API_VERSION']), 
-        'title': 'vk.com' }]
+    g.vk_flow = vk_flow
+    g.su_flow = su_flow
 
 import thousands.views
+import thousands.auth

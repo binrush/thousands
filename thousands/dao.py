@@ -167,11 +167,18 @@ class UsersDao(Dao):
             return self._fromrow(cur.fetchone())
    
     def create(self, user):
-        sql = """INSERT INTO users (src, oauth_id, name, email, img_id)
-            VALUES (%s, %s, %s, %s, %s) RETURNING id;
+        sql = """INSERT INTO users (src, oauth_id, name, email, image_id, location, preview_id)
+            VALUES (%s, %s, %s, %s, %s, %s, %s) RETURNING id;
         """
         with self.get_cursor() as cur:
-            cur.execute(sql, (user.src, user.oauth_id, user.name, user.email, user.img_id))
+            cur.execute(sql, (
+                user.src, 
+                user.oauth_id, 
+                user.name, 
+                user.email, 
+                user.image_id, 
+                user.location, 
+                user.preview_id))
             if cur.rowcount < 1:
                 return None
             return cur.fetchone()['id']

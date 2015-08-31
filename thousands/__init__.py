@@ -14,7 +14,7 @@ from oauth2client.client import OAuth2WebServerFlow
 
 PG_DSN="dbname=su user=rush"
 VK_CLIENT_ID="4890287"
-VK_API_VERSION="5.32"
+VK_API_VERSION="5.37"
 SU_CLIENT_ID="thousands"
 
 app = Flask(__name__)
@@ -54,7 +54,8 @@ vk_flow = OAuth2WebServerFlow(
         token_uri = 'https://oauth.vk.com/access_token',
         revoke_uri = None,
         device_uri = None,
-        state = 'state'
+        state = 'state',
+        v = VK_API_VERSION
         )
 su_flow = OAuth2WebServerFlow(
         app.config['SU_CLIENT_ID'],

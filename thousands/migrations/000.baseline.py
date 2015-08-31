@@ -1,5 +1,4 @@
 from yoyo import step
-import os, sys
 
 sql = """
 CREATE TABLE IF NOT EXISTS ridges (

@@ -3,10 +3,11 @@
 {% block content %}
 <h2>Профиль</h2>
 <div class="row">
-    <div class="col-md-3 text-right"><img src="{{ url_for('image_get', image_id=current_user.img_id)}}"></div>
+    <div class="col-md-3 text-right"><img src="{{ url_for('image_get', image_id=current_user.image_id)}}"></div>
     <div class="col-md-6">
         <p><strong>Имя:</strong> {{ current_user.name }}</p>
         <p><strong>Восхождений:</strong> {{ climbed | length }}</p>
+        <p><strong>Город</strong> {{ current_user.location }}</p>
         <ul class="list-inline">
         {% for c in climbed %}
         <li><a href="{{ url_for('summit', summit_id=c.id)}}">{{ c.format_name() }} {{ c.format_name_alt() }}</a></li>

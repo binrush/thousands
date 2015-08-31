@@ -6,12 +6,13 @@ from oauth2client.client import FlowExchangeError
 
 from thousands import app
 
-httplib2.debuglevel = 4
-
 AUTH_SRC_VK = 1
+AUTH_SRC_SU = 2
 
 @app.route('/login/su')
 def su_login():
+    #return oauth_login(request, g.su_flow, su_get_user)
+
     if 'error' in request.args.keys():
         return make_response(request.args.get('error_description'))
 
@@ -32,10 +33,10 @@ def vk_login():
 
 def oauth_login(req, flow, get_user):
     if 'error' in request.args.keys():
-        return make_response(request.args.get('error_description'))
+        return make_response(req.args.get('error_description'))
     
     try:
-        credentials = flow.step2_exchange(request.args.get('code'))
+        credentials = flow.step2_exchange(req.args.get('code'))
     except FlowExchangeError, e:
         logging.exception(e)
         return make_response('Error getting access token')
@@ -55,8 +56,9 @@ def vk_get_user(credentials):
     conn = httplib2.Http()
     credentials.authorize(conn)
     params = {
-            'user_ids'    : credentials.token_response['user_id'],
-            'fields'      : 'photo_100'
+            'v'        : '5.37', 
+            'user_ids' : credentials.token_response['user_id'],
+            'fields'   : 'photo_50, photo_200_orig, city'
             }
     resp, content = conn.request('https://api.vk.com/method/users.get', 'POST', urllib.urlencode(params))
 
@@ -66,6 +68,7 @@ def vk_get_user(credentials):
         return None
 
     data = json.loads(content)['response'][0]
+    print data
     if 'error' in data:
         logging.error("Error getting profile data")
         logging.error(data['error'])
@@ -73,34 +76,55 @@ def vk_get_user(credentials):
     
     user = UserMixin()
     user.oauth_id = credentials.token_response['user_id']
-    user.name = u"{} {}".format(data['first_name'], data['last_name'])
+    user.name = u"{} {}".format(data.get('first_name', ''), data.get('last_name', ''))
     user.src = AUTH_SRC_VK
     user.email = credentials.token_response.get('email', None)
-        
-    fd = urllib.urlopen(data['photo_100'])
-    if fd.getcode() == 200:
-        user.img_id = g.images_dao.create(fd.read(), fd.info().gettype())
+    if data.has_key('city'):
+        user.location = data['city']['title']
     else:
-        user.img_id = None
+        user.location = None
+        
+    fd = urllib.urlopen(data['photo_200_orig'])
+    if fd.getcode() == 200:
+        user.image_id = g.images_dao.create(fd.read(), fd.info().gettype())
+    else:
+        user.image_id = None
+    
+    fd = urllib.urlopen(data['photo_50'])
+    if fd.getcode() == 200:
+        user.preview_id = g.images_dao.create(fd.read(), fd.info().gettype())
+    else:
+        user.preview_id = None
 
     user.id = g.users_dao.create(user)
 
     return user
 
 def su_get_user(credentials):
-
     conn = httplib2.Http()
     credentials.authorize(conn)
-    resp, content = conn.request('https://www.southural.ru', 'POST')
+    resp, content = conn.request('http://www.southural.ru/oauth2/UserInfo', 'POST')
     if resp.status != 200:
-        logging.error("Error getting user profile from vk api: %d", resp.status)
+        logging.error("Error getting user profile from su api: %d", resp.status)
         logging.error(content)
         return None
     data = json.loads(content)
     if 'error' in data:
+        logging.error("Error getting user data from su")
         logging.error(data['error'])
         return None
-    profile = {}
-    profile['name'] = data['name']
-    profile['image'] = data['photo_100']
-    return profile
+    
+    user = g.users_dao.get(credentials.token_response['user_id'], AUTH_SRC_SU)
+    if user is not None:
+        return user
+
+    user = UserMixin()
+    user.oauth_id = data['sub']
+    user.name = data['name']
+    user.src = AUTH_SRC_SU
+    user.location = data.get('city', None)
+    user.image_id = None
+    user.preview_id = None
+    user.id = g.users_dao.create(user)
+
+    return user

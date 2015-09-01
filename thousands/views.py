@@ -24,16 +24,15 @@ def summit(summit_id):
     s = g.summits_dao.get(summit_id)
     if s is None:
         return abort(404)
-    climbed = False
     climbers = g.climbs_dao.climbers(summit_id)
-    if current_user in climbers:
-        climbers.remove(current_user)
-        climbed = True
-        print climbers
+    i = 0
+    for c in climbers:
+        if c['user'] == current_user:
+            this = climbers.pop(i)
+        i += 1
     return render_template('summit.html',
             summit=s,
-            climbers=climbers,
-            climbed = climbed,
+            climbers= [ this ] + climbers,
             active_page='table')
 
 @app.route('/summit/new', methods=['GET', 'POST'])
@@ -88,6 +87,19 @@ def climb_new(summit_id):
     return render_template('climb_edit.html', 
             summit = g.summits_dao.get(summit_id),
             form = f)
+
+@app.route('/climb/edit/<int:summit_id>', methods=['GET', 'POST'])
+@login_required
+def climb_edit(summit_id):
+    f = forms.ClimbForm()
+    return render_template('climb_edit.html',
+            summit = g.summits_dao.get(summit_id),
+            form = f)
+
+@app.route('/climb/delete/<int:summit_id>')
+@login_required
+def climb_delete(summit_id):
+    return redirect(url_for('summit', summit_id=summit_id))
 
 @app.route('/api/summits')
 def summits_get():

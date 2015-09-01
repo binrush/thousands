@@ -33,14 +33,23 @@
     <dd>{{ summit.description | safe }}</dd>
 </dl>
 {% endif %}
-<h3>Восходители{% if not climbed %} <small>(<a href="{{ url_for('climb_new', summit_id=summit.id) }}">Взошли на эту вершину?</a>)</small>{% endif %}</h3>
+<h3>Восходители{% if current_user != climbers[0]['user'] %} <small>(<a href="{{ url_for('climb_new', summit_id=summit.id) }}">Взошли на эту вершину?</a>)</small>{% endif %}</h3>
 <ul class="list-unstyled">
-    {% if climbed %}
-    <li>{{ current_user.name }}</li>
-    {% endif %}
-
     {% for c in climbers %}
-    <li>{{ c.name }}</li>
+    <li>
+        {% if c['user'].preview_id %}
+        <img src="{{ url_for("image_get", image_id=c['user'].preview_id)}}" class="pull-left img-thumbnail">
+        {% else %}
+        <img src="/static/1px.png" width="50px" height="50px" class="pull-left img-thumbnail">
+        {% endif %}
+        <a href="{{ url_for('user', user_id=c['user'].id) }}">{{ c['user'].name }}</a>
+        <small>{{ c['date'] if c['date'] != None }} </small>
+        <p>{{ c['comment'] }}</p>
+        {% if c['user'] == current_user %}
+        <small><a href="{{ url_for('climb_edit', summit_id=summit.id) }}">Редактировать</a></small>
+        <small><a href="{{ url_for('climb_delete', summit_id=summit.id) }}">Удалить</a></small>
+        {% endif %}
+    </li>
     {% endfor %}
 </ul>
 {% endblock %}

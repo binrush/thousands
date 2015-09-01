@@ -54,7 +54,6 @@ def vk_get_user(credentials):
         return None
 
     data = json.loads(content)['response'][0]
-    print data
     if 'error' in data:
         logging.error("Error getting profile data")
         logging.error(data['error'])

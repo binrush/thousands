@@ -41,6 +41,9 @@ class Summit(object):
 class Image(object):
     pass
 
+class Climb(object):
+    pass
+
 class SummitsDao(Dao):
 
     def get_all(self, user_id=None, orderByHeight=False):
@@ -211,16 +214,24 @@ class ClimbsDao(Dao):
 
     def climbers(self, summit_id):
         climbers = []
-        sql = """SELECT users.id, users.name
+        sql = """SELECT 
+                    ts,
+                    comment,
+                    users.id,
+                    users.name,
+                    users.preview_id
                 FROM users LEFT JOIN climbs ON climbs.user_id=users.id 
-                WHERE climbs.summit_id=%s;"""
+                LEFT JOIN summits ON climbs.summit_id=summits.id
+                WHERE climbs.summit_id=%s
+                ORDER BY ts;"""
         with self.get_cursor() as cur:
             cur.execute(sql, (summit_id, ))
             for row in cur:
                 u = UserMixin()
                 u.id = row['id']
                 u.name = row['name']
-                climbers.append(u)
+                u.preview_id = row['preview_id']
+                climbers.append({ 'user': u, 'date': row['ts'], 'comment': row['comment']})
         return climbers
 
     def create(self, user_id, summit_id, date=None, comment=None):

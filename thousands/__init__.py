@@ -48,7 +48,7 @@ login_manager.init_app(app)
 vk_flow = OAuth2WebServerFlow(
         app.config['VK_CLIENT_ID'],
         client_secret = app.config['VK_CLIENT_SECRET'],
-        scope = 'email',
+        scope = '',
         redirect_uri = 'http://1000.southural.ru/login/vk',
         auth_uri = 'https://oauth.vk.com/authorize',
         token_uri = 'https://oauth.vk.com/access_token',
@@ -60,7 +60,7 @@ vk_flow = OAuth2WebServerFlow(
 su_flow = OAuth2WebServerFlow(
         app.config['SU_CLIENT_ID'],
         client_secret = app.config['SU_CLIENT_SECRET'],
-        scope = 'openid email profile',
+        scope = 'openid profile',
         redirect_uri = 'http://1000.southural.ru/login/su',
         auth_uri = 'http://www.southural.ru/oauth2/authorize',
         token_uri = 'http://www.southural.ru/oauth2/token',

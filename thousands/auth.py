@@ -11,21 +11,7 @@ AUTH_SRC_SU = 2
 
 @app.route('/login/su')
 def su_login():
-    #return oauth_login(request, g.su_flow, su_get_user)
-
-    if 'error' in request.args.keys():
-        return make_response(request.args.get('error_description'))
-
-    try:
-        credentials = g.su_flow.step2_exchange(request.args.get('code'))
-    except FlowExchangeError, e:
-        logging.exception(e)
-        return make_response('Error getting access token')
-    
-    conn = httplib2.Http()
-    credentials.authorize(conn)
-    resp, content = conn.request('http://www.southural.ru/oauth2/UserInfo', 'POST')
-    return make_response(content)
+    return oauth_login(request, g.su_flow, su_get_user)
 
 @app.route('/login/vk')
 def vk_login():
@@ -49,7 +35,7 @@ def oauth_login(req, flow, get_user):
     abort(401)
    
 def vk_get_user(credentials):
-    user = g.users_dao.get(credentials.token_response['user_id'], AUTH_SRC_VK)
+    user = g.users_dao.get(unicode(credentials.token_response['user_id']), AUTH_SRC_VK)
     if user is not None:
         return user
 
@@ -75,10 +61,9 @@ def vk_get_user(credentials):
         return None
     
     user = UserMixin()
-    user.oauth_id = credentials.token_response['user_id']
+    user.oauth_id = unicode(credentials.token_response['user_id'])
     user.name = u"{} {}".format(data.get('first_name', ''), data.get('last_name', ''))
     user.src = AUTH_SRC_VK
-    user.email = credentials.token_response.get('email', None)
     if data.has_key('city'):
         user.location = data['city']['title']
     else:
@@ -114,10 +99,9 @@ def su_get_user(credentials):
         logging.error(data['error'])
         return None
     
-    user = g.users_dao.get(credentials.token_response['user_id'], AUTH_SRC_SU)
+    user = g.users_dao.get(data['sub'], AUTH_SRC_SU)
     if user is not None:
         return user
-
     user = UserMixin()
     user.oauth_id = data['sub']
     user.name = data['name']

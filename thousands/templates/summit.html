@@ -33,7 +33,12 @@
     <dd>{{ summit.description | safe }}</dd>
 </dl>
 {% endif %}
-<h3>Восходители{% if current_user != climbers[0]['user'] %} <small>(<a href="{{ url_for('climb_new', summit_id=summit.id) }}">Взошли на эту вершину?</a>)</small>{% endif %}</h3>
+<h3>
+    Восходители
+    {% if climbers | length == 0 or current_user != climbers[0]['user'] %} 
+        <small>(<a href="{{ url_for('climb_new', summit_id=summit.id) }}">Взошли на эту вершину?</a>)</small>
+    {% endif %}
+</h3>
 <ul class="list-unstyled">
     {% for c in climbers %}
     <li>
@@ -47,7 +52,7 @@
         <p>{{ c['comment'] }}</p>
         {% if c['user'] == current_user %}
         <small><a href="{{ url_for('climb_edit', summit_id=summit.id) }}">Редактировать</a></small>
-        <small><a href="{{ url_for('climb_delete', summit_id=summit.id) }}">Удалить</a></small>
+        <small><a href="{{ url_for('climb_delete', summit_id=summit.id) }}" class="simple-delete-confirm">Удалить</a></small>
         {% endif %}
     </li>
     {% endfor %}

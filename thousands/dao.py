@@ -234,7 +234,29 @@ class ClimbsDao(Dao):
                 climbers.append({ 'user': u, 'date': row['ts'], 'comment': row['comment']})
         return climbers
 
+    def get(self, user_id, summit_id):
+        sql = "SELECT ts, comment FROM climbs WHERE user_id=%s AND summit_id=%s"
+        with self.get_cursor() as cur:
+            cur.execute(sql, (user_id, summit_id))
+            if cur.rowcount < 1:
+                return None
+            row = cur.fetchone()
+            climb = Climb()
+            climb.date = row['ts']
+            climb.comment = row['comment']
+        return climb
+
     def create(self, user_id, summit_id, date=None, comment=None):
         sql = "INSERT INTO climbs (user_id, summit_id, ts, comment) VALUES (%s, %s, %s, %s)"
         with self.get_cursor() as cur:
             cur.execute(sql, (user_id, summit_id, date, comment))
+
+    def update(self, user_id, summit_id, date=None, comment=None):
+        sql = "UPDATE climbs SET ts=%s, comment=%s WHERE user_id=%s AND summit_id=%s"
+        with self.get_cursor() as cur:
+            cur.execute(sql, (date, comment, user_id, summit_id))
+
+    def delete(self, user_id, summit_id):
+        sql = "DELETE FROM climbs WHERE user_id=%s AND summit_id=%s"
+        with self.get_cursor() as cur:
+            cur.execute(sql, (user_id, summit_id))

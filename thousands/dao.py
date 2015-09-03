@@ -234,6 +234,9 @@ class ClimbsDao(Dao):
                 climbers.append({ 'user': u, 'date': row['ts'], 'comment': row['comment']})
         return climbers
 
+    def top(self):
+        return []
+
     def get(self, user_id, summit_id):
         sql = "SELECT ts, comment FROM climbs WHERE user_id=%s AND summit_id=%s"
         with self.get_cursor() as cur:

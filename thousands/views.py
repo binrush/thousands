@@ -142,4 +142,5 @@ def user(user_id):
 
 @app.route('/top')
 def top():
-    abort(404)
+    climbers = g.climbs_dao.top()
+    return render_template('top.html', climbers = climbers, active_page='top')

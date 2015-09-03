@@ -39,21 +39,28 @@
         <small>(<a href="{{ url_for('climb_new', summit_id=summit.id) }}">Взошли на эту вершину?</a>)</small>
     {% endif %}
 </h3>
-<ul class="list-unstyled">
+<ul class="media-list">
     {% for c in climbers %}
-    <li>
+    <li class="media">
+    <div class="media-left">
+        <a href="{{ url_for('user', user_id=c['user'].id) }}">
         {% if c['user'].preview_id %}
-        <img src="{{ url_for("image_get", image_id=c['user'].preview_id)}}" class="pull-left img-thumbnail">
+        <img src="{{ url_for("image_get", image_id=c['user'].preview_id)}}" class="media-object">
         {% else %}
-        <img src="/static/1px.png" width="50px" height="50px" class="pull-left img-thumbnail">
+        <img src="/static/1px.png" class="media-object">
         {% endif %}
-        <a href="{{ url_for('user', user_id=c['user'].id) }}">{{ c['user'].name }}</a>
-        <small>{{ c['date'] if c['date'] != None }} </small>
+        </a>
+    </div>
+    <div class="media-body">
+        <h4 class="media-heading">
+            <a href="{{ url_for('user', user_id=c['user'].id) }}">{{ c['user'].name }}</a> <small>{{ c['date'] if c['date'] != None }}</small>
+        </h4>
         <p>{{ c['comment'] }}</p>
         {% if c['user'] == current_user %}
         <small><a href="{{ url_for('climb_edit', summit_id=summit.id) }}">Редактировать</a></small>
         <small><a href="{{ url_for('climb_delete', summit_id=summit.id) }}" class="simple-delete-confirm">Удалить</a></small>
         {% endif %}
+    </div>
     </li>
     {% endfor %}
 </ul>

@@ -133,12 +133,16 @@ def logout():
 @app.route('/profile')
 @login_required
 def profile():
-    climbed = [ s for s in g.summits_dao.get_all(current_user.get_id()) if s.climbed ]
-    return render_template('profile.html', climbed = climbed, active_page='profile')
+    return user(current_user.get_id())
 
 @app.route('/user/<int:user_id>')
 def user(user_id):
-    abort(404)
+    user = g.users_dao.get_by_id(user_id)
+    climbed = g.climbs_dao.climbed(user_id)
+    return render_template('user.html',
+            user=user,
+            climbed = climbed,
+            active_page='profile')
 
 @app.route('/top')
 def top():

@@ -234,6 +234,22 @@ class ClimbsDao(Dao):
                 climbers.append({ 'user': u, 'date': row['ts'], 'comment': row['comment']})
         return climbers
 
+    def climbed(self, user_id):
+        climbed = []
+        sql = """SELECT ts, comment, summits.id, summits.name, summits.name_alt
+                FROM summits LEFT JOIN climbs ON summits.id=climbs.summit_id
+                WHERE climbs.user_id=%s
+                ORDER BY ts"""
+        with self.get_cursor() as cur:
+            cur.execute(sql, (user_id, ))
+            for row in cur:
+                s = Summit()
+                s.name = row['name']
+                s.name_alt = row['name_alt']
+                s.id = row['id']
+                climbed.append({ 'summit': s, 'date': row['ts'], 'comment': row['comment'] })
+            return climbed
+
     def top(self):
         users = []
         sql = """SELECT user_id, users.name, users.preview_id, COUNT(*) AS climbs

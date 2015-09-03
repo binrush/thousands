@@ -43,6 +43,7 @@ def vk_get_user(credentials):
     credentials.authorize(conn)
     params = {
             'v'        : '5.37', 
+            'lang'     : 'ru',
             'user_ids' : credentials.token_response['user_id'],
             'fields'   : 'photo_50, photo_200_orig, city'
             }

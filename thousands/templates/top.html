@@ -1,0 +1,21 @@
+{% extends "layout.html" %}
+{% block title %}Восходители{% endblock %}
+{% block content %}
+<table class="table">
+    <thead>
+        <tr>
+            <th>Имя</th>
+            <th>Восхождений</th>
+            <th>Место в рейтинге</th>
+    </thead>
+    <tbody>
+        {% for c in climbers %}
+        <tr>
+            <td><a href="{{ url_for('user', user_id=c.id) }}">{{ c.name }}</a></td>
+            <td>{{ c.climbs }}</td>
+            <td>{{ loop.index }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

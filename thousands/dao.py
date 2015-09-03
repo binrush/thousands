@@ -235,7 +235,22 @@ class ClimbsDao(Dao):
         return climbers
 
     def top(self):
-        return []
+        users = []
+        sql = """SELECT user_id, users.name, users.preview_id, COUNT(*) AS climbs
+                FROM users LEFT JOIN climbs ON users.id=climbs.user_id
+                GROUP BY climbs.user_id, users.name, users.preview_id
+                ORDER BY climbs DESC
+        """
+        with self.get_cursor() as cur:
+            cur.execute(sql)
+            for row in cur:
+                u = UserMixin()
+                u.id = row['user_id']
+                u.name = row['name']
+                u.preview_id = row['preview_id']
+                u.climbs = row['climbs']
+                users.append(u)
+        return users
 
     def get(self, user_id, summit_id):
         sql = "SELECT ts, comment FROM climbs WHERE user_id=%s AND summit_id=%s"

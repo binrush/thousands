@@ -35,7 +35,7 @@
 {% endif %}
 <h3>
     Восходители
-    {% if climbers | length == 0 or current_user != climbers[0]['user'] %} 
+    {% if current_user.is_authenticated() and ( climbers | length == 0 or current_user != climbers[0]['user'] ) %} 
         <small>(<a href="{{ url_for('climb_new', summit_id=summit.id) }}">Взошли на эту вершину?</a>)</small>
     {% endif %}
 </h3>

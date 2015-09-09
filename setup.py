@@ -5,5 +5,6 @@ setup(name='thousands',
       description='Site for South Ural moultains climbers',
       author='Rushan Shaymardanov',
       author_email='rush.ru@gmail.com',
-      install_requires=['psycopg2', 'Flask', 'flask-login', 'wtforms', 'yoyo-migrations', 'google-api-python-client']
+      install_requires=['psycopg2', 'Flask', 'flask-login', 'wtforms', 'yoyo-migrations', 'google-api-python-client'],
+      test_suite = "thousands.tests"
      )

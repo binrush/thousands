@@ -7,7 +7,7 @@
         {% if user.image_id %}
                 <img src="{{ url_for('image_get', image_id=current_user.image_id)}}" class="center-block user-image-large">
         {% endif %}
-    {% if user.id == current_user.id %}
+    {% if user == current_user %}
         <a href="{{ url_for('logout') }}" class="btn btn-default center-block" type="button" role="button">Выйти</a>
     {% endif %}
     </div>
@@ -21,7 +21,7 @@
             {% if c.date %}<small>{{ c['date'] | climb_date }}</small>{% endif %}
         </h4>
         <p>{{ c['comment'] }}</p>
-        {% if user.id == current_user.id %}
+        {% if user == current_user %}
         <small><a href="{{ url_for('climb_edit', summit_id=c.summit.id) }}">Редактировать</a></small>
         <small><a href="{{ url_for('climb_delete', summit_id=c.summit.id) }}" class="simple-delete-confirm">Удалить</a></small>
         {% endif %}

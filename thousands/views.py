@@ -139,7 +139,6 @@ def profile():
 def user(user_id):
     user = g.users_dao.get_by_id(user_id)
     climbed = g.climbs_dao.climbed(user_id)
-    print dir(climbed[3]['summit'])
     return render_template('user.html',
             user=user,
             climbed = climbed,

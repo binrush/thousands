@@ -236,7 +236,7 @@ class ClimbsDao(Dao):
 
     def climbed(self, user_id):
         climbed = []
-        sql = """SELECT ts, comment, summits.id, summits.name, summits.name_alt
+        sql = """SELECT ts, comment, id, name, name_alt, height
                 FROM summits LEFT JOIN climbs ON summits.id=climbs.summit_id
                 WHERE climbs.user_id=%s
                 ORDER BY ts"""
@@ -247,6 +247,7 @@ class ClimbsDao(Dao):
                 s.name = row['name']
                 s.name_alt = row['name_alt']
                 s.id = row['id']
+                s.height = row['height']
                 climbed.append({ 'summit': s, 'date': row['ts'], 'comment': row['comment'] })
             return climbed
 

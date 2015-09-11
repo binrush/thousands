@@ -15,7 +15,9 @@ from oauth2client.client import OAuth2WebServerFlow
 PG_DSN="dbname=su user=rush"
 VK_CLIENT_ID="4890287"
 VK_API_VERSION="5.37"
+VK_CLIENT_SECRET="fake-vk-client-secret"
 SU_CLIENT_ID="thousands"
+SU_CLIENT_SECRET="fake-su-client-secret"
 
 app = Flask(__name__)
 app.config.from_object(__name__)
@@ -68,6 +70,11 @@ su_flow = OAuth2WebServerFlow(
         device_uri = None,
         state = 'state'
         )
+
+@app.template_filter('climb_date')
+def format_climb_date(d):
+    return d.strftime('%d.%m.%Y')
+
 @login_manager.user_loader
 def load_user(userid):
     return users_dao.get_by_id(userid)

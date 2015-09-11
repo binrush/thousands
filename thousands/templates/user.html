@@ -1,39 +1,33 @@
 {% extends "layout.html" %}
 {% block title %}Профиль{% endblock %}
 {% block content %}
-<h2>Профиль</h2>
+<h2>{{ user.name }} <small>{{ user.location }}</small></h2>
 <div class="row">
     <div class="col-md-3 text-right">
-        {% if current_user.image_id %}
-                <img src="{{ url_for('image_get', image_id=current_user.image_id)}}">
+        {% if user.image_id %}
+                <img src="{{ url_for('image_get', image_id=current_user.image_id)}}" class="center-block user-image-large">
         {% endif %}
+    {% if user.id == current_user.id %}
+        <a href="{{ url_for('logout') }}" class="btn btn-default center-block" type="button" role="button">Выйти</a>
+    {% endif %}
     </div>
     <div class="col-md-6">
-        <dl>
-            <dt>Имя</dt>
-            <dd>{{ current_user.name }}</dd>
-            <dt>Восхождений</dt>
-            <dd>{{ climbed | length }}</dd>
-            <dt>Город</dt>
-            <dd>{{ current_user.location }}</dd>
-        </dl>
-        <a href="{{ url_for('logout') }}" class="btn btn-default" role="button">Выход</a>
-    </div>
-</div>
-<div class="row">
-    <div class="col-md-offset-3 col-md-6">
-    </div>
-</div>
-<h3>Восхождения</h3>
-<ul class="list-unstyled">
+    <h3>Восхождения</h3>
+    <ul class="list-unstyled">
     {% for c in climbed %}
     <li>
         <h4>
             <a href="{{ url_for('summit', summit_id=c.summit.id)}}">{{ c.summit.format_name() }} {{ c.summit.format_name_alt() }}</a>
-            <small>{{ c['date'] }}</small>
+            {% if c.date %}<small>{{ c['date'] | climb_date }}</small>{% endif %}
         </h4>
         <p>{{ c['comment'] }}</p>
+        {% if user.id == current_user.id %}
+        <small><a href="{{ url_for('climb_edit', summit_id=c.summit.id) }}">Редактировать</a></small>
+        <small><a href="{{ url_for('climb_delete', summit_id=c.summit.id) }}" class="simple-delete-confirm">Удалить</a></small>
+        {% endif %}
     </li>
     {% endfor %}
-</ul>
+    </ul>
+    </div>
+</div>
 {% endblock %}

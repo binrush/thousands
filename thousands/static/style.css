@@ -8,3 +8,7 @@ body { padding-top: 70px;}
 .dl-horizontal dt {
     white-space: normal;
 }
+
+.user-image-large {
+    margin-bottom: 15px;
+}

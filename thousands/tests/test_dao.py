@@ -12,6 +12,8 @@ class SummitTestCase(unittest.TestCase):
         self.summit1.coordinates = (53.1111, 58.2222)
         self.summit1.ridge = 'Yamantau'
         self.summit1.rid = 1
+        self.summit1.color = 'aaaaaa'
+        self.summit1.climbed = False
 
         self.summit2 = dao.Summit()
         self.summit2.name = ''
@@ -34,7 +36,18 @@ class SummitTestCase(unittest.TestCase):
         assert self.summit2.format_name_alt() == ""
 
     def test_togeojson(self):
-        assert self.summit1.to_geojson() == {}
+        assert self.summit1.to_geojson() ==  \
+            {'geometry': 
+                    {'type': 'Point', 'coordinates': [58.2222, 53.1111]}, 
+            'type': 'Feature', 
+            'properties': {
+                'ridge': 'Yamantau', 
+                'name': 'Small Yamantau', 
+                'color': 'aaaaaa', 
+                'climbed': False, 
+                'height': 1519, 
+                'name_alt': '(Kuyantau)'}, 
+            'id': 1}
 
 
 if __name__ == '__main__':

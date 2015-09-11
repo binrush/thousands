@@ -5,7 +5,7 @@
 <div class="row">
     <div class="col-md-3 text-right">
         {% if user.image_id %}
-                <img src="{{ url_for('image_get', image_id=current_user.image_id)}}" class="center-block user-image-large">
+                <img src="{{ url_for('image_get', image_id=user.image_id)}}" class="center-block user-image-large">
         {% endif %}
     {% if user == current_user %}
         <a href="{{ url_for('logout') }}" class="btn btn-default center-block" type="button" role="button">Выйти</a>

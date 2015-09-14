@@ -253,16 +253,16 @@ class ClimbsDao(Dao):
 
     def top(self):
         users = []
-        sql = """SELECT user_id, users.name, users.preview_id, COUNT(*) AS climbs
+        sql = """SELECT users.id, users.name, users.preview_id, COUNT(climbs.*) AS climbs
                 FROM users LEFT JOIN climbs ON users.id=climbs.user_id
-                GROUP BY climbs.user_id, users.name, users.preview_id
+                GROUP BY users.id, users.name, users.preview_id
                 ORDER BY climbs DESC
         """
         with self.get_cursor() as cur:
             cur.execute(sql)
             for row in cur:
                 u = UserMixin()
-                u.id = row['user_id']
+                u.id = row['id']
                 u.name = row['name']
                 u.preview_id = row['preview_id']
                 u.climbs = row['climbs']

@@ -1,6 +1,7 @@
 import unittest
 from thousands import dao
 
+
 class SummitTestCase(unittest.TestCase):
 
     def setUp(self):
@@ -37,19 +38,18 @@ class SummitTestCase(unittest.TestCase):
 
     def test_togeojson(self):
         assert self.summit1.to_geojson() ==  \
-            {'geometry': 
-                    {'type': 'Point', 'coordinates': [58.2222, 53.1111]}, 
-            'type': 'Feature', 
-            'properties': {
-                'ridge': 'Yamantau', 
-                'name': 'Small Yamantau', 
-                'color': 'aaaaaa', 
-                'climbed': False, 
-                'height': 1519, 
-                'name_alt': '(Kuyantau)'}, 
-            'id': 1}
+            {'geometry':
+                {'type': 'Point', 'coordinates': [58.2222, 53.1111]},
+             'type': 'Feature',
+             'properties': {
+                 'ridge': 'Yamantau',
+                 'name': 'Small Yamantau',
+                 'color': 'aaaaaa',
+                 'climbed': False,
+                 'height': 1519,
+                 'name_alt': '(Kuyantau)'},
+             'id': 1}
 
 
 if __name__ == '__main__':
     unittest.main()
-

@@ -14,7 +14,15 @@ def about():
 
 @app.route('/')
 def index():
-    return render_template('map.html', active_page='index')
+    try:
+        hl_summit = int(request.args['sid'])
+    except (ValueError, TypeError, KeyError):
+        hl_summit = None
+
+    return render_template(
+        'map.html',
+        active_page='index',
+        hl_summit=hl_summit)
 
 
 @app.route('/table')

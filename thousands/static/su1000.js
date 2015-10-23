@@ -62,9 +62,18 @@ function placePoints(data) {
                 icon = "marker";
             }
             var icon = L.MakiMarkers.icon({icon: icon, color: "#" + feature.properties.color, size: "s"});
-            return L.marker(latlng, {icon: icon}).bindPopup(pointPopupCode(feature));
+            if ( typeof(hl_summit) !== 'undefined' && hl_summit === feature.id ) {
+                // ugly workaround due to https://github.com/Leaflet/Leaflet/issues/2488
+                popup_toopen = L.marker(latlng, {icon: icon}).bindPopup(pointPopupCode(feature));
+                return popup_toopen;
+            } else {
+                return L.marker(latlng, {icon: icon}).bindPopup(pointPopupCode(feature));
+            }
         }
     }).addTo(map);
+    if ( typeof popup_toopen !== 'undefined' ) {
+        popup_toopen.openPopup();
+    }
 }
 
 function createMainMap() {

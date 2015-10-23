@@ -21,11 +21,26 @@ class Dao(object):
 
 class Summit(object):
 
+    def to_mins_secs(self, value):
+        deg = int(value)
+        mins = (value - deg)*60
+        secs = (mins - int(mins))*60
+        return u"{}{}{}'{}''".format(deg, u'\u00b0', int(mins), secs)
+
     def format_name(self):
         return self.name if self.name else str(self.height)
 
     def format_name_alt(self):
         return '(' + self.name_alt + ')' if self.name_alt else ''
+
+    def format_coordinates(self):
+        return u'{} {} ({}{} {}{})'.format(
+            self.coordinates[0],
+            self.coordinates[1],
+            self.to_mins_secs(self.coordinates[0]),
+            'N' if self.coordinates[0] >= 0 else 'S',
+            self.to_mins_secs(self.coordinates[1]),
+            'E' if self.coordinates[1] >= 0 else 'W')
 
     def to_geojson(self):
         ret = {'type': 'Feature',

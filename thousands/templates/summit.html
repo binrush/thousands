@@ -19,7 +19,7 @@
 </dl>
 <dl class="dl-horizontal">
     <dt>Координаты</dt>
-    <dd>{{ summit.coordinates[0] }} {{ summit.coordinates[1]}}</dd>
+    <dd><a href="{{ url_for('index', sid=summit.id) }}#12/{{ summit.coordinates[0] }}/{{ summit.coordinates[1] }}">{{ summit.format_coordinates() }}</a></dd>
 </dl>
 {% if summit.interpretation %}
 <dl class="dl-horizontal">

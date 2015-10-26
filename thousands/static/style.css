@@ -12,3 +12,6 @@ body { padding-top: 70px;}
 .user-image-large {
     margin-bottom: 15px;
 }
+.table tbody>tr>td.vertical-align {
+    vertical-align: middle;
+}

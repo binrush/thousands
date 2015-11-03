@@ -15,3 +15,11 @@ body { padding-top: 70px;}
 .table tbody>tr>td.vertical-align {
     vertical-align: middle;
 }
+
+.btn-auth-vk, .btn-auth-vk:hover {
+    background-color: #5B7FA6;
+}
+
+.btn-auth-su, .btn-auth-su:hover {
+    background-color: #007700;
+}

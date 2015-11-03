@@ -4,23 +4,68 @@ import urllib
 import logging
 
 from flask.ext.login import login_user, UserMixin
-from flask import request, g, redirect, make_response, url_for, abort
-from oauth2client.client import FlowExchangeError
+from flask import (request, g, redirect, make_response,
+                   url_for, abort, render_template)
+from oauth2client.client import FlowExchangeError, OAuth2WebServerFlow
 
 from thousands import app
 
+VK_API_VERSION = "5.37"
 AUTH_SRC_VK = 1
 AUTH_SRC_SU = 2
 
 
+@app.errorhandler(401)
+def handle_unauthorized(e):
+    return login_form(request.path)
+
+
+@app.route('/login')
+def login():
+    return login_form()
+
+
+def vk_flow(state):
+    return OAuth2WebServerFlow(
+        app.config['VK_CLIENT_ID'],
+        client_secret=app.config['VK_CLIENT_SECRET'],
+        scope='',
+        redirect_uri='http://1000.southural.ru/login/vk',
+        auth_uri='https://oauth.vk.com/authorize',
+        token_uri='https://oauth.vk.com/access_token',
+        revoke_uri=None,
+        device_uri=None,
+        state=state,
+        v=VK_API_VERSION)
+
+
+def su_flow(state):
+    return OAuth2WebServerFlow(
+        app.config['SU_CLIENT_ID'],
+        client_secret=app.config['SU_CLIENT_SECRET'],
+        scope='openid profile',
+        redirect_uri='http://1000.southural.ru/login/su',
+        auth_uri='http://www.southural.ru/oauth2/authorize',
+        token_uri='http://www.southural.ru/oauth2/token',
+        revoke_uri=None,
+        device_uri=None,
+        state=state)
+
+
+def login_form(redirect="/profile"):
+    return render_template('/login.html',
+                           vk_flow=vk_flow(redirect),
+                           su_flow=su_flow(redirect))
+
+
 @app.route('/login/su')
 def su_login():
-    return oauth_login(request, g.su_flow, su_get_user)
+    return oauth_login(request, su_flow('state'), su_get_user)
 
 
 @app.route('/login/vk')
 def vk_login():
-    return oauth_login(request, g.vk_flow, vk_get_user)
+    return oauth_login(request, vk_flow('state'), vk_get_user)
 
 
 def oauth_login(req, flow, get_user):
@@ -36,7 +81,7 @@ def oauth_login(req, flow, get_user):
     user = get_user(credentials)
     if user is not None:
         login_user(user)
-        return redirect(url_for('profile'))
+        return redirect(req.args.get('state', url_for('profile')))
 
     abort(401)
 

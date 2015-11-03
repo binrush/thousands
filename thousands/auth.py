@@ -15,16 +15,6 @@ AUTH_SRC_VK = 1
 AUTH_SRC_SU = 2
 
 
-@app.errorhandler(401)
-def handle_unauthorized(e):
-    return login_form(request.path)
-
-
-@app.route('/login')
-def login():
-    return login_form()
-
-
 def vk_flow(state):
     return OAuth2WebServerFlow(
         app.config['VK_CLIENT_ID'],
@@ -52,7 +42,9 @@ def su_flow(state):
         state=state)
 
 
-def login_form(redirect="/profile"):
+@app.route('/login')
+def login_form():
+    redirect = request.args.get('r', url_for('profile'))
     return render_template('/login.html',
                            vk_flow=vk_flow(redirect),
                            su_flow=su_flow(redirect))

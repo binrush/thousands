@@ -5,7 +5,7 @@
 <li {%  if active_page == 'top' %} class="active"{% endif %}><a href="{{ url_for('top') }}">Восходители</a></li>
 <li {%  if active_page == 'about' %} class="active"{% endif %}><a href="{{ url_for('about') }}">О проекте</a></li>
   {% if not current_user.is_authenticated() %}
-  <li><a href="{{ url_for('login') }}">Вход</a></li>
+  <li><a href="/login?r={{ request.path }}" data-remote="false" data-toggle="modal" data-target="#authModal">Вход</a>
   {% else %}
   <li {%  if active_page == 'profile' %} class="active"{% endif %}><a href="{{ url_for('profile') }}">{{ current_user.name }}</a></li>
   {% endif %}

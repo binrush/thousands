@@ -70,10 +70,11 @@ def oauth_login(req, flow, get_user):
         logging.exception(e)
         return make_response('Error getting access token')
 
-    user = get_user(credentials)
+    user, created = get_user(credentials)
     if user is not None:
         login_user(user)
-        return redirect(req.args.get('state', url_for('profile')))
+        redirect_to = url_for('profile') if created else req.args.get('state')
+        return redirect(redirect_to)
 
     abort(401)
 
@@ -82,7 +83,7 @@ def vk_get_user(credentials):
     user = g.users_dao.get(unicode(credentials.token_response['user_id']),
                            AUTH_SRC_VK)
     if user is not None:
-        return user
+        return user, False
 
     conn = httplib2.Http()
     credentials.authorize(conn)
@@ -134,7 +135,7 @@ def vk_get_user(credentials):
 
     user.id = g.users_dao.create(user)
 
-    return user
+    return user, True
 
 
 def su_get_user(credentials):
@@ -155,7 +156,7 @@ def su_get_user(credentials):
 
     user = g.users_dao.get(data['sub'], AUTH_SRC_SU)
     if user is not None:
-        return user
+        return user, False
     user = UserMixin()
     user.oauth_id = data['sub']
     user.name = data['name']
@@ -165,4 +166,4 @@ def su_get_user(credentials):
     user.preview_id = None
     user.id = g.users_dao.create(user)
 
-    return user
+    return user, True

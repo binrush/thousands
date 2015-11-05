@@ -69,7 +69,7 @@ class Climb(object):
 
 class SummitsDao(Dao):
 
-    def get_all(self, user_id=None, orderByHeight=False):
+    def get_all(self, user_id=None, sort='ridge'):
         def row2summit(row):
             s = Summit()
             for k in ['id', 'name', 'name_alt', 'height',
@@ -77,11 +77,15 @@ class SummitsDao(Dao):
                 setattr(s, k, row[k])
             s.coordinates = (row['lat'], row['lng'])
             return s
+
+        if sort == 'height':
+            order = "ORDER BY s.height DESC"
+        elif sort == 'name':
+            order = "ORDER BY s.name, s.name_alt"
+        else:
+            order = "ORDER BY r.name, s.lat DESC"
+
         with self.get_cursor() as cur:
-            if orderByHeight:
-                order = "ORDER BY s.height DESC"
-            else:
-                order = "ORDER BY r.name, s.lat DESC"
             cur.execute(
                 """SELECT s.id, s.name, s.name_alt,
                     s.height, s.lng, s.lat, r.name AS ridge, r.color,

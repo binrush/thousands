@@ -2,8 +2,15 @@
 {% block title %}Список вершин{% endblock %}
 {% block content %}
 <ul class="nav nav-pills">
-  <li role="presentation"><a id="orderSummitsByRidge" href="/table">Сортировать по хребтам</a></li>
-  <li role="presentation"><a id="orderSummitsByHeight" href="/table?orderByHeight">Сортировать по высоте</a></li>
+    <li role="presentation" {%  if sort == 'ridge' %} class="active"{% endif %} >
+        <a {% if sort != 'ridge' %}href="{{url_for('table')}}"{% endif %}>Сортировать по хребтам</a>
+    </li>
+    <li role="presentation" {%  if sort == 'height' %} class="active"{% endif %}>
+        <a {% if sort != 'height' %}href="{{ url_for('table', sort='height') }}"{% endif %}>Сортировать по высоте</a>
+    </li>
+    <li role="presentation" {%  if sort == 'name' %} class="active"{% endif %}>
+        <a {% if sort != 'name' %}href="{{ url_for('table', sort='name') }}"{% endif %}>Сортировать по названию</a>
+    </li>
 </ul>
 <table id='summitsTable' class="table">
 <thead>

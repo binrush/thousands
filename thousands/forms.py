@@ -77,17 +77,17 @@ class ClimbDateField(Field):
 
 class SummitForm(Form):
     id = HiddenField('id')
-    name = TextField('name')
-    name_alt = TextField('name_alt')
+    name = TextField('name', filters=[lambda x: x or None])
+    name_alt = TextField('name_alt', filters=[lambda x: x or None])
     height = IntegerField('height', [validators.NumberRange(1000, 1640)])
     rid = SelectField('rid', coerce=int, choices=[(0, '---')])
     coordinates = CoordinatesField('coordinates',
                                    validators=[validators.DataRequired()])
-    interpretation = TextAreaField('interpretation')
-    description = TextAreaField('description')
+    interpretation = TextAreaField('interpretation', filters=[lambda x: x or None])
+    description = TextAreaField('description', filters=[lambda x: x or None])
 
 
 class ClimbForm(Form):
     summit_id = HiddenField('summit_id')
-    date = ClimbDateField(u'Дата')
+    date = ClimbDateField(u'Дата', filters=[lambda x: x or None])
     comment = TextAreaField(u'Комментарий')

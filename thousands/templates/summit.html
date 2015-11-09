@@ -1,14 +1,14 @@
 {% extends "layout.html" %}
 {% block title %} хр. {{ summit.ridge }} - {{ summit.format_name() }} {{ summit.format_name_alt() }} {% endblock %}
 {% block content %}
-<h2>
+<h1>
 {{ summit.format_name() }} <small>{{ summit.format_name_alt() }}
 {% if current_user.admin %}
 <a href="{{ url_for('summit_edit', summit_id=summit.id) }}"><span class="glyphicon glyphicon-edit"></span></a>
 <a href="{{ url_for('summit_delete', summit_id=summit.id) }}" class="simple-delete-confirm"><span class="glyphicon glyphicon-remove"></span></a>
 {% endif %}
 </small>
-</h2>
+</h1>
 <dl class="dl-horizontal">
     <dt>Высота</dt>
     <dd>{{ summit.height }}</dd>

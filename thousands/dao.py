@@ -3,6 +3,10 @@ import psycopg2.extras
 from flask.ext.login import UserMixin
 
 
+class ModelException(Exception):
+    pass
+
+
 class Dao(object):
     pool = None
 
@@ -212,6 +216,14 @@ class UsersDao(Dao):
             if cur.rowcount < 1:
                 return None
             return cur.fetchone()['id']
+
+    def update(self, user_id, user):
+        sql = """UPDATE users SET name=%s, location=%s, about=%s
+            WHERE id=%s"""
+        with self.get_cursor() as cur:
+            cur.execute(sql, (user.name, user.location, user.about, user_id))
+            if cur.rowcount < 1:
+                raise ModelException("User not fount while updating")
 
 
 class ImagesDao(Dao):

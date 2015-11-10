@@ -1,7 +1,8 @@
 from thousands import app
 from flask import (request, render_template, g, jsonify,
                    redirect, url_for, abort, send_file)
-from flask.ext.login import logout_user, current_user, login_required
+from flask.ext.login import (logout_user, current_user,
+                             login_required, UserMixin)
 import dao
 import forms
 import io
@@ -172,6 +173,21 @@ def logout():
 @login_required
 def profile():
     return user(current_user.get_id())
+
+
+@app.route('/profile/edit', methods=['GET', 'POST'])
+@login_required
+def profile_edit():
+    if request.method == 'POST':
+        f = forms.ProfileForm(request.form)
+        if f.validate():
+            user = UserMixin()
+            f.populate_obj(user)
+            g.users_dao.update(current_user.get_id(), user)
+            return redirect(url_for('profile'))
+    else:
+        f = forms.ProfileForm(None, current_user)
+    return render_template('profile_edit.html', form=f)
 
 
 @app.route('/user/<int:user_id>')

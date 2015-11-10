@@ -13,6 +13,7 @@
         {% endif %}
     {% if user == current_user %}
         <a href="{{ url_for('logout') }}" class="btn btn-default center-block" type="button" role="button">Выйти</a>
+        <a href="{{ url_for('profile_edit') }}" class="btn btn-default center-block" type="button" role="button">Редактировать профиль</a>
     {% endif %}
     </div>
     <div class="col-md-6">

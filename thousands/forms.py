@@ -83,7 +83,8 @@ class SummitForm(Form):
     rid = SelectField('rid', coerce=int, choices=[(0, '---')])
     coordinates = CoordinatesField('coordinates',
                                    validators=[validators.DataRequired()])
-    interpretation = TextAreaField('interpretation', filters=[lambda x: x or None])
+    interpretation = TextAreaField('interpretation',
+                                   filters=[lambda x: x or None])
     description = TextAreaField('description', filters=[lambda x: x or None])
 
 
@@ -96,5 +97,5 @@ class ClimbForm(Form):
 class ProfileForm(Form):
     name = TextField(u'Имя', validators=[
         validators.DataRequired(message=u'Поле обязательно для заполнения')])
-    location = TextField(u'Город')
-    about = TextAreaField(u'О себе')
+    location = TextField(u'Город', filters=[lambda x: x or None])
+    about = TextAreaField(u'О себе', filters=[lambda x: x or None])

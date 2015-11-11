@@ -2,30 +2,26 @@
 {% block title %}Таблица тысячников Южного Урала{% endblock %}
 {% block description %}Все вершины Южного Урала выше тысячи метров в таблице{% endblock %}
 {% block content %}
-<ul class="nav nav-pills">
-    <li role="presentation" {%  if sort == 'ridge' %} class="active"{% endif %} >
-        <a {% if sort != 'ridge' %}href="{{url_for('table')}}"{% endif %}>Сортировать по хребтам</a>
-    </li>
-    <li role="presentation" {%  if sort == 'height' %} class="active"{% endif %}>
-        <a {% if sort != 'height' %}href="{{ url_for('table', sort='height') }}"{% endif %}>Сортировать по высоте</a>
-    </li>
-    <li role="presentation" {%  if sort == 'name' %} class="active"{% endif %}>
-        <a {% if sort != 'name' %}href="{{ url_for('table', sort='name') }}"{% endif %}>Сортировать по названию</a>
-    </li>
-</ul>
+<h1>Все вершины Южного Урала выше тысячи метров</h1>
 <table id='summitsTable' class="table">
 <thead>
     <tr>
-        <th>Номер</th>
-        <th>Название</th>
-        <th>Высота</th>
-        <th>Хребет</th>
+        <!-- <th>Номер</th> -->
+        <th class="{% if sort == 'name' %}info{% else %}clickable-cell{% endif %}">
+            <a {% if sort != 'name' %}href="{{ url_for('table', sort='name') }}"{% endif %}>Название</a>
+        </th>
+        <th class="{% if sort == 'height' %}info{% else %}clickable-cell{% endif %}">
+            <a {% if sort != 'height' %}href="{{ url_for('table') }}"{% endif %}>Высота</a>
+        </th>
+        <th class="{% if sort == 'ridge' %}info{% else %}clickable-cell{% endif %}">
+            <a {% if sort != 'ridge' %}href="{{url_for('table', sort='ridge')}}"{% endif %}>Хребет</a>
+        </th>
     </tr>
 </thead>
 <tbody>
     {% for s in summits %}
     <tr>
-        <td>{{ s.number }}</td>
+        <!-- <td>{{ s.number }}</td> -->
         <td class="text-left">
             {% if s.climbed %}
             <span class="glyphicon glyphicon-flag" aria-hidden="true"></span>

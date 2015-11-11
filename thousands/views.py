@@ -28,12 +28,12 @@ def index():
 
 @app.route('/table')
 def table():
-    sort = request.args.get('sort', 'ridge')
+    sort = request.args.get('sort', 'height')
     return render_template(
         'table.html',
         summits=g.summits_dao.get_all(
             current_user.get_id(),
-            request.args.get('sort', 'ridge')),
+            sort),
         active_page='table',
         sort=sort)
 

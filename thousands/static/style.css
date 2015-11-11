@@ -24,3 +24,10 @@ body { padding-top: 70px;}
 .btn-auth-su, .btn-auth-su:hover {
     background-color: #007700;
 }
+
+th.clickable-cell:hover {
+   background: #f5f5f5;
+}
+th.clickable-cell a {
+   display: block;
+}

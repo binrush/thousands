@@ -50,7 +50,7 @@ function pointPopupCode(feature) {
     name = "<a href=\"/summit/" + feature.id + "\">" + feature.properties.name + "</a>";
     return name + name_alt +
         "<br>Высота: " + feature.properties.height + 
-        "<br>Хребет:" + feature.properties.ridge;
+        "<br>Хребет: " + feature.properties.ridge;
 }
 
 function placePoints(data) {

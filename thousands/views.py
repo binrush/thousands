@@ -172,7 +172,11 @@ def logout():
 @app.route('/profile')
 @login_required
 def profile():
-    return user(current_user.get_id())
+    climbed = g.climbs_dao.climbed(current_user.get_id())
+    return render_template(
+        'profile.html',
+        climbed=climbed,
+        active_page='profile')
 
 
 @app.route('/profile/edit', methods=['GET', 'POST'])
@@ -198,7 +202,7 @@ def user(user_id):
         'user.html',
         user=user,
         climbed=climbed,
-        active_page='profile')
+        active_page='top')
 
 
 @app.route('/top')

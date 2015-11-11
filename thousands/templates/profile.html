@@ -1,21 +1,18 @@
 {% extends "layout.html" %}
-{% block title %}{{ user.name }}{% endblock %}
-{% block description %}{{ user.name }} - информация о пользователе, восхождения{% endblock %}
+{% block title %}Профиль{% endblock %}
 {% block content %}
-<h2>{{ user.name }}
-    {% if user.location %}
-        <small>{{ user.location }}</small>
+<h2>{{ current_user.name }}
+    {% if current_user.location %}
+        <small>{{ current_user.location }}</small>
     {% endif %}
 </h2>
 <div class="row">
     <div class="col-md-3 text-right">
-        {% if user.image_id %}
-                <img src="{{ url_for('image_get', image_id=user.image_id)}}" class="center-block user-image-large">
+        {% if current_user.image_id %}
+                <img src="{{ url_for('image_get', image_id=current_user.image_id)}}" class="center-block user-image-large">
         {% endif %}
-    {% if user == current_user %}
         <a href="{{ url_for('logout') }}" class="btn btn-default center-block" type="button" role="button">Выйти</a>
         <a href="{{ url_for('profile_edit') }}" class="btn btn-default center-block" type="button" role="button">Редактировать профиль</a>
-    {% endif %}
     </div>
     <div class="col-md-6">
     <h3>Восхождения</h3>
@@ -30,10 +27,8 @@
             {% if c.date %}<small>{{ c['date'] | climb_date }}</small>{% endif %}
         </h4>
         <p>{{ c['comment'] }}</p>
-        {% if user == current_user %}
         <small><a href="{{ url_for('climb_edit', summit_id=c.summit.id) }}">Редактировать</a></small>
         <small><a href="{{ url_for('climb_delete', summit_id=c.summit.id) }}" class="simple-delete-confirm">Удалить</a></small>
-        {% endif %}
     </li>
     {% endfor %}
     </ul>

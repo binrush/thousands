@@ -28,7 +28,13 @@
             {% endif %}
             <a href="/summit/{{ s.id }}">{{s.format_name() }} {{ s.format_name_alt() }}</a>
         </td>
-        <td>{{ s.height }}</td>
+        <td>
+            {% if s.main %}
+            <b>{{ s.height }}</b>
+            {% else %}
+            {{ s.height }}
+            {% endif %}
+        </td>
         <td>{{ s.ridge }}</td>
     </tr>
     {% endfor %}

@@ -59,6 +59,7 @@ class Summit(object):
         ret['properties']['ridge'] = self.ridge
         ret['properties']['color'] = self.color
         ret['properties']['climbed'] = self.climbed
+        ret['properties']['main'] = self.main
 
         return ret
 
@@ -77,7 +78,7 @@ class SummitsDao(Dao):
         def row2summit(row):
             s = Summit()
             for k in ['id', 'name', 'name_alt', 'height',
-                      'ridge', 'color', 'climbed']:
+                      'ridge', 'color', 'climbed', 'main']:
                 setattr(s, k, row[k])
             s.coordinates = (row['lat'], row['lng'])
             return s
@@ -89,15 +90,24 @@ class SummitsDao(Dao):
         else:
             order = "ORDER BY r.name, s.lat DESC"
 
+        query = """
+        SELECT s.id, s.name, s.name_alt,
+                s.height, s.lng, s.lat, r.name AS ridge, r.color,
+            EXISTS (
+                SELECT * FROM climbs
+                WHERE summit_id=s.id AND user_id=%s
+            ) AS climbed,
+            EXISTS (
+                SELECT * FROM
+                    (SELECT rid, max(height) AS maxheight
+                        FROM summits WHERE rid=s.rid GROUP BY rid) as smtsg
+                    INNER JOIN summits smts
+                    ON smtsg.rid=smts.rid AND smts.height=smtsg.maxheight
+                    WHERE id=s.id
+            ) AS main
+        FROM summits s LEFT JOIN ridges r ON s.rid=r.id """ + order
         with self.get_cursor() as cur:
-            cur.execute(
-                """SELECT s.id, s.name, s.name_alt,
-                    s.height, s.lng, s.lat, r.name AS ridge, r.color,
-                    EXISTS (
-                        SELECT * FROM climbs
-                        WHERE summit_id=s.id AND user_id=%s) AS climbed
-                FROM summits s LEFT JOIN ridges r ON s.rid=r.id """ + order,
-                (user_id, ))
+            cur.execute(query, (user_id, ))
             summits = map(row2summit, cur)
             sortkey = lambda f: f[1].height
             index = [elem[0] for elem in sorted(enumerate(summits),

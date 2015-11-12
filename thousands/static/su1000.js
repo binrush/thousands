@@ -56,12 +56,9 @@ function pointPopupCode(feature) {
 function placePoints(data) {
     L.geoJson(data, {
         pointToLayer: function (feature, latlng) {
-            if ( feature.properties.climbed ) {
-                icon = "embassy";
-            } else  {
-                icon = "marker";
-            }
-            var icon = L.MakiMarkers.icon({icon: icon, color: "#" + feature.properties.color, size: "s"});
+            icon_type = feature.properties.climbed ? "embassy" : "marker";
+            marker_size = feature.properties.main ? "m" : "s";
+            var icon = L.MakiMarkers.icon({icon: icon_type, color: "#" + feature.properties.color, size: marker_size});
             if ( typeof(hl_summit) !== 'undefined' && hl_summit === feature.id ) {
                 // ugly workaround due to https://github.com/Leaflet/Leaflet/issues/2488
                 popup_toopen = L.marker(latlng, {icon: icon}).bindPopup(pointPopupCode(feature));

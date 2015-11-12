@@ -7,13 +7,13 @@
 <thead>
     <tr>
         <!-- <th>Номер</th> -->
-        <th class="{% if sort == 'name' %}info{% else %}clickable-cell{% endif %}">
+        <th class="{% if sort == 'name' %}info{% else %}clickable-cell active{% endif %}">
             <a {% if sort != 'name' %}href="{{ url_for('table', sort='name') }}"{% endif %}>Название</a>
         </th>
-        <th class="{% if sort == 'height' %}info{% else %}clickable-cell{% endif %}">
+        <th class="{% if sort == 'height' %}info{% else %}clickable-cell active{% endif %}">
             <a {% if sort != 'height' %}href="{{ url_for('table') }}"{% endif %}>Высота</a>
         </th>
-        <th class="{% if sort == 'ridge' %}info{% else %}clickable-cell{% endif %}">
+        <th class="{% if sort == 'ridge' %}info{% else %}clickable-cell active{% endif %}">
             <a {% if sort != 'ridge' %}href="{{url_for('table', sort='ridge')}}"{% endif %}>Хребет</a>
         </th>
     </tr>

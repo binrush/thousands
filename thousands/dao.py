@@ -138,8 +138,9 @@ class SummitsDao(Dao):
             query = """INSERT INTO summits
                 (name, name_alt, height, description, rid, lat, lng) VALUES
                 (%(name)s, %(name_alt)s, %(height)s,
-                %(description)s, %(rid)s, %(lat)s, %(lng)s)
+                %(description)s, %(rid)s, round(%(lat)s, 6), round(%(lng)s, 6))
                 RETURNING id"""
+            print query
             cur.execute(query, {
                 'name': summit.name,
                 'name_alt': summit.name_alt,
@@ -155,7 +156,7 @@ class SummitsDao(Dao):
             query = """UPDATE summits SET
                 name=%(name)s, name_alt=%(name_alt)s, height=%(height)s,
                 description=%(description)s, interpretation=%(interpretation)s,
-                rid=%(rid)s, lat=%(lat)s, lng=%(lng)s
+                rid=%(rid)s, lat=round(%(lat)s, 6), lng=round(%(lng)s, 6)
                 WHERE id=%(id)s"""
             cur.execute(query, {
                 'name': summit.name,

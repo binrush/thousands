@@ -19,16 +19,21 @@
     {% if climbed | length == 0 %}
     Вы еще не добавили ни одного восхождения. Найти вершину, на которую вы взошли можно <a href="{{ url_for('index') }}">на карте</a> или <a href="{{ url_for('table') }}">в таблице</a>.
     {% endif %}
-    <ul class="list-unstyled">
+    <ul class="media-list">
     {% for c in climbed %}
-    <li>
-        <h4>
-            <a href="{{ url_for('summit', summit_id=c.summit.id)}}">{{ c.summit.format_name() }} {{ c.summit.format_name_alt() }}</a>
-            {% if c.date %}<small>{{ c['date'] | climb_date }}</small>{% endif %}
+    <li class="media">
+        <div class="media-body">
+        <h4 class="media-heading">
+            <a href="{{ url_for('summit', summit_id=c.summit.id)}}">{{ c.summit.format_name() }}</a>
+            <small>хребет {{ c.summit.ridge }}</small>
         </h4>
-        <p>{{ c['comment'] }}</p>
+        {% if c.date %}<div class="text-muted"><i>{{ c['date'] | climb_date }}</i></div>{% endif %}
+        {{ c['comment'] }}
+        <div>
         <small><a href="{{ url_for('climb_edit', summit_id=c.summit.id) }}">Редактировать</a></small>
         <small><a href="{{ url_for('climb_delete', summit_id=c.summit.id) }}" class="simple-delete-confirm">Удалить</a></small>
+        </div>
+        </div>
     </li>
     {% endfor %}
     </ul>

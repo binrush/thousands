@@ -2,11 +2,11 @@
 {% block title %}{{ user.name }}{% endblock %}
 {% block description %}{{ user.name }} - информация о пользователе, восхождения{% endblock %}
 {% block content %}
-<h2>{{ user.name }}
+<h1>{{ user.name }}
     {% if user.location %}
         <small>{{ user.location }}</small>
     {% endif %}
-</h2>
+</h1>
 <div class="row">
     <div class="col-md-3 text-right">
         {% if user.image_id %}
@@ -22,20 +22,19 @@
     <div class="col-md-6">
     <h3>Восхождения</h3>
     {% if climbed | length == 0 %}
-    Этот восходитель еще не сообщил ни об одном восхождении.
+        Этот восходитель еще не сообщил ни об одном восхождении.
     {% endif %}
-    <ul class="list-unstyled">
+    <ul class="media-list">
     {% for c in climbed %}
-    <li>
-        <h4>
-            <a href="{{ url_for('summit', summit_id=c.summit.id)}}">{{ c.summit.format_name() }} {{ c.summit.format_name_alt() }}</a>
-            {% if c.date %}<small>{{ c['date'] | climb_date }}</small>{% endif %}
+    <li class="media">
+        <div class="media-body">
+        <h4 class="media-heading">
+            <a href="{{ url_for('summit', summit_id=c.summit.id)}}">{{ c.summit.format_name() }}</a>
+            <small>хребет {{ c.summit.ridge }}</small>
         </h4>
-        <p>{{ c['comment'] }}</p>
-        {% if user == current_user %}
-        <small><a href="{{ url_for('climb_edit', summit_id=c.summit.id) }}">Редактировать</a></small>
-        <small><a href="{{ url_for('climb_delete', summit_id=c.summit.id) }}" class="simple-delete-confirm">Удалить</a></small>
-        {% endif %}
+        {% if c.date %}<div class="text-muted"><i>{{ c['date'] | climb_date }}</i></div>{% endif %}
+        {{ c['comment'] }}
+        </div>
     </li>
     {% endfor %}
     </ul>

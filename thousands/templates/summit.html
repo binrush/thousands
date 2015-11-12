@@ -60,12 +60,14 @@
     <div class="media-body">
         <h4 class="media-heading">
             <a href="{{ url_for('user', user_id=c['user'].id) }}">{{ c['user'].name }}</a> 
-            {% if c['date'] != None %}<small>{{ c['date'] | climb_date }}</small>{% endif %}
         </h4>
-        {% if c['comment'] %}<p>{{ c['comment'] }}</p> {% endif %}
+        {% if c['date'] != None %}<div class="text-muted"><i>{{ c['date'] | climb_date }}</i></div>{% endif %}
+        {% if c['comment'] %}{{ c['comment'] }}{% endif %}
         {% if c['user'] == current_user %}
+        <div>
         <small><a href="{{ url_for('climb_edit', summit_id=summit.id) }}">Редактировать</a></small>
         <small><a href="{{ url_for('climb_delete', summit_id=summit.id) }}" class="simple-delete-confirm">Удалить</a></small>
+        </div>
         {% endif %}
     </div>
     </li>

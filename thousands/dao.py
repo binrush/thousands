@@ -279,8 +279,9 @@ class ClimbsDao(Dao):
 
     def climbed(self, user_id):
         climbed = []
-        sql = """SELECT ts, comment, id, name, name_alt, height
-                FROM summits LEFT JOIN climbs ON summits.id=climbs.summit_id
+        sql = """SELECT ts, comment, summits.id, summits.name, height, ridges.name AS ridge
+                FROM ridges LEFT JOIN summits ON ridges.id=summits.rid
+                LEFT JOIN climbs ON summits.id=climbs.summit_id
                 WHERE climbs.user_id=%s
                 ORDER BY ts"""
         with self.get_cursor() as cur:
@@ -288,7 +289,7 @@ class ClimbsDao(Dao):
             for row in cur:
                 s = Summit()
                 s.name = row['name']
-                s.name_alt = row['name_alt']
+                s.ridge = row['ridge']
                 s.id = row['id']
                 s.height = row['height']
                 climbed.append(

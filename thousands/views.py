@@ -28,7 +28,7 @@ def index():
 
 @app.route('/table')
 def table():
-    sort = request.args.get('sort', 'height')
+    sort = request.args.get('sort', 'ridge')
     return render_template(
         'table.html',
         summits=g.summits_dao.get_all(

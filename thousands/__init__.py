@@ -1,3 +1,4 @@
+# coding: utf-8
 import os
 from flask import Flask, g
 import psycopg2
@@ -48,7 +49,20 @@ login_manager.init_app(app)
 
 @app.template_filter('climb_date')
 def format_climb_date(d):
-    return d.strftime('%d.%m.%Y')
+    months = [u'Января',
+              u'Февраля',
+              u'Марта',
+              u'Апреля',
+              u'Мая',
+              u'Июня',
+              u'Июля',
+              u'Августа',
+              u'Сентября',
+              u'Октября',
+              u'Ноября',
+              u'Декабря']
+
+    return u'{} {} {}'.format(d.day, months[d.month + 1], d.year)
 
 
 @login_manager.user_loader

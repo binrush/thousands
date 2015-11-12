@@ -62,7 +62,7 @@ def format_climb_date(d):
               u'Ноября',
               u'Декабря']
 
-    return u'{} {} {}'.format(d.day, months[d.month + 1], d.year)
+    return u'{} {} {}'.format(d.day, months[d.month - 1], d.year)
 
 
 @login_manager.user_loader

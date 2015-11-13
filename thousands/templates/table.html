@@ -6,7 +6,7 @@
 <table id='summitsTable' class="table">
 <thead>
     <tr>
-        <!-- <th>Номер</th> -->
+        <th class="summit-visited"></th>
         <th class="{% if sort == 'name' %}info{% else %}clickable-cell active{% endif %}">
             <a {% if sort != 'name' %}href="{{ url_for('table', sort='name') }}"{% endif %}>Название</a>
         </th>
@@ -21,11 +21,12 @@
 <tbody>
     {% for s in summits %}
     <tr>
-        <!-- <td>{{ s.number }}</td> -->
-        <td class="text-left">
+        <td class="summit-visited">
             {% if s.climbed %}
-            <span class="glyphicon glyphicon-flag" aria-hidden="true"></span>
+            <span class="glyphicon glyphicon-flag" aria-hidden="true" title="Вы взошли на эту вершину"></span>
             {% endif %}
+        </td>
+        <td class="text-left">
             {% if s.main %}
             <b><a href="/summit/{{ s.id }}" title="Главная (высочайшая) вершина хребта">{{s.format_name() }} {{ s.format_name_alt() }}</a></b>
             {% else %}

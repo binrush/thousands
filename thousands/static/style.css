@@ -28,3 +28,12 @@ body { padding-top: 70px;}
 th.clickable-cell a {
    display: block;
 }
+
+.table thead tr th.summit-visited {
+    border-bottom-style: none;
+}
+
+.table tbody tr td.summit-visited {
+    border-top-style: none;
+    padding-right: 0px;
+}

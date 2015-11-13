@@ -34,13 +34,17 @@
     <dd>{{ summit.description | safe }}</dd>
 </dl>
 {% endif %}
+{% if not current_user.is_authenticated() %}
+    <dl class="dl-horizontal">
+        <dd><a class="btn btn-primary" href="{{ url_for('login_form', r=url_for('climb_new', summit_id=summit.id)) }}" data-remote="false" data-toggle="modal" data-target="#authModal">Взошли на эту вершину?</a></dd>
+    </dl>
+{% elif climbers | length  == 0 or current_user != climbers[0]['user'] %} 
+    <dl class="dl-horizontal">
+        <dd><a class="btn btn-primary" href="{{ url_for('climb_new', summit_id=summit.id) }}" data-remote="false" data-toggle="modal" data-target="#authModal">Взошли на эту вершину?</a></dd>
+    </dl>
+{% endif %}
 <h3>
     Восходители
-    {% if not current_user.is_authenticated() %}
-        <small>(<a href="{{ url_for('login_form', r=url_for('climb_new', summit_id=summit.id)) }}" data-remote="false" data-toggle="modal" data-target="#authModal">Взошли на эту вершину?</a>)</small>
-    {% elif climbers | length  == 0 or current_user != climbers[0]['user'] %} 
-        <small>(<a href="{{ url_for('climb_new', summit_id=summit.id) }}">Взошли на эту вершину?</a>)</small>
-    {% endif %}
 </h3>
 {% if climbers | length == 0 %}
 Никто пока не зарегистрировал восхождение на эту вершину.

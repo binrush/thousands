@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 {% block title %}{{ user.name }}{% endblock %}
 {% block description %}{{ user.name }} - информация о пользователе, восхождения{% endblock %}
-{% block image %}{{ url_for('image_get', image_id=user.image_id) }}{% endblock %}
+{% block image %}{{ url_for('image_get', image_id=user.image_id, _external=True) }}{% endblock %}
 {% block content %}
 <h1>{{ user.name }}
     {% if user.location %}

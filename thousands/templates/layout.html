@@ -7,7 +7,14 @@
   <meta name="HandheldFriendly" content="True">
   <meta name="description" content="{% block description %}Вершины Южного Урала выше тысячи метров{% endblock %}">
 
-  <title>{% block title %} {% endblock %}</title>
+  <meta name="og:title" content="{% block title %}Вершины Южного Урала выше тысячи метров{% endblock %}">
+  <meta name="og:type" content="article">
+  <meta name="og:url" content="{{ request.base_url }}">
+  <meta name="og:image" content="{{ url_for('static', filename='og_image.png', _external=True) }}">
+  <meta name="og:description" content="{{ self.description() }}">
+
+
+  <title>{{ self.title() }}</title>
 
   <!-- Latest compiled and minified CSS -->
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">

@@ -5,7 +5,7 @@
 {% if user.image_id %}
 {{ url_for('image_get', image_id=user.image_id, _external=True) }}
 {% else %}
-{{ url_for('static', filename=climber.png, _external=True) }}
+{{ url_for('static', filename='climber.png', _external=True) }}
 {% endif %}
 {% endblock %}
 {% block content %}

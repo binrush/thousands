@@ -10,7 +10,7 @@
   <meta name="og:title" content="{% block title %}Вершины Южного Урала выше тысячи метров{% endblock %}">
   <meta name="og:type" content="article">
   <meta name="og:url" content="{{ request.base_url }}">
-  <meta name="og:image" content="{{ url_for('static', filename='og_image.png', _external=True) }}">
+  <meta name="og:image" content="{% block image %}{{ url_for('static', filename='og_image.png', _external=True) }}{% endblock %}">
   <meta name="og:description" content="{{ self.description() }}">
 
 

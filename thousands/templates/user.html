@@ -1,7 +1,13 @@
 {% extends "layout.html" %}
 {% block title %}{{ user.name }}{% endblock %}
 {% block description %}{{ user.name }} - информация о пользователе, восхождения{% endblock %}
-{% block image %}{{ url_for('image_get', image_id=user.image_id, _external=True) }}{% endblock %}
+{% block image %}
+{% if user.image_id %}
+{{ url_for('image_get', image_id=user.image_id, _external=True) }}
+{% else %}
+{{ url_for('static', filename=climber.png, _external=True) }}
+{% endif %}
+{% endblock %}
 {% block content %}
 <h1>{{ user.name }}
     {% if user.location %}

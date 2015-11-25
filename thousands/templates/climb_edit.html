@@ -43,41 +43,13 @@
   </div>
 </form>
 <script>
-var calendar_state = 0;
-function onAnyDateChange(e) {
-    /*if ( calendar_state == 2 ) {
-        //calendar_state = 0;
-    } else {
-        calendar_state++;
-    }*/
-    calendar_state++;
-    $('.datepicker').datepicker('update', e.date);
-}
 $('.datepicker').datepicker({
     autoclose: true,
-    //format: 'dd.mm.yyyy',
-    format: {
-        toDisplay: function (date, format, language) {
-            var d = new Date(date);
-            if ( calendar_state === 1 ) {
-                return d.getFullYear();
-            } else if ( calendar_state === 2 ) {
-                return (d.getMonth() + 1) + "." + d.getFullYear();
-            } else if ( calendar_state === 3 ) {
-                return d.getDate() + "." + ( d.getMonth() + 1) + "." + d.getFullYear();
-            }
-        },
-        toValue: function (date, format, language) {
-            return new Date(date);
-        }
-    },
+    format: 'dd.mm.yyyy',
     endDate: '0d',
     language: 'ru',
-    startView: 2,
     //immediateUpdates: true
-}).on('changeYear', onAnyDateChange).on('changeMonth', onAnyDateChange).on('changeDate', onAnyDateChange)
-.on('show', function (e) { if ( calendar_state === 3 ) { calendar_state = 0;}; })
-.on('hide', function(e) { calendar_state = 0 });
+});
 </script>
 {% endblock %}
 

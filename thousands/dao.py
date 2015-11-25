@@ -1,6 +1,91 @@
+# coding: utf-8
 from contextlib import contextmanager
 import psycopg2.extras
 from flask.ext.login import UserMixin
+import datetime
+
+
+class InexactDate(object):
+    def __init__(self, year, month=None, day=None):
+        if day is not None:
+            if month is None:
+                raise ValueError("Month cannot be None if day is not")
+            else:
+                # validate
+                datetime.date(year, month, day)
+        elif month is not None:
+            if month < 1 or month > 12:
+                raise ValueError("Month should be between 1 and 12")
+
+        self.year, self.month, self.day = \
+            year, month, day
+
+    @classmethod
+    def fromdate(cls, date):
+        return cls(date.year, date.month, date.day)
+
+    @classmethod
+    def fromstring(cls, data):
+        try:
+            if len(data) == 4:
+                year = int(data)
+                month = None
+                day = None
+            else:
+                fields = [int(f) for f in data.split('.')]
+                if len(fields) == 2:
+                    month, year = fields
+                    day = None
+                elif len(fields) == 3:
+                    d = datetime.date(*(list(reversed(fields))))
+                    year, month, day = d.year, d.month, d.day
+                else:
+                    raise ValueError("Wrong inexact date format: " + data)
+        except ValueError, e:
+            raise ValueError("Wrong inexact date format: " + data, e)
+        return cls(year, month, day)
+
+    def format(self):
+        months_genitive = [
+            u'Января',
+            u'Февраля',
+            u'Марта',
+            u'Апреля',
+            u'Мая',
+            u'Июня',
+            u'Июля',
+            u'Августа',
+            u'Сентября',
+            u'Октября',
+            u'Ноября',
+            u'Декабря']
+        months = [
+            u'Январь',
+            u'Февраль',
+            u'Март',
+            u'Апрель',
+            u'Май',
+            u'Июнь',
+            u'Июль',
+            u'Август',
+            u'Сентябрь',
+            u'Октябрь',
+            u'Ноябрь',
+            u'Декабрь']
+        if self.day is not None:
+            return u'{} {} {}'.format(self.day,
+                                      months_genitive[self.month - 1],
+                                      self.year)
+        elif self.month is not None:
+            return u'{} {}'.format(months[self.month-1], self.year)
+        else:
+            return str(self.year)
+
+    def tuple(self):
+        return (self.year, self.month, self.day)
+
+    def __cmp__(self, other):
+        return cmp(self.tuple(), other.tuple())
 
 
 class ModelException(Exception):
@@ -268,7 +353,9 @@ class ClimbsDao(Dao):
     def climbers(self, summit_id):
         climbers = []
         sql = """SELECT
-                    ts,
+                    year,
+                    month,
+                    day,
                     comment,
                     users.id,
                     users.name,
@@ -276,7 +363,7 @@ class ClimbsDao(Dao):
                 FROM users LEFT JOIN climbs ON climbs.user_id=users.id
                 LEFT JOIN summits ON climbs.summit_id=summits.id
                 WHERE climbs.summit_id=%s
-                ORDER BY ts;"""
+                ORDER BY year, month, day;"""
         with self.get_cursor() as cur:
             cur.execute(sql, (summit_id, ))
             for row in cur:
@@ -284,17 +371,23 @@ class ClimbsDao(Dao):
                 u.id = row['id']
                 u.name = row['name']
                 u.preview_id = row['preview_id']
+                if row['year'] is not None:
+                    date = InexactDate(row['year'], row['month'], row['day'])
+                else:
+                    date = None
                 climbers.append(
-                    {'user': u, 'date': row['ts'], 'comment': row['comment']})
+                    {'user': u, 'date': date, 'comment': row['comment']})
         return climbers
 
     def climbed(self, user_id):
         climbed = []
-        sql = """SELECT ts, comment, summits.id, summits.name, height, ridges.name AS ridge
+        sql = """SELECT
+                    year, month, day, comment,
+                    summits.id, summits.name, height, ridges.name AS ridge
                 FROM ridges LEFT JOIN summits ON ridges.id=summits.rid
                 LEFT JOIN climbs ON summits.id=climbs.summit_id
                 WHERE climbs.user_id=%s
-                ORDER BY ts"""
+                ORDER BY year, month, day"""
         with self.get_cursor() as cur:
             cur.execute(sql, (user_id, ))
             for row in cur:
@@ -303,9 +396,13 @@ class ClimbsDao(Dao):
                 s.ridge = row['ridge']
                 s.id = row['id']
                 s.height = row['height']
+                if row['year'] is not None:
+                    date = InexactDate(row['year'], row['month'], row['day'])
+                else:
+                    date = None
                 climbed.append(
                     {'summit': s,
-                     'date': row['ts'],
+                     'date': date,
                      'comment': row['comment']})
             return climbed
 
@@ -328,7 +425,7 @@ class ClimbsDao(Dao):
         return users
 
     def get(self, user_id, summit_id):
-        sql = "SELECT ts, comment" + \
+        sql = "SELECT year, month, day, comment" + \
             " FROM climbs WHERE user_id=%s AND summit_id=%s"
         with self.get_cursor() as cur:
             cur.execute(sql, (user_id, summit_id))
@@ -336,21 +433,25 @@ class ClimbsDao(Dao):
                 return None
             row = cur.fetchone()
             climb = Climb()
-            climb.date = row['ts']
+            climb.date = InexactDate(row['year'], row['month'], row['day'])
             climb.comment = row['comment']
         return climb
 
     def create(self, user_id, summit_id, date=None, comment=None):
-        sql = "INSERT INTO climbs (user_id, summit_id, ts, comment)" + \
-            " VALUES (%s, %s, %s, %s)"
+        sql = "INSERT INTO climbs (user_id, summit_id, comment, year, month, day)" + \
+            " VALUES (%s, %s, %s, %s, %s, %s)"
         with self.get_cursor() as cur:
-            cur.execute(sql, (user_id, summit_id, date, comment))
+            cur.execute(
+                sql,
+                (user_id, summit_id, comment, date.year, date.month, date.day))
 
     def update(self, user_id, summit_id, date=None, comment=None):
-        sql = "UPDATE climbs SET ts=%s, comment=%s" + \
+        sql = "UPDATE climbs SET year=%s, month=%s, day=%s, comment=%s" + \
             " WHERE user_id=%s AND summit_id=%s"
         with self.get_cursor() as cur:
-            cur.execute(sql, (date, comment, user_id, summit_id))
+            cur.execute(
+                sql,
+                (date.year, date.month, date.day, comment, user_id, summit_id))
 
     def delete(self, user_id, summit_id):
         sql = "DELETE FROM climbs WHERE user_id=%s AND summit_id=%s"

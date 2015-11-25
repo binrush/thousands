@@ -65,7 +65,7 @@
         <h4 class="media-heading">
             <a href="{{ url_for('user', user_id=c['user'].id) }}">{{ c['user'].name }}</a> 
         </h4>
-        {% if c['date'] != None %}<div class="text-muted"><i>{{ c['date'] | climb_date }}</i></div>{% endif %}
+        {% if c['date'] is not none %}<div class="text-muted"><i>{{ c['date'].format() }}</i></div>{% endif %}
         {% if c['comment'] %}{{ c['comment'] }}{% endif %}
         {% if c['user'] == current_user %}
         <div>

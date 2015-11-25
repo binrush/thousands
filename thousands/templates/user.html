@@ -39,7 +39,7 @@
             <a href="{{ url_for('summit', summit_id=c.summit.id)}}">{{ c.summit.format_name() }}</a>
             <small>хребет {{ c.summit.ridge }}</small>
         </h4>
-        {% if c.date %}<div class="text-muted"><i>{{ c['date'] | climb_date }}</i></div>{% endif %}
+        {% if c.date %}<div class="text-muted"><i>{{ c['date'].format() }}</i></div>{% endif %}
         {{ c['comment'] }}
         </div>
     </li>

@@ -6,7 +6,7 @@ import datetime
 
 
 class InexactDate(object):
-    def __init__(self, year, month=None, day=None):
+    def __init__(self, year=None, month=None, day=None):
         if day is not None:
             if month is None:
                 raise ValueError("Month cannot be None if day is not")
@@ -26,6 +26,8 @@ class InexactDate(object):
 
     @classmethod
     def fromstring(cls, data):
+        if not data:
+            return cls()
         try:
             if len(data) == 4:
                 year = int(data)

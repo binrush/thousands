@@ -61,7 +61,7 @@ class ClimbDateField(Field):
             return u''
 
     def process_formdata(self, valuelist):
-        if valuelist and valuelist[0]:
+        if valuelist:
             try:
                 self.data = dao.InexactDate.fromstring(valuelist[0])
             except ValueError:
@@ -92,7 +92,7 @@ class SummitForm(Form):
 
 class ClimbForm(Form):
     summit_id = HiddenField('summit_id')
-    date = ClimbDateField(u'Дата', filters=[lambda x: x or None])
+    date = ClimbDateField(u'Дата')
     comment = TextAreaField(u'Комментарий')
 
 

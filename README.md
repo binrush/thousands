@@ -1,3 +1,5 @@
+# South Ural summits project
+
 This is a source code for http://1000.southural.ru/
 
 ## Running locally
@@ -10,9 +12,9 @@ This is a source code for http://1000.southural.ru/
 6. Create configuration file (see below)
 7. Run application. `THOUSANDS_CONF` environment variable should point to your configuration file `THOUSANDS_CONF="~/thousands.conf" ~/virtualenv/thousands/bin/python wsgi.py`
 
-## Sample file
+## Sample configuration file
 
-```
+```python
 # Sessions secret key
 SECRET_KEY="somesecretkey"
 # Client secret for vk auth

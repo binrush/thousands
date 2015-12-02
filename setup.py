@@ -7,9 +7,9 @@ setup(name='thousands',
       author_email='rush.ru@gmail.com',
       install_requires=[
           'psycopg2',
-          'Flask',
-          'flask-login',
+          'Flask==0.10.1',
+          'flask-login==0.3.2',
           'wtforms',
-          'yoyo-migrations',
+          'yoyo-migrations==4.2.5',
           'google-api-python-client'],
       test_suite="tests")

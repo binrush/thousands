@@ -34,7 +34,7 @@
     <dd>{{ summit.description | safe }}</dd>
 </dl>
 {% endif %}
-{% if not current_user.is_authenticated() %}
+{% if not current_user.is_authenticated %}
     <dl class="dl-horizontal">
         <dd><a class="btn btn-primary" href="{{ url_for('login_form', r=url_for('climb_new', summit_id=summit.id)) }}" data-remote="false" data-toggle="modal" data-target="#authModal">Взошли на эту вершину?</a></dd>
     </dl>

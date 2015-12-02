@@ -163,7 +163,7 @@ class SummitsDao(Dao):
         def row2summit(row):
             s = Summit()
             for k in ['id', 'name', 'name_alt', 'height',
-                      'ridge', 'color', 'climbed', 'main']:
+                      'ridge', 'color', 'climbed', 'main', 'climbers_count']:
                 setattr(s, k, row[k])
             s.coordinates = (row['lat'], row['lng'])
             return s
@@ -178,6 +178,7 @@ class SummitsDao(Dao):
         query = """
         SELECT s.id, s.name, s.name_alt,
                 s.height, s.lng, s.lat, r.name AS ridge, r.color,
+                count(c.user_id) AS climbers_count,
             EXISTS (
                 SELECT * FROM climbs
                 WHERE summit_id=s.id AND user_id=%s
@@ -190,7 +191,10 @@ class SummitsDao(Dao):
                     ON smtsg.rid=smts.rid AND smts.height=smtsg.maxheight
                     WHERE id=s.id
             ) AS main
-        FROM summits s LEFT JOIN ridges r ON s.rid=r.id """ + order
+        FROM summits s
+        LEFT JOIN ridges r ON s.rid=r.id
+        LEFT JOIN climbs c ON c.summit_id = s.id
+        GROUP BY s.id, s.name, s.name_alt, r.name, r.color """ + order
         with self.get_cursor() as cur:
             cur.execute(query, (user_id, ))
             summits = map(row2summit, cur)

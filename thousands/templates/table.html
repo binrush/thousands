@@ -16,6 +16,9 @@
         <th class="{% if sort == 'ridge' %}info{% else %}clickable-cell active{% endif %}">
             <a {% if sort != 'ridge' %}href="{{url_for('table')}}"{% endif %}>Хребет</a>
         </th>
+        <th class="{% if sort == 'climbers_count' %}info{% else %}clickable-cell active{% endif %}">
+            <a {% if sort != 'climbers_count' %}href="{{url_for('table', sort='climbers_count')}}"{% endif %}>Восходителей</a>
+        </th>
     </tr>
 </thead>
 <tbody>
@@ -41,6 +44,7 @@
             {% endif %}
         </td>
         <td>{{ s.ridge }}</td>
+        <td>{{ s.climbers_count }}</td>
     </tr>
     {% endfor %}
 </tbody>

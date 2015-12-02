@@ -163,7 +163,7 @@ class SummitsDao(Dao):
         def row2summit(row):
             s = Summit()
             for k in ['id', 'name', 'name_alt', 'height',
-                      'ridge', 'color', 'climbed', 'main', 'climbers_count']:
+                      'ridge', 'color', 'climbed', 'main', 'climbers']:
                 setattr(s, k, row[k])
             s.coordinates = (row['lat'], row['lng'])
             return s
@@ -172,13 +172,15 @@ class SummitsDao(Dao):
             order = "ORDER BY s.height DESC"
         elif sort == 'name':
             order = "ORDER BY s.name, s.name_alt"
+        elif sort == 'climbers':
+            order = "ORDER BY climbers"
         else:
             order = "ORDER BY r.name, s.lat DESC"
 
         query = """
         SELECT s.id, s.name, s.name_alt,
                 s.height, s.lng, s.lat, r.name AS ridge, r.color,
-                count(c.user_id) AS climbers_count,
+                count(c.user_id) AS climbers,
             EXISTS (
                 SELECT * FROM climbs
                 WHERE summit_id=s.id AND user_id=%s

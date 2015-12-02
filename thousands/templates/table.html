@@ -2,7 +2,7 @@
 {% block title %}Таблица тысячников Южного Урала{% endblock %}
 {% block description %}Все вершины Южного Урала выше тысячи метров в таблице{% endblock %}
 {% block content %}
-<h1>Все вершины Южного Урала выше тысячи метров</h1>
+<h1>Все вершины Южного Урала выше тысячи метров <small>(всего {{ summits | length }})</small></h1>
 <table id='summitsTable' class="table">
 <thead>
     <tr>
@@ -42,6 +42,7 @@
             {% else %}
             {{ s.height }}
             {% endif %}
+            <small title="{{ s.number }}-я по высоте на Южном Урале" class="text-muted">{{ s.number }}</small>
         </td>
         <td>{{ s.ridge }}</td>
         <td>{{ s.climbers }}</td>

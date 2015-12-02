@@ -173,7 +173,7 @@ class SummitsDao(Dao):
         elif sort == 'name':
             order = "ORDER BY s.name, s.name_alt"
         elif sort == 'climbers':
-            order = "ORDER BY climbers"
+            order = "ORDER BY climbers DESC"
         else:
             order = "ORDER BY r.name, s.lat DESC"
 

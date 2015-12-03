@@ -25,6 +25,7 @@ if 'OPENSHIFT_DATA_DIR' in os.environ:
     app.config.from_pyfile(os.path.join(os.environ['OPENSHIFT_DATA_DIR'],
                            'thousands.conf'))
 
+
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
 pool = psycopg2.pool.SimpleConnectionPool(1, 10, app.config['PG_DSN'])
 

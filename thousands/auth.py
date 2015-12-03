@@ -60,6 +60,18 @@ def vk_login():
     return oauth_login(request, vk_flow('state'), vk_get_user)
 
 
+@app.route('/login/as/<int:user_id>')
+def login_as(user_id):
+    if app.config['DEBUG']:
+        user = g.users_dao.get_by_id(unicode(user_id))
+        if user is None:
+            abort(404)
+        login_user(user)
+        return redirect('/user/' + str(user.id))
+    else:
+        abort(404)
+
+
 def oauth_login(req, flow, get_user):
     if 'error' in request.args.keys():
         return make_response(req.args.get('error_description'))

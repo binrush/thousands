@@ -132,7 +132,7 @@ def climb_edit(summit_id):
                 f.summit_id.data,
                 f.date.data,
                 f.comment.data)
-            return redirect(url_for('summit', summit_id=f.summit_id.data))
+            return redirect(url_for('profile'))
     else:
         climb = g.climbs_dao.get(current_user.id, summit_id)
         f = forms.ClimbForm(None, climb, summit=summit_id)
@@ -145,7 +145,7 @@ def climb_edit(summit_id):
 @login_required
 def climb_delete(summit_id):
     g.climbs_dao.delete(current_user.id, summit_id)
-    return redirect(url_for('summit', summit_id=summit_id))
+    return redirect(url_for('profile'))
 
 
 @app.route('/api/summits')

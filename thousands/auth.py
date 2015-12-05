@@ -1,3 +1,4 @@
+# coding: utf8
 import json
 import httplib2
 import urllib
@@ -5,7 +6,7 @@ import logging
 
 from flask.ext.login import login_user, UserMixin
 from flask import (request, g, redirect, make_response,
-                   url_for, abort, render_template)
+                   url_for, abort, render_template, flash)
 from oauth2client.client import FlowExchangeError, OAuth2WebServerFlow
 
 from thousands import app
@@ -67,7 +68,7 @@ def login_as(user_id):
         if user is None:
             abort(404)
         login_user(user)
-        return redirect('/user/' + str(user.id))
+        return redirect(url_for('profile'))
     else:
         abort(404)
 
@@ -85,8 +86,11 @@ def oauth_login(req, flow, get_user):
     user, created = get_user(credentials)
     if user is not None:
         login_user(user)
-        redirect_to = url_for('profile') if created else req.args.get('state')
-        return redirect(redirect_to)
+        if created:
+            flash(u'Регистрация завершена')
+            return redirect(url_for('profile'))
+        else:
+            return redirect(req.args.get('state'))
 
     abort(401)
 

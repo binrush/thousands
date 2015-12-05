@@ -1,6 +1,7 @@
+# coding: utf8
 from thousands import app
 from flask import (request, render_template, g, jsonify,
-                   redirect, url_for, abort, send_file)
+                   redirect, url_for, abort, send_file, flash)
 from flask.ext.login import (logout_user, current_user,
                              login_required, UserMixin)
 import dao
@@ -115,6 +116,7 @@ def climb_new(summit_id):
             f.summit_id.data,
             f.date.data,
             f.comment.data)
+        flash(u'Ваше восхождение зарегистрировано')
         return redirect(url_for('summit', summit_id=f.summit_id.data))
     return render_template('climb_edit.html',
                            summit=g.summits_dao.get(summit_id),
@@ -142,6 +144,7 @@ def climb_edit(summit_id, redirect_url):
                 f.summit_id.data,
                 f.date.data,
                 f.comment.data)
+            flash(u'Ваше восхождение отредактировано')
             return redirect(redirect_url)
     else:
         climb = g.climbs_dao.get(current_user.id, summit_id)
@@ -165,6 +168,7 @@ def profile_climb_delete(summit_id):
 
 def climb_delete(summit_id, redirect_url):
     g.climbs_dao.delete(current_user.id, summit_id)
+    flash(u'Ваше восхождение удалено')
     return redirect(redirect_url)
 
 
@@ -208,6 +212,7 @@ def profile_edit():
             user = UserMixin()
             f.populate_obj(user)
             g.users_dao.update(current_user.get_id(), user)
+            flash(u'Профиль отредактирован')
             return redirect(url_for('profile'))
     else:
         f = forms.ProfileForm(None, current_user)

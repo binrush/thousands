@@ -1,24 +1,27 @@
 {% extends "layout.html" %}
 {% block title %}Профиль{% endblock %}
 {% block content %}
-<h2>{{ current_user.name }}
-    {% if current_user.location %}
-        <small>{{ current_user.location }}</small>
-    {% endif %}
-</h2>
+<h1>{{ current_user.name }}</h1>
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+<div class="alert alert-success" role="alert">
+    {% for message in messages %}
+      {{ message }}
+    {% endfor %}
+</div>
+  {% endif %}
+{% endwith %}
 <div class="row">
     <div class="col-md-3 text-right">
         {% if current_user.image_id %}
                 <img src="{{ url_for('image_get', image_id=current_user.image_id)}}" class="center-block user-image-large">
         {% endif %}
-        <a href="{{ url_for('logout') }}" class="btn btn-default center-block" type="button" role="button">Выйти</a>
-        <a href="{{ url_for('profile_edit') }}" class="btn btn-default center-block" type="button" role="button">Редактировать профиль</a>
     </div>
     <div class="col-md-6">
-    <h3>Восхождения</h3>
     {% if climbed | length == 0 %}
-    Вы еще не добавили ни одного восхождения. Найти вершину, на которую вы взошли можно <a href="{{ url_for('index') }}">на карте</a> или <a href="{{ url_for('table') }}">в таблице</a>.
-    {% endif %}
+        Вы еще не сообщили ни об одной посещенной вершине. Найти вершину, на которую вы взошли можно <a href="{{ url_for('index') }}">на карте</a> или <a href="{{ url_for('table') }}">в таблице</a>.
+    {% else %}
+    <h3>Посещенные вершины <small>(всего {{ climbed | length }})</small></h3>
     <ul class="media-list">
     {% for c in climbed %}
     <li class="media">
@@ -37,6 +40,7 @@
     </li>
     {% endfor %}
     </ul>
+    {% endif %}
     </div>
 </div>
 {% endblock %}

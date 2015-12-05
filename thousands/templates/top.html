@@ -16,7 +16,7 @@
                  {% if c.preview_id %}
                  <a href="{{ url_for('user', user_id=c.id) }}"><img src="{{ url_for("image_get", image_id=c.preview_id)}}"></a>
                  {% else %}
-                 <img src="/static/climber_sm.png">
+                 <a href="{{ url_for('user', user_id=c.id) }}"><img src="/static/climber_sm.png"></a>
                  {% endif %}
                  <a href="{{ url_for('user', user_id=c.id) }}">{{ c.name }}</a>
             </td>

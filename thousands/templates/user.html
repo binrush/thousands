@@ -9,11 +9,7 @@
 {% endif %}
 {% endblock %}
 {% block content %}
-<h1>{{ user.name }}
-    {% if user.location %}
-        <small>{{ user.location }}</small>
-    {% endif %}
-</h1>
+<h1>{{ user.name }}</h1>
 <div class="row">
     <div class="col-md-3 text-right">
         {% if user.image_id %}
@@ -21,16 +17,12 @@
         {% else %}
             <img src="/static/climber.png" class="center-block user-image-large">
         {% endif %}
-    {% if user == current_user %}
-        <a href="{{ url_for('logout') }}" class="btn btn-default center-block" type="button" role="button">Выйти</a>
-        <a href="{{ url_for('profile_edit') }}" class="btn btn-default center-block" type="button" role="button">Редактировать профиль</a>
-    {% endif %}
     </div>
     <div class="col-md-6">
-    <h3>Восхождения</h3>
     {% if climbed | length == 0 %}
-        Этот восходитель еще не сообщил ни об одном восхождении.
-    {% endif %}
+        Этот восходитель еще не сообщил ни об одной посещенной вершине.
+    {% else %}
+    <h3>Посещенные вершины <small>(всего {{ climbed | length }})</small></h3>
     <ul class="media-list">
     {% for c in climbed %}
     <li class="media">
@@ -45,6 +37,7 @@
     </li>
     {% endfor %}
     </ul>
+    {% endif %}
     </div>
 </div>
 {% endblock %}

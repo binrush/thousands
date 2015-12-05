@@ -45,7 +45,7 @@ def su_flow(state):
 
 @app.route('/login')
 def login_form():
-    redirect = request.args.get('r', url_for('profile'))
+    redirect = request.args.get('r')
     return render_template('/login.html',
                            vk_flow=vk_flow(redirect),
                            su_flow=su_flow(redirect))
@@ -68,7 +68,7 @@ def login_as(user_id):
         if user is None:
             abort(404)
         login_user(user)
-        return redirect(url_for('profile'))
+        return redirect(url_for('user', user_id=user_id))
     else:
         abort(404)
 
@@ -88,7 +88,7 @@ def oauth_login(req, flow, get_user):
         login_user(user)
         if created:
             flash(u'Регистрация завершена')
-            return redirect(url_for('profile'))
+            return redirect(url_for('user', user_id=user.get_id()))
         else:
             return redirect(req.args.get('state'))
 

@@ -193,32 +193,6 @@ def logout():
     return redirect(url_for('index'))
 
 
-@app.route('/profile')
-@login_required
-def profile():
-    climbed = g.climbs_dao.climbed(current_user.get_id())
-    return render_template(
-        'profile.html',
-        climbed=climbed,
-        active_page='profile')
-
-
-@app.route('/profile/edit', methods=['GET', 'POST'])
-@login_required
-def profile_edit():
-    if request.method == 'POST':
-        f = forms.ProfileForm(request.form)
-        if f.validate():
-            user = UserMixin()
-            f.populate_obj(user)
-            g.users_dao.update(current_user.get_id(), user)
-            flash(u'Профиль отредактирован')
-            return redirect(url_for('profile'))
-    else:
-        f = forms.ProfileForm(None, current_user)
-    return render_template('profile_edit.html', form=f)
-
-
 @app.route('/user/<int:user_id>')
 def user(user_id):
     user = g.users_dao.get_by_id(user_id)

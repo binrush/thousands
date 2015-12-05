@@ -306,8 +306,8 @@ class UsersDao(Dao):
             return self._fromrow(cur.fetchone())
 
     def create(self, user):
-        sql = """INSERT INTO users (src, oauth_id, name, image_id, location, preview_id)
-            VALUES (%s, %s, %s, %s, %s, %s) RETURNING id;
+        sql = """INSERT INTO users (src, oauth_id, name, image_id, preview_id)
+            VALUES (%s, %s, %s, %s, %s) RETURNING id;
         """
         with self.get_cursor() as cur:
             cur.execute(sql, (
@@ -315,19 +315,10 @@ class UsersDao(Dao):
                 user.oauth_id,
                 user.name,
                 user.image_id,
-                user.location,
                 user.preview_id))
             if cur.rowcount < 1:
                 return None
             return cur.fetchone()['id']
-
-    def update(self, user_id, user):
-        sql = """UPDATE users SET name=%s, location=%s, about=%s
-            WHERE id=%s"""
-        with self.get_cursor() as cur:
-            cur.execute(sql, (user.name, user.location, user.about, user_id))
-            if cur.rowcount < 1:
-                raise ModelException("User not fount while updating")
 
 
 class ImagesDao(Dao):

@@ -132,11 +132,6 @@ def vk_get_user(credentials):
         data.get('last_name', ''))
     user.src = AUTH_SRC_VK
 
-    if 'city' in data:
-        user.location = data['city']['title']
-    else:
-        user.location = None
-
     fd = urllib.urlopen(data['photo_200_orig'])
     if fd.getcode() == 200:
         user.image_id = g.images_dao.create(fd.read(), fd.info().gettype())
@@ -177,7 +172,6 @@ def su_get_user(credentials):
     user.oauth_id = data['sub']
     user.name = data['name']
     user.src = AUTH_SRC_SU
-    user.location = data.get('city', None)
     user.image_id = None
     user.preview_id = None
     user.id = g.users_dao.create(user)

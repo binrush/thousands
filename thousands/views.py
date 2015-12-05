@@ -151,13 +151,13 @@ def climb_edit(summit_id, redirect_url):
                            form=f)
 
 
-@app.route('/summit/<int:summit_id>/climb/delete/', methods=['GET', 'POST'])
+@app.route('/summit/<int:summit_id>/climb/delete/')
 @login_required
 def summit_climb_delete(summit_id):
     return climb_delete(summit_id, url_for('summit', summit_id=summit_id))
 
 
-@app.route('/climb/delete/<int:summit_id>', methods=['GET', 'POST'])
+@app.route('/climb/delete/<int:summit_id>')
 @login_required
 def profile_climb_delete(summit_id):
     return climb_delete(summit_id, url_for('profile'))

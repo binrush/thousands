@@ -38,7 +38,7 @@
     <dl class="dl-horizontal">
         <dd><a class="btn btn-primary" href="{{ url_for('login_form', r=url_for('climb_new', summit_id=summit.id)) }}" data-remote="false" data-toggle="modal" data-target="#authModal">Взошли на эту вершину?</a></dd>
     </dl>
-{% elif climbers | length  == 0 or current_user != climbers[0]['user'] %} 
+{% elif climbers | length  == 0 or current_user != climbers[0]['user'] %}
     <dl class="dl-horizontal">
         <dd><a class="btn btn-primary" href="{{ url_for('climb_new', summit_id=summit.id) }}">Взошли на эту вершину?</a></dd>
     </dl>
@@ -63,14 +63,14 @@
     </div>
     <div class="media-body">
         <h4 class="media-heading">
-            <a href="{{ url_for('user', user_id=c['user'].id) }}">{{ c['user'].name }}</a> 
+            <a href="{{ url_for('user', user_id=c['user'].id) }}">{{ c['user'].name }}</a>
         </h4>
         {% if c['date'] is not none %}<div class="text-muted"><i>{{ c['date'].format() }}</i></div>{% endif %}
         {% if c['comment'] %}{{ c['comment'] }}{% endif %}
         {% if c['user'] == current_user %}
         <div>
-        <small><a href="{{ url_for('climb_edit', summit_id=summit.id) }}">Редактировать</a></small>
-        <small><a href="{{ url_for('climb_delete', summit_id=summit.id) }}" class="simple-delete-confirm">Удалить</a></small>
+        <small><a href="{{ url_for('summit_climb_edit', summit_id=summit.id) }}">Редактировать</a></small>
+        <small><a href="{{ url_for('summit_climb_delete', summit_id=summit.id) }}" class="simple-delete-confirm">Удалить</a></small>
         </div>
         {% endif %}
     </div>

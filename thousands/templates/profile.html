@@ -30,8 +30,8 @@
         {% if c.date %}<div class="text-muted"><i>{{ c['date'].format() }}</i></div>{% endif %}
         {{ c['comment'] }}
         <div>
-        <small><a href="{{ url_for('climb_edit', summit_id=c.summit.id) }}">Редактировать</a></small>
-        <small><a href="{{ url_for('climb_delete', summit_id=c.summit.id) }}" class="simple-delete-confirm">Удалить</a></small>
+        <small><a href="{{ url_for('profile_climb_edit', summit_id=c.summit.id) }}">Редактировать</a></small>
+        <small><a href="{{ url_for('profile_climb_delete', summit_id=c.summit.id) }}" class="simple-delete-confirm">Удалить</a></small>
         </div>
         </div>
     </li>

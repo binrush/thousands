@@ -121,9 +121,19 @@ def climb_new(summit_id):
                            form=f)
 
 
+@app.route('/summit/<int:summit_id>/climb/edit', methods=['GET', 'POST'])
+@login_required
+def summit_climb_edit(summit_id):
+    return climb_edit(summit_id, url_for('summit', summit_id=summit_id))
+
+
 @app.route('/climb/edit/<int:summit_id>', methods=['GET', 'POST'])
 @login_required
-def climb_edit(summit_id):
+def profile_climb_edit(summit_id):
+    return climb_edit(summit_id, url_for('profile'))
+
+
+def climb_edit(summit_id, redirect_url):
     if request.method == 'POST':
         f = forms.ClimbForm(request.form)
         if f.validate():
@@ -132,7 +142,7 @@ def climb_edit(summit_id):
                 f.summit_id.data,
                 f.date.data,
                 f.comment.data)
-            return redirect(url_for('summit', summit_id=f.summit_id.data))
+            return redirect(redirect_url)
     else:
         climb = g.climbs_dao.get(current_user.id, summit_id)
         f = forms.ClimbForm(None, climb, summit=summit_id)
@@ -141,11 +151,21 @@ def climb_edit(summit_id):
                            form=f)
 
 
+@app.route('/summit/<int:summit_id>/climb/delete/')
+@login_required
+def summit_climb_delete(summit_id):
+    return climb_delete(summit_id, url_for('summit', summit_id=summit_id))
+
+
 @app.route('/climb/delete/<int:summit_id>')
 @login_required
-def climb_delete(summit_id):
+def profile_climb_delete(summit_id):
+    return climb_delete(summit_id, url_for('profile'))
+
+
+def climb_delete(summit_id, redirect_url):
     g.climbs_dao.delete(current_user.id, summit_id)
-    return redirect(url_for('summit', summit_id=summit_id))
+    return redirect(redirect_url)
 
 
 @app.route('/api/summits')

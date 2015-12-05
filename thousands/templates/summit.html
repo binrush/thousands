@@ -62,11 +62,7 @@
     {% for c in climbers %}
     <li class="media">
     <div class="media-left">
-        {% if c['user'] == current_user %}
-            <a href="{{ url_for('profile') }}">
-        {% else %}
-            <a href="{{ url_for('user', user_id=c['user'].id) }}">
-        {% endif %}
+        <a href="{{ url_for('user', user_id=c['user'].id) }}">
         {% if c['user'].preview_id %}
         <img src="{{ url_for("image_get", image_id=c['user'].preview_id)}}" class="media-object">
         {% else %}
@@ -76,11 +72,7 @@
     </div>
     <div class="media-body">
         <h4 class="media-heading">
-            {% if c['user'] == current_user %}
-                <a href="{{ url_for('profile') }}">{{ c['user'].name }}</a> 
-            {% else %}
-                <a href="{{ url_for('user', user_id=c['user'].id) }}">{{ c['user'].name }}</a> 
-            {% endif %}
+            <a href="{{ url_for('user', user_id=c['user'].id) }}">{{ c['user'].name }}</a> 
         </h4>
         {% if c['date'] is not none %}<div class="text-muted"><i>{{ c['date'].format() }}</i></div>{% endif %}
         {% if c['comment'] %}{{ c['comment'] }}{% endif %}

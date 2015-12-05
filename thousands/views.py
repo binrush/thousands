@@ -132,7 +132,7 @@ def summit_climb_edit(summit_id):
 @app.route('/climb/edit/<int:summit_id>', methods=['GET', 'POST'])
 @login_required
 def profile_climb_edit(summit_id):
-    return climb_edit(summit_id, url_for('profile'))
+    return climb_edit(summit_id, url_for('user', user_id=current_user.get_id()))
 
 
 def climb_edit(summit_id, redirect_url):
@@ -163,7 +163,7 @@ def summit_climb_delete(summit_id):
 @app.route('/climb/delete/<int:summit_id>')
 @login_required
 def profile_climb_delete(summit_id):
-    return climb_delete(summit_id, url_for('profile'))
+    return climb_delete(summit_id, url_for('user', user_id=current_user.get_id()))
 
 
 def climb_delete(summit_id, redirect_url):

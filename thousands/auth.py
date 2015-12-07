@@ -4,16 +4,16 @@ import httplib2
 import urllib
 import logging
 
-from flask.ext.login import login_user, UserMixin
+from flask.ext.login import login_user
 from flask import (request, g, redirect, make_response,
                    url_for, abort, render_template, flash)
 from oauth2client.client import FlowExchangeError, OAuth2WebServerFlow
 
+import dao
+
 from thousands import app
 
 VK_API_VERSION = "5.37"
-AUTH_SRC_VK = 1
-AUTH_SRC_SU = 2
 
 
 def vk_flow(state):
@@ -97,7 +97,7 @@ def oauth_login(req, flow, get_user):
 
 def vk_get_user(credentials):
     user = g.users_dao.get(unicode(credentials.token_response['user_id']),
-                           AUTH_SRC_VK)
+                           dao.AUTH_SRC_VK)
     if user is not None:
         return user, False
 
@@ -125,12 +125,12 @@ def vk_get_user(credentials):
         logging.error(data['error'])
         return None
 
-    user = UserMixin()
+    user = dao.User()
     user.oauth_id = unicode(credentials.token_response['user_id'])
     user.name = u"{} {}".format(
         data.get('first_name', ''),
         data.get('last_name', ''))
-    user.src = AUTH_SRC_VK
+    user.src = dao.AUTH_SRC_VK
 
     fd = urllib.urlopen(data['photo_200_orig'])
     if fd.getcode() == 200:
@@ -165,13 +165,13 @@ def su_get_user(credentials):
         logging.error(data['error'])
         return None
 
-    user = g.users_dao.get(data['sub'], AUTH_SRC_SU)
+    user = g.users_dao.get(data['sub'], dao.AUTH_SRC_SU)
     if user is not None:
         return user, False
-    user = UserMixin()
+    user = dao.User()
     user.oauth_id = data['sub']
     user.name = data['name']
-    user.src = AUTH_SRC_SU
+    user.src = dao.AUTH_SRC_SU
     user.image_id = None
     user.preview_id = None
     user.id = g.users_dao.create(user)

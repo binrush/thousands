@@ -26,6 +26,9 @@
         {% else %}
             <img src="/static/climber.png" class="center-block user-image-large">
         {% endif %}
+        <p class="text-center">
+        {{ user.social_link() | safe }}
+        </p>
     </div>
     <div class="col-md-6">
     {% if climbed | length == 0 %}

@@ -4,6 +4,24 @@ import psycopg2.extras
 from flask.ext.login import UserMixin
 import datetime
 
+AUTH_SRC_VK = 1
+AUTH_SRC_SU = 2
+
+
+class User(UserMixin):
+
+    __auth_sources = {
+        AUTH_SRC_VK:
+            u'<a href="https://vk.com/id{}" target="_blank">' +
+            u'Профиль ВКонтакте</a>',
+        AUTH_SRC_SU:
+            u'<a href="http://www.southural.ru/authors/{}" target="_blank">' +
+            u'Профиль на southural.ru</a>'
+    }
+
+    def social_link(self):
+        return self.__auth_sources[self.src].format(self.oauth_id)
+
 
 class InexactDate(object):
     def __init__(self, year=None, month=None, day=None):
@@ -281,7 +299,7 @@ class SummitsDao(Dao):
 class UsersDao(Dao):
 
     def _fromrow(self, row):
-        user = UserMixin()
+        user = User()
         for k in row.keys():
             setattr(user, k, row[k])
         return user
@@ -366,7 +384,7 @@ class ClimbsDao(Dao):
         with self.get_cursor() as cur:
             cur.execute(sql, (summit_id, ))
             for row in cur:
-                u = UserMixin()
+                u = User()
                 u.id = row['id']
                 u.name = row['name']
                 u.preview_id = row['preview_id']
@@ -415,7 +433,7 @@ class ClimbsDao(Dao):
         with self.get_cursor() as cur:
             cur.execute(sql)
             for row in cur:
-                u = UserMixin()
+                u = User()
                 u.id = row['id']
                 u.name = row['name']
                 u.preview_id = row['preview_id']

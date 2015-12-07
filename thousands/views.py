@@ -3,7 +3,7 @@ from thousands import app
 from flask import (request, render_template, g, jsonify,
                    redirect, url_for, abort, send_file, flash)
 from flask.ext.login import (logout_user, current_user,
-                             login_required, UserMixin)
+                             login_required)
 import dao
 import forms
 import io
@@ -132,7 +132,8 @@ def summit_climb_edit(summit_id):
 @app.route('/climb/edit/<int:summit_id>', methods=['GET', 'POST'])
 @login_required
 def profile_climb_edit(summit_id):
-    return climb_edit(summit_id, url_for('user', user_id=current_user.get_id()))
+    return climb_edit(summit_id,
+                      url_for('user', user_id=current_user.get_id()))
 
 
 def climb_edit(summit_id, redirect_url):
@@ -163,7 +164,8 @@ def summit_climb_delete(summit_id):
 @app.route('/climb/delete/<int:summit_id>')
 @login_required
 def profile_climb_delete(summit_id):
-    return climb_delete(summit_id, url_for('user', user_id=current_user.get_id()))
+    return climb_delete(summit_id,
+                        url_for('user', user_id=current_user.get_id()))
 
 
 def climb_delete(summit_id, redirect_url):

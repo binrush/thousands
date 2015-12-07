@@ -24,10 +24,10 @@ function createMap(container, center, zoom) {
             minZoom: 8,
             attribution: "Генштабовские топокарты используют сервис <a href=\"http://www.marshruty.ru/Maps/Maps.aspx\">карты Маршруты.Ру</a>"
             });
-    var osm = new L.TileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    var osm = new L.TileLayer('https://{s}.tile.thunderforest.com/landscape/{z}/{x}/{y}.png', {
             maxZoom: 20,
             minZoom: 8,
-            attribution: "&copy; Участники <a href=\"http://www.openstreetmap.org/copyright\">OpenStreetMaps</a>"
+            attribution: "Карты &copy; <a href=\"http://www.thunderforest.com\">Thunderforest</a>, Данные &copy; <a href=\"http://www.openstreetmap.org/copyright\">участники OpenStreetMap</a>"
             });
     var gs = new L.Google('SATELLITE', {
             maxZoom: 20,
@@ -36,9 +36,9 @@ function createMap(container, center, zoom) {
 
     var map = L.map(container, { center: center, zoom: zoom, layers: osm  });
     var baseMaps = {
-        "OpenStreetMaps": osm,
-        "Топокарты": topo,
-        "Google Sattelite": gs
+        "OpenStreetMaps Topo": osm,
+        "Генштабовские Топокарты": topo,
+        "Спутниковые снимки": gs
     };
     L.control.layers(baseMaps).addTo(map);
 

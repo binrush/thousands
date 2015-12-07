@@ -61,7 +61,7 @@
         </div><!--/.nav-collapse -->
       </div>
     </nav>
-  <div class="container">
+  <div class="{% if active_page == 'index'%}container-map{% else %}container{% endif %}">
       {% block content %}{% endblock %}
   </div>
 <div class="modal fade" id="authModal" tabindex="-1" role="dialog" aria-labelledby="authModalLabel" aria-hidden="true">

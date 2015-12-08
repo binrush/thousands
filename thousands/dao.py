@@ -8,19 +8,8 @@ AUTH_SRC_VK = 1
 AUTH_SRC_SU = 2
 
 
-class User(UserMixin):
-
-    __auth_sources = {
-        AUTH_SRC_VK:
-            u'<a href="https://vk.com/id{}" target="_blank">' +
-            u'Профиль ВКонтакте</a>',
-        AUTH_SRC_SU:
-            u'<a href="http://www.southural.ru/authors/{}" target="_blank">' +
-            u'Профиль на southural.ru</a>'
-    }
-
-    def social_link(self):
-        return self.__auth_sources[self.src].format(self.oauth_id)
+class ModelException(Exception):
+    pass
 
 
 class InexactDate(object):
@@ -67,31 +56,14 @@ class InexactDate(object):
 
     def format(self):
         months_genitive = [
-            u'Января',
-            u'Февраля',
-            u'Марта',
-            u'Апреля',
-            u'Мая',
-            u'Июня',
-            u'Июля',
-            u'Августа',
-            u'Сентября',
-            u'Октября',
-            u'Ноября',
+            u'Января', u'Февраля', u'Марта', u'Апреля', u'Мая', u'Июня',
+            u'Июля', u'Августа', u'Сентября', u'Октября', u'Ноября',
             u'Декабря']
         months = [
-            u'Январь',
-            u'Февраль',
-            u'Март',
-            u'Апрель',
-            u'Май',
-            u'Июнь',
-            u'Июль',
-            u'Август',
-            u'Сентябрь',
-            u'Октябрь',
-            u'Ноябрь',
+            u'Январь', u'Февраль', u'Март', u'Апрель', u'Май', u'Июнь',
+            u'Июль', u'Август', u'Сентябрь', u'Октябрь', u'Ноябрь',
             u'Декабрь']
+
         if self.day is not None:
             return u'{} {} {}'.format(self.day,
                                       months_genitive[self.month - 1],
@@ -106,10 +78,6 @@ class InexactDate(object):
 
     def __cmp__(self, other):
         return cmp(self.tuple(), other.tuple())
-
-
-class ModelException(Exception):
-    pass
 
 
 class Dao(object):
@@ -130,7 +98,7 @@ class Dao(object):
 
 class Summit(object):
 
-    def to_mins_secs(self, value):
+    def __to_mins_secs(self, value):
         deg = int(value)
         mins = (value - deg)*60
         secs = (mins - int(mins))*60
@@ -139,16 +107,13 @@ class Summit(object):
     def format_name(self):
         return self.name if self.name else str(self.height)
 
-    def format_name_alt(self):
-        return '(' + self.name_alt + ')' if self.name_alt else ''
-
     def format_coordinates(self):
         return u'{} {} ({}{} {}{})'.format(
             self.coordinates[0],
             self.coordinates[1],
-            self.to_mins_secs(self.coordinates[0]),
+            self.__to_mins_secs(self.coordinates[0]),
             'N' if self.coordinates[0] >= 0 else 'S',
-            self.to_mins_secs(self.coordinates[1]),
+            self.__to_mins_secs(self.coordinates[1]),
             'E' if self.coordinates[1] >= 0 else 'W')
 
     def to_geojson(self):
@@ -160,7 +125,6 @@ class Summit(object):
             [self.coordinates[1], self.coordinates[0]]
         ret['properties']['height'] = self.height
         ret['properties']['name'] = self.format_name()
-        ret['properties']['name_alt'] = self.format_name_alt()
         ret['properties']['ridge'] = self.ridge
         ret['properties']['color'] = self.color
         ret['properties']['climbed'] = self.climbed
@@ -169,24 +133,30 @@ class Summit(object):
         return ret
 
 
-class Image(object):
-    pass
-
-
-class Climb(object):
-    pass
-
-
 class SummitsDao(Dao):
 
-    def get_all(self, user_id=None, sort='ridge'):
-        def row2summit(row):
+    def __row2summit(self, row):
             s = Summit()
             for k in ['id', 'name', 'name_alt', 'height',
-                      'ridge', 'color', 'climbed', 'main', 'climbers']:
-                setattr(s, k, row[k])
+                      'description', 'interpretation',
+                      'ridge', 'rid', 'color', 'climbed', 'main', 'climbers']:
+                if k in row:
+                    setattr(s, k, row[k])
             s.coordinates = (row['lat'], row['lng'])
             return s
+
+    def __rate_by_field(self, summits, field):
+            index = \
+                [elem[0] for elem in sorted(enumerate(summits),
+                                            key=lambda f: getattr(f[1], field),
+                                            reverse=True)]
+            i = 0
+            for pos in index:
+                summits[pos].number = i + 1
+                i += 1
+            return summits
+
+    def get_all(self, user_id=None, sort='ridge'):
 
         if sort == 'height':
             order = "ORDER BY s.height DESC"
@@ -217,18 +187,10 @@ class SummitsDao(Dao):
         LEFT JOIN ridges r ON s.rid=r.id
         LEFT JOIN climbs c ON c.summit_id = s.id
         GROUP BY s.id, s.name, s.name_alt, r.name, r.color """ + order
+
         with self.get_cursor() as cur:
             cur.execute(query, (user_id, ))
-            summits = map(row2summit, cur)
-            sortkey = lambda f: f[1].height
-            index = [elem[0] for elem in sorted(enumerate(summits),
-                                                key=sortkey,
-                                                reverse=True)]
-            i = 0
-            for pos in index:
-                summits[pos].number = i + 1
-                i += 1
-            return summits
+            return self.__rate_by_field(map(self.__row2summit, cur), 'height')
 
     def get_ridges(self):
         with self.get_cursor() as cur:
@@ -246,13 +208,8 @@ class SummitsDao(Dao):
                    WHERE s.id=%s""", (sid, ))
             if cur.rowcount < 1:
                 return None
-            row = cur.fetchone()
-            summit = Summit()
-            for k in ['id', 'name', 'name_alt', 'height',
-                      'interpretation', 'description', 'rid', 'ridge']:
-                setattr(summit, k, row[k])
-            summit.coordinates = (row['lat'], row['lng'])
-            return summit
+
+            return self.__row2summit(cur.fetchone())
 
     def create(self, summit):
         with self.get_cursor() as cur:
@@ -261,7 +218,6 @@ class SummitsDao(Dao):
                 (%(name)s, %(name_alt)s, %(height)s,
                 %(description)s, %(rid)s, round(%(lat)s, 6), round(%(lng)s, 6))
                 RETURNING id"""
-            print query
             cur.execute(query, {
                 'name': summit.name,
                 'name_alt': summit.name_alt,
@@ -294,6 +250,21 @@ class SummitsDao(Dao):
     def delete(self, summit_id):
         with self.get_cursor() as cur:
             cur.execute("DELETE FROM summits WHERE id=%s", (summit_id, ))
+
+
+class User(UserMixin):
+
+    __auth_sources = {
+        AUTH_SRC_VK:
+            u'<a href="https://vk.com/id{}" target="_blank">' +
+            u'Профиль ВКонтакте</a>',
+        AUTH_SRC_SU:
+            u'<a href="http://www.southural.ru/authors/{}" target="_blank">' +
+            u'Профиль на southural.ru</a>'
+    }
+
+    def social_link(self):
+        return self.__auth_sources[self.src].format(self.oauth_id)
 
 
 class UsersDao(Dao):
@@ -339,6 +310,10 @@ class UsersDao(Dao):
             return cur.fetchone()['id']
 
 
+class Image(object):
+    pass
+
+
 class ImagesDao(Dao):
 
     def create(self, data, fmt):
@@ -363,6 +338,10 @@ class ImagesDao(Dao):
                 img.type = row['type']
                 img.payload = row['payload']
                 return img
+
+
+class Climb(object):
+    pass
 
 
 class ClimbsDao(Dao):

@@ -50,8 +50,10 @@
         {% if c.date %}<div class="text-muted"><i>{{ c['date'].format() }}</i></div>{% endif %}
         {{ c['comment'] }}
         {% if user == current_user %}
+            <div>
             <small><a href="{{ url_for('profile_climb_edit', summit_id=c.summit.id) }}">Редактировать</a></small>
             <small><a href="{{ url_for('profile_climb_delete', summit_id=c.summit.id) }}" class="simple-delete-confirm">Удалить</a></small>
+            </div>
         {% endif %}
         </div>
     </li>

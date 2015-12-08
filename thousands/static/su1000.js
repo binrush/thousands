@@ -46,9 +46,8 @@ function createMap(container, center, zoom) {
 }
 
 function pointPopupCode(feature) {
-    name_alt = feature.properties.name_alt == "" ? "" : "<br/>" + feature.properties.name_alt;
     name = "<a href=\"/summit/" + feature.id + "\">" + feature.properties.name + "</a>";
-    return name + name_alt +
+    return name +
         "<br>Высота: " + feature.properties.height + 
         "<br>Хребет: " + feature.properties.ridge;
 }

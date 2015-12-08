@@ -15,13 +15,18 @@
 {% endif %}
 <form id="summit_edit_form" method="post" class="form-horizontal">
   {{ form.summit_id(value=summit.id) }}
-  <div class="row">
-    <h5 class="col-md-offset-3 col-md-6">
+
+  <div class="form-group">
+    <label class="col-md-3 control-label">Вершина</label>
+    <div class="col-md-6">
+      <p class="form-control-static">
         <a  href="{{ url_for('summit', summit_id=summit.id) }}">
-        {{ summit.format_name() }} {{  summit.format_name_alt() }}, {{ summit.height }}, хребет {{ summit.ridge }}
+            {% if summit.name %}{{ summit.format_name() }}, {% endif %}{{ summit.height }}, хребет {{ summit.ridge }}
         </a>
-    </h5>
+      </p>
+    </div>
   </div>
+
   <div class="form-group">
     <label for="name_alt" class="col-md-3 control-label">Дата</label>
     <div class="col-md-6">

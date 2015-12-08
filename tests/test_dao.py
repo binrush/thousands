@@ -1,3 +1,4 @@
+# coding: utf8
 import unittest
 from thousands import dao
 from mock import MagicMock
@@ -6,24 +7,23 @@ from mock import MagicMock
 class InexactDateTestCase(unittest.TestCase):
     def test_init(self):
         ied = dao.InexactDate(2010, 10, 10)
-        assert ied.year == 2010
-        assert ied.month == 10
-        assert ied.day == 10
+        assert ied.year() == 2010
+        assert ied.month() == 10
+        assert ied.day() == 10
 
     def test_init_wrong(self):
         self.assertRaises(ValueError, dao.InexactDate, 2010, 13)
-        self.assertRaises(ValueError, dao.InexactDate, 2010, day=31)
         self.assertRaises(ValueError, dao.InexactDate, 2015, 2, 29)
 
     def test_fromstring(self):
         ied = dao.InexactDate.fromstring('2010')
-        assert ied.year == 2010 and ied.month is None and ied.day is None
+        assert ied.year() == 2010 and ied.month() is None and ied.day() is None
         ied = dao.InexactDate.fromstring('2.2010')
-        assert ied.year == 2010 and ied.month == 2 and ied.day is None
+        assert ied.year() == 2010 and ied.month() == 2 and ied.day() is None
         ied = dao.InexactDate.fromstring('12.06.2014')
-        assert ied.year == 2014 and ied.month == 6 and ied.day == 12
+        assert ied.year() == 2014 and ied.month() == 6 and ied.day() == 12
         ied = dao.InexactDate.fromstring('')
-        assert ied.year is None and ied.month is None and ied.day is None
+        assert ied.year() is None and ied.month() is None and ied.day() is None
 
         self.assertRaises(ValueError,
                           dao.InexactDate.fromstring,
@@ -35,9 +35,28 @@ class InexactDateTestCase(unittest.TestCase):
                           dao.InexactDate.fromstring,
                           '29.2.2015')
 
-    def test_tuple(self):
-        ied = dao.InexactDate(2010, 6, 12)
-        assert ied.tuple() == (2010, 6, 12)
+    def test_fromdict(self):
+        ied = dao.InexactDate.fromdict(
+            {'year': 2010, 'month': 10, 'day': 10})
+        assert ied.year() == 2010 and ied.month() == 10 and ied.day() == 10
+        ied = dao.InexactDate.fromdict(
+            {'year': 2010, 'month': 10, 'day': None})
+        assert ied.year() == 2010 and ied.month() == 10 and ied.day() is None
+        ied = dao.InexactDate.fromdict(
+            {'year': 2010, 'month': None, 'day': None})
+        assert ied.year() == 2010 and ied.month() is None and ied.day() is None
+        ied = dao.InexactDate.fromdict(
+            {'year': None, 'month': None, 'day': None})
+        assert not ied
+        assert len(ied) == 0
+
+    def test_format(self):
+        ied = dao.InexactDate(2010)
+        assert ied.format() == u'2010'
+        ied = dao.InexactDate(2010, 10)
+        assert ied.format() == u'Октябрь 2010'
+        ied = dao.InexactDate(2010, 10, 10)
+        assert ied.format() == u'10 Октября 2010'
 
 
 class SummitTestCase(unittest.TestCase):

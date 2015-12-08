@@ -55,7 +55,7 @@ class ClimbDateField(Field):
         elif self.data:
             return \
                 u'.'.join(
-                    [str(f) for f in reversed(self.data.tuple())
+                    [str(f) for f in reversed(self.data)
                         if f is not None])
         else:
             return u''

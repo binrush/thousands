@@ -12,20 +12,22 @@ class ModelException(Exception):
     pass
 
 
-class InexactDate(object):
-    def __init__(self, year=None, month=None, day=None):
-        if day is not None:
-            if month is None:
-                raise ValueError("Month cannot be None if day is not")
-            else:
-                # validate
-                datetime.date(year, month, day)
-        elif month is not None:
-            if month < 1 or month > 12:
-                raise ValueError("Month should be between 1 and 12")
+class InexactDate(tuple):
 
-        self.year, self.month, self.day = \
-            year, month, day
+    def __new__(cls, *args):
+
+        if len(args) > 3:
+            raise TypeError("InexactDate() takes at most 3 arguments, {} given"
+                            .format(len(args)))
+
+        if len(args) == 3:
+            datetime.date(args[0], args[1], args[2])
+        elif len(args) == 2:
+            datetime.date(args[0], args[1], 1)
+        elif len(args) == 1:
+            datetime.date(args[0], 1, 1)
+
+        return tuple.__new__(cls, args)
 
     @classmethod
     def fromdate(cls, date):
@@ -37,22 +39,17 @@ class InexactDate(object):
             return cls()
         try:
             if len(data) == 4:
-                year = int(data)
-                month = None
-                day = None
+                return cls(int(data))
             else:
-                fields = [int(f) for f in data.split('.')]
-                if len(fields) == 2:
-                    month, year = fields
-                    day = None
-                elif len(fields) == 3:
-                    d = datetime.date(*(list(reversed(fields))))
-                    year, month, day = d.year, d.month, d.day
-                else:
-                    raise ValueError("Wrong inexact date format: " + data)
-        except ValueError, e:
+                return cls(*(reversed([int(f) for f in data.split('.')])))
+
+        except (ValueError, TypeError) as e:
             raise ValueError("Wrong inexact date format: " + data, e)
-        return cls(year, month, day)
+
+    @classmethod
+    def fromdict(cls, d):
+        return InexactDate(*(
+            [v for v in (d['year'], d['month'], d['day']) if v is not None]))
 
     def format(self):
         months_genitive = [
@@ -64,20 +61,32 @@ class InexactDate(object):
             u'Июль', u'Август', u'Сентябрь', u'Октябрь', u'Ноябрь',
             u'Декабрь']
 
-        if self.day is not None:
-            return u'{} {} {}'.format(self.day,
-                                      months_genitive[self.month - 1],
-                                      self.year)
-        elif self.month is not None:
-            return u'{} {}'.format(months[self.month-1], self.year)
+        if len(self) == 3:
+            return u'{} {} {}'.format(self[2],
+                                      months_genitive[self[1] - 1],
+                                      self[0])
+        elif len(self) == 2:
+            return u'{} {}'.format(months[self[1]-1], self[0])
         else:
-            return str(self.year)
+            return unicode(self[0])
 
-    def tuple(self):
-        return (self.year, self.month, self.day)
+    def year(self):
+        if len(self) > 0:
+            return self[0]
+        else:
+            return None
 
-    def __cmp__(self, other):
-        return cmp(self.tuple(), other.tuple())
+    def month(self):
+        if len(self) > 1:
+            return self[1]
+        else:
+            return None
+
+    def day(self):
+        if len(self) > 2:
+            return self[2]
+        else:
+            return None
 
 
 class Dao(object):
@@ -367,12 +376,9 @@ class ClimbsDao(Dao):
                 u.id = row['id']
                 u.name = row['name']
                 u.preview_id = row['preview_id']
-                if row['year'] is not None:
-                    date = InexactDate(row['year'], row['month'], row['day'])
-                else:
-                    date = None
                 climbers.append(
-                    {'user': u, 'date': date, 'comment': row['comment']})
+                    {'user': u, 'date': InexactDate.fromdict(row),
+                     'comment': row['comment']})
         return climbers
 
     def climbed(self, user_id):
@@ -392,13 +398,9 @@ class ClimbsDao(Dao):
                 s.ridge = row['ridge']
                 s.id = row['id']
                 s.height = row['height']
-                if row['year'] is not None:
-                    date = InexactDate(row['year'], row['month'], row['day'])
-                else:
-                    date = None
                 climbed.append(
                     {'summit': s,
-                     'date': date,
+                     'date': InexactDate.fromdict(row),
                      'comment': row['comment']})
             return climbed
 
@@ -429,7 +431,8 @@ class ClimbsDao(Dao):
                 return None
             row = cur.fetchone()
             climb = Climb()
-            climb.date = InexactDate(row['year'], row['month'], row['day'])
+            climb.date = \
+                InexactDate.fromdict(row)
             climb.comment = row['comment']
         return climb
 
@@ -439,7 +442,8 @@ class ClimbsDao(Dao):
         with self.get_cursor() as cur:
             cur.execute(
                 sql,
-                (user_id, summit_id, comment, date.year, date.month, date.day))
+                (user_id, summit_id, comment,
+                 date.year(), date.month(), date.day()))
 
     def update(self, user_id, summit_id, date=None, comment=None):
         sql = "UPDATE climbs SET year=%s, month=%s, day=%s, comment=%s" + \
@@ -447,7 +451,8 @@ class ClimbsDao(Dao):
         with self.get_cursor() as cur:
             cur.execute(
                 sql,
-                (date.year, date.month, date.day, comment, user_id, summit_id))
+                (date.year(), date.month(), date.day(),
+                 comment, user_id, summit_id))
 
     def delete(self, user_id, summit_id):
         sql = "DELETE FROM climbs WHERE user_id=%s AND summit_id=%s"

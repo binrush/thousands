@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/binrush/thousands.svg?branch=master)](https://travis-ci.org/binrush/thousands)
+
 # South Ural summits project
 
 This is a source code for http://1000.southural.ru/

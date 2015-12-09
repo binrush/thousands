@@ -11,7 +11,7 @@ import yoyo.exceptions
 import logging
 
 
-PG_DSN = "dbname = su user = rush"
+PG_DSN = "dbname=thousands user=postgres"
 VK_CLIENT_ID = "4890287"
 VK_CLIENT_SECRET = "fake-vk-client-secret"
 SU_CLIENT_ID = "thousands"

@@ -1,5 +1,15 @@
+addons:
+    postgresql: "9.4"
+
+services:
+    - postgresql
+
 language: python
 python:
     - "2.7"
 install: "python setup.py develop"
+
+before_script:
+    - createdb -O postgres -E UTF-8 thousands
+
 script: "python setup.py test"

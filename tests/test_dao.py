@@ -1,10 +1,10 @@
 # coding: utf8
-import unittest
-from thousands import dao
+from thousands import dao, pool
 from mock import MagicMock
+import pytest
 
 
-class InexactDateTestCase(unittest.TestCase):
+class TestInexactDate():
     def test_init(self):
         ied = dao.InexactDate(2010, 10, 10)
         assert ied.year() == 2010
@@ -12,8 +12,10 @@ class InexactDateTestCase(unittest.TestCase):
         assert ied.day() == 10
 
     def test_init_wrong(self):
-        self.assertRaises(ValueError, dao.InexactDate, 2010, 13)
-        self.assertRaises(ValueError, dao.InexactDate, 2015, 2, 29)
+        with pytest.raises(ValueError):
+            dao.InexactDate(2010, 13)
+        with pytest.raises(ValueError):
+            dao.InexactDate(2015, 2, 29)
 
     def test_fromstring(self):
         ied = dao.InexactDate.fromstring('2010')
@@ -25,15 +27,14 @@ class InexactDateTestCase(unittest.TestCase):
         ied = dao.InexactDate.fromstring('')
         assert ied.year() is None and ied.month() is None and ied.day() is None
 
-        self.assertRaises(ValueError,
-                          dao.InexactDate.fromstring,
-                          'some wrong input')
-        self.assertRaises(ValueError,
-                          dao.InexactDate.fromstring,
-                          '10..2010')
-        self.assertRaises(ValueError,
-                          dao.InexactDate.fromstring,
-                          '29.2.2015')
+        with pytest.raises(ValueError):
+            dao.InexactDate.fromstring('some wrong input')
+
+        with pytest.raises(ValueError):
+            dao.InexactDate.fromstring('10..2010')
+
+        with pytest.raises(ValueError):
+            dao.InexactDate.fromstring('29.2.2015')
 
     def test_fromdict(self):
         ied = dao.InexactDate.fromdict(
@@ -59,37 +60,39 @@ class InexactDateTestCase(unittest.TestCase):
         assert ied.format() == u'10 Октября 2010'
 
 
-class SummitTestCase(unittest.TestCase):
+class TestSummit():
 
-    def setUp(self):
-        self.summit1 = dao.Summit()
-        self.summit1.id = 1
-        self.summit1.name = "Small Yamantau"
-        self.summit1.height = 1519
-        self.summit1.name_alt = "Kuyantau"
-        self.summit1.coordinates = (53.1111, 58.2222)
-        self.summit1.ridge = 'Yamantau'
-        self.summit1.rid = 1
-        self.summit1.color = 'aaaaaa'
-        self.summit1.climbed = False
-        self.summit1.main = False
+    @pytest.fixture
+    def summit1(self):
+        summit1 = dao.Summit()
+        summit1.id = 1
+        summit1.name = "Small Yamantau"
+        summit1.height = 1519
+        summit1.name_alt = "Kuyantau"
+        summit1.coordinates = (53.1111, 58.2222)
+        summit1.ridge = 'Yamantau'
+        summit1.rid = 1
+        summit1.color = 'aaaaaa'
+        summit1.climbed = False
+        summit1.main = False
+        return summit1
 
-        self.summit2 = dao.Summit()
-        self.summit2.name = ''
-        self.summit2.height = 1111
-        self.summit2.name_alt = ''
+    @pytest.fixture
+    def summit2(self):
+        summit2 = dao.Summit()
+        summit2.name = ''
+        summit2.height = 1111
+        summit2.name_alt = ''
+        return summit2
 
-    def tearDown(self):
-        pass
+    def test_format_name_when_name_exists(self, summit1):
+        assert summit1.format_name() == "Small Yamantau"
 
-    def test_format_name_when_name_exists(self):
-        assert self.summit1.format_name() == "Small Yamantau"
+    def test_format_name_when_only_height(self, summit2):
+        assert summit2.format_name() == "1111"
 
-    def test_format_name_when_only_height(self):
-        assert self.summit2.format_name() == "1111"
-
-    def test_togeojson(self):
-        assert self.summit1.to_geojson() ==  \
+    def test_togeojson(self, summit1):
+        assert summit1.to_geojson() ==  \
             {'geometry':
                 {'type': 'Point', 'coordinates': [58.2222, 53.1111]},
              'type': 'Feature',
@@ -103,12 +106,15 @@ class SummitTestCase(unittest.TestCase):
                  },
              'id': 1}
 
-    def test_format_coordinates(self):
-        assert self.summit1.format_coordinates() == \
+    def test_format_coordinates(self, summit1):
+        assert summit1.format_coordinates() == \
             u"53.1111 58.2222 (53\u00b06'39.96''N 58\u00b013'19.92''E)"
 
 
-class SummitDaoTestCase(unittest.TestCase):
+class TestSummitDao():
+
+    def summits_dao(self):
+        return dao.SummitsDao(pool)
 
     def test_row2summit(self):
         row = {'id': 1, 'height': 1640, 'ridge': "Yamantau",
@@ -136,5 +142,5 @@ class SummitDaoTestCase(unittest.TestCase):
         assert res[1].number == 1
         assert res[2].number == 2
 
-if __name__ == '__main__':
-    unittest.main()
+    def test_create(self, summits_dao):
+        pass

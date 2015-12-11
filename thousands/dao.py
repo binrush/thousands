@@ -67,8 +67,10 @@ class InexactDate(tuple):
                                       self[0])
         elif len(self) == 2:
             return u'{} {}'.format(months[self[1]-1], self[0])
-        else:
+        elif len(self) == 1:
             return unicode(self[0])
+        else:
+            return ()
 
     def year(self):
         if len(self) > 0:

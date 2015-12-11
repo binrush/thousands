@@ -1,5 +1,5 @@
 # coding: utf8
-from thousands import dao, pool
+from thousands import dao
 from mock import MagicMock
 import pytest
 
@@ -113,9 +113,6 @@ class TestSummit():
 
 class TestSummitDao():
 
-    def summits_dao(self):
-        return dao.SummitsDao(pool)
-
     def test_row2summit(self):
         row = {'id': 1, 'height': 1640, 'ridge': "Yamantau",
                "lat": 65.4321, "lng": 12.3456}
@@ -141,6 +138,3 @@ class TestSummitDao():
         assert res[0].number == 3
         assert res[1].number == 1
         assert res[2].number == 2
-
-    def test_create(self, summits_dao):
-        pass

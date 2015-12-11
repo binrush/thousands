@@ -1,5 +1,5 @@
 # coding: utf8
-from thousands import app
+from thousands import app, summits_dao
 from flask import (request, render_template, g, jsonify,
                    redirect, url_for, abort, send_file, flash)
 from flask.ext.login import (logout_user, current_user,
@@ -28,11 +28,11 @@ def index():
 
 
 @app.route('/table')
-def table():
+def table(summits_dao=summits_dao):
     sort = request.args.get('sort', 'ridge')
     return render_template(
         'table.html',
-        summits=g.summits_dao.get_all(
+        summits=summits_dao.get_all(
             current_user.get_id(),
             sort),
         active_page='table',
@@ -40,7 +40,7 @@ def table():
 
 
 @app.route('/summit/<int:summit_id>')
-def summit(summit_id):
+def summit(summit_id, summits_dao=summits_dao):
     s = g.summits_dao.get(summit_id)
     if s is None:
         return abort(404)

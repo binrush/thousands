@@ -49,7 +49,8 @@ class InexactDate(tuple):
     @classmethod
     def fromdict(cls, d):
         return InexactDate(*(
-            [v for v in (d['year'], d['month'], d['day']) if v is not None]))
+            [v for v in (d.get('year'), d.get('month'), d.get('day'))
+             if v is not None]))
 
     def format(self):
         months_genitive = [
@@ -70,7 +71,7 @@ class InexactDate(tuple):
         elif len(self) == 1:
             return unicode(self[0])
         else:
-            return ()
+            return u''
 
     def year(self):
         if len(self) > 0:

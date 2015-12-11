@@ -11,53 +11,42 @@ class TestInexactDate():
         assert ied.month() == 10
         assert ied.day() == 10
 
-    def test_init_wrong(self):
-        with pytest.raises(ValueError):
-            dao.InexactDate(2010, 13)
-        with pytest.raises(ValueError):
-            dao.InexactDate(2015, 2, 29)
+        wrong_inputs = [(2010, 13), (2015, 2, 29)]
+        for i in wrong_inputs:
+            with pytest.raises(ValueError):
+                dao.InexactDate(*i)
 
     def test_fromstring(self):
-        ied = dao.InexactDate.fromstring('2010')
-        assert ied.year() == 2010 and ied.month() is None and ied.day() is None
-        ied = dao.InexactDate.fromstring('2.2010')
-        assert ied.year() == 2010 and ied.month() == 2 and ied.day() is None
-        ied = dao.InexactDate.fromstring('12.06.2014')
-        assert ied.year() == 2014 and ied.month() == 6 and ied.day() == 12
-        ied = dao.InexactDate.fromstring('')
-        assert ied.year() is None and ied.month() is None and ied.day() is None
+        correct_cases = [('2010', (2010, )),
+                         ('2.2010', (2010, 2)),
+                         ('12.06.2014', (2014, 6, 12)),
+                         ('', ())]
+        for c in correct_cases:
+            ied = dao.InexactDate.fromstring(c[0])
+            assert ied == dao.InexactDate(*c[1])
 
-        with pytest.raises(ValueError):
-            dao.InexactDate.fromstring('some wrong input')
-
-        with pytest.raises(ValueError):
-            dao.InexactDate.fromstring('10..2010')
-
-        with pytest.raises(ValueError):
-            dao.InexactDate.fromstring('29.2.2015')
+        incorrect_cases = ['some wrong input', '10..2010', '29.2.2015']
+        for c in incorrect_cases:
+            with pytest.raises(ValueError):
+                dao.InexactDate.fromstring(c)
 
     def test_fromdict(self):
-        ied = dao.InexactDate.fromdict(
-            {'year': 2010, 'month': 10, 'day': 10})
-        assert ied.year() == 2010 and ied.month() == 10 and ied.day() == 10
-        ied = dao.InexactDate.fromdict(
-            {'year': 2010, 'month': 10, 'day': None})
-        assert ied.year() == 2010 and ied.month() == 10 and ied.day() is None
-        ied = dao.InexactDate.fromdict(
-            {'year': 2010, 'month': None, 'day': None})
-        assert ied.year() == 2010 and ied.month() is None and ied.day() is None
-        ied = dao.InexactDate.fromdict(
-            {'year': None, 'month': None, 'day': None})
-        assert not ied
-        assert len(ied) == 0
+        cases = [({'year': 2010, 'month': 10, 'day': 10}, (2010, 10, 10)),
+                 ({'year': 2010, 'month': 10, 'day': None}, (2010, 10)),
+                 ({'year': 2010}, (2010, )),
+                 ({}, ())]
+        for c in cases:
+            ied = dao.InexactDate.fromdict(c[0])
+            assert ied == dao.InexactDate(*c[1])
 
     def test_format(self):
-        ied = dao.InexactDate(2010)
-        assert ied.format() == u'2010'
-        ied = dao.InexactDate(2010, 10)
-        assert ied.format() == u'Октябрь 2010'
-        ied = dao.InexactDate(2010, 10, 10)
-        assert ied.format() == u'10 Октября 2010'
+        cases = [((2010, ), u'2010'),
+                 ((2010, 10), u'Октябрь 2010'),
+                 ((2010, 10, 10), u'10 Октября 2010'),
+                 ((), u'')]
+        for c in cases:
+            ied = dao.InexactDate(*c[0])
+            assert ied.format() == c[1]
 
 
 class TestSummit():

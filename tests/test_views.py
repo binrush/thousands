@@ -15,6 +15,7 @@ from thousands import views
 @pytest.fixture
 def client():
     thousands.app.config['TESTING'] = True
+    thousands.app.config['SECRET_KEY'] = 'test-secret-key'
     return thousands.app.test_client
 
 

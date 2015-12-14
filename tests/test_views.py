@@ -18,6 +18,14 @@ def client():
     thousands.app.config['SECRET_KEY'] = 'test-secret-key'
     return thousands.app.test_client
 
+@pytest.fixture
+def mock_users_dao():
+    ud = mock.MagicMock()
+    u = mock.MagicMock()
+    u.get_id.return_value=u'5'
+    ud.get_by_id.return_value = u
+    return ud
+
 
 def test_move_to_front():
     l = [1, 6, 7, 2, 4]
@@ -32,8 +40,10 @@ def test_index(client):
     assert "document.body.onload = createMainMap;" in rv.data
 
 
+@mock.patch('thousands.users_dao', new=mock_users_dao())
 @mock.patch('thousands.summits_dao')
-def test_table(mock_summits_dao, client):
+def test_table(mock_summits_dao, mock_users_dao, client):
+    #mock_users_dao.get_by_id.return_value = mock_user    
     with client() as c:
         c.get('/table')
         mock_summits_dao.get_all.assert_called_with(None, 'ridge')

@@ -42,9 +42,7 @@
     <ul class="media-list">
     {% for c in climbed %}
     <li class="media">
-        {% if user == current_user %}
-            <a class="anchor" name="{{c.summit.id}}"></a>
-        {% endif %}
+        <a class="anchor" name="{{c.summit.id}}"></a>
         <div class="media-body">
         <h4 class="media-heading">
             <a href="{{ url_for('summit', summit_id=c.summit.id)}}">{{ c.summit.format_name() }}</a>

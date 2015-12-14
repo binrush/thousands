@@ -1,5 +1,5 @@
 # coding: utf8
-from thousands import app, summits_dao
+from thousands import app
 from flask import (request, render_template, g, jsonify,
                    redirect, url_for, abort, send_file, flash)
 from flask.ext.login import (logout_user, current_user,
@@ -7,6 +7,19 @@ from flask.ext.login import (logout_user, current_user,
 import dao
 import forms
 import io
+
+
+def move_to_front(l, fn):
+    """
+        Move list value to the beginning of list
+    """
+    i = 0
+    for e in l:
+        if fn(e):
+            l.insert(0, l.pop(i))
+            break
+        i += 1
+    return l
 
 
 @app.route('/about')
@@ -28,11 +41,11 @@ def index():
 
 
 @app.route('/table')
-def table(summits_dao=summits_dao):
+def table():
     sort = request.args.get('sort', 'ridge')
     return render_template(
         'table.html',
-        summits=summits_dao.get_all(
+        summits=g.summits_dao.get_all(
             current_user.get_id(),
             sort),
         active_page='table',
@@ -40,17 +53,12 @@ def table(summits_dao=summits_dao):
 
 
 @app.route('/summit/<int:summit_id>')
-def summit(summit_id, summits_dao=summits_dao):
+def summit(summit_id):
     s = g.summits_dao.get(summit_id)
     if s is None:
         return abort(404)
-    climbers = g.climbs_dao.climbers(summit_id)
-    i = 0
-    for c in climbers:
-        if c['user'] == current_user:
-            this = climbers.pop(i)
-            climbers = [this] + climbers
-        i += 1
+    climbers = move_to_front(g.climbs_dao.climbers(summit_id),
+                             lambda x: x['user'] == current_user)
     return render_template(
         'summit.html',
         summit=s,
@@ -133,7 +141,8 @@ def summit_climb_edit(summit_id):
 @login_required
 def profile_climb_edit(summit_id):
     return climb_edit(summit_id,
-                      url_for('user', user_id=current_user.get_id(), _anchor=summit_id))
+                      url_for('user', user_id=current_user.get_id(),
+                              _anchor=summit_id))
 
 
 def climb_edit(summit_id, redirect_url):

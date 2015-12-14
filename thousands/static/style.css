@@ -52,3 +52,10 @@ th.clickable-cell a {
 .login-comment {
     padding-top: 10px;
 }
+
+a.anchor {
+    display: block;
+    position: relative;
+    top: -60px;
+    visibility: hidden;
+}

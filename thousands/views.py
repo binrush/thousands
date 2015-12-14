@@ -133,7 +133,7 @@ def summit_climb_edit(summit_id):
 @login_required
 def profile_climb_edit(summit_id):
     return climb_edit(summit_id,
-                      url_for('user', user_id=current_user.get_id()))
+                      url_for('user', user_id=current_user.get_id(), _anchor=summit_id))
 
 
 def climb_edit(summit_id, redirect_url):

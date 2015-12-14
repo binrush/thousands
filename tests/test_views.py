@@ -43,7 +43,6 @@ def test_index(client):
 @mock.patch('thousands.users_dao', new=mock_users_dao())
 @mock.patch('thousands.summits_dao')
 def test_table(mock_summits_dao, mock_users_dao, client):
-    #mock_users_dao.get_by_id.return_value = mock_user    
     with client() as c:
         c.get('/table')
         mock_summits_dao.get_all.assert_called_with(None, 'ridge')
@@ -71,10 +70,16 @@ def test_summit(mock_summits_dao, mock_climbs_dao, client):
         mock_climbs_dao.climbers.assert_called_with(1)
 
 
+@mock.patch('thousands.climbs_dao')
+@mock.patch('thousands.users_dao', new=mock_users_dao())
 @mock.patch('thousands.summits_dao')
-def test_climb_new(mock_summits_dao, client):
+def test_climb_new(mock_summits_dao, mock_users_dao, mock_climbs_dao, client):
     with client() as c:
         resp = c.get('/climb/new/2')
-        mock_summits_dao.asssert_called_with('abc')
         assert resp.status == '401 UNAUTHORIZED'
-        # c.post('/climb/new/1', data=dict())
+        with c.session_transaction() as sess:
+            sess['user_id'] = u'5'
+        resp = c.get('/climb/new/2')
+        mock_summits_dao.get.assert_called_with(2)
+
+        resp = c.post('/climb/new/1', data=dict(summit_id=3, date='10.2010', comment="Test"))

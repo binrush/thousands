@@ -124,6 +124,4 @@ class TestSummitDao():
         s3.height = 1582
         sl = [s1, s2, s3]
         res = sd._SummitsDao__rate_by_field(sl, 'height')
-        assert res[0].number == 3
-        assert res[1].number == 1
-        assert res[2].number == 2
+        assert [v.number for v in res] == [3, 1, 2]

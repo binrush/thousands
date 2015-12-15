@@ -18,13 +18,19 @@ def client():
     thousands.app.config['SECRET_KEY'] = 'test-secret-key'
     return thousands.app.test_client
 
+
 @pytest.fixture
 def mock_users_dao():
     ud = mock.MagicMock()
     u = mock.MagicMock()
-    u.get_id.return_value=u'5'
+    u.get_id.return_value = u'5'
     ud.get_by_id.return_value = u
     return ud
+
+
+@pytest.fixture
+def mock_climbs_dao():
+    return mock.MagicMock()
 
 
 def test_move_to_front():
@@ -81,5 +87,9 @@ def test_climb_new(mock_summits_dao, mock_users_dao, mock_climbs_dao, client):
             sess['user_id'] = u'5'
         resp = c.get('/climb/new/2')
         mock_summits_dao.get.assert_called_with(2)
+        # mock_users_dao.get_by_id.assert_called_with(u'5')
 
-        resp = c.post('/climb/new/1', data=dict(summit_id=3, date='10.2010', comment="Test"))
+        # resp = c.post('/climb/new/1',
+        #              data=dict(summit_id=3, date='10.2010', comment="Test"))
+        # mock_climbs_dao.create.assert_called_with(5, 2, '10.2010', 'Test')
+        # print resp.headers['Location']

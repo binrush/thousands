@@ -5,7 +5,7 @@ import urllib
 import logging
 
 from flask.ext.login import login_user
-from flask import (request, g, redirect, make_response,
+from flask import (request, g, redirect,
                    url_for, abort, render_template, flash)
 from oauth2client.client import FlowExchangeError, OAuth2WebServerFlow
 
@@ -14,6 +14,10 @@ import dao
 from thousands import app
 
 VK_API_VERSION = "5.37"
+
+
+class AuthError(Exception):
+    pass
 
 
 def vk_flow(state):
@@ -74,14 +78,13 @@ def login_as(user_id):
 
 
 def oauth_login(req, flow, get_user):
-    if 'error' in request.args.keys():
-        return make_response(req.args.get('error_description'))
+    if 'error' in req.args.keys():
+        raise AuthError(req.args.get('error_description'))
 
     try:
         credentials = flow.step2_exchange(req.args.get('code'))
     except FlowExchangeError, e:
-        logging.exception(e)
-        return make_response('Error getting access token')
+        raise AuthError('Error getting access token', e)
 
     user, created = get_user(credentials)
     if user is not None:

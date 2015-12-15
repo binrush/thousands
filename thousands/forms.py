@@ -91,13 +91,9 @@ class SummitForm(Form):
 
 
 class ClimbForm(Form):
+    MAX_COMMENT_SIZE = 1000
+
     summit_id = HiddenField('summit_id')
     date = ClimbDateField(u'Дата')
-    comment = TextAreaField(u'Комментарий')
-
-
-class ProfileForm(Form):
-    name = TextField(u'Имя', validators=[
-        validators.DataRequired(message=u'Поле обязательно для заполнения')])
-    location = TextField(u'Город', filters=[lambda x: x or None])
-    about = TextAreaField(u'О себе', filters=[lambda x: x or None])
+    comment = TextAreaField(u'Комментарий',
+                            [validators.Length(max=MAX_COMMENT_SIZE)])

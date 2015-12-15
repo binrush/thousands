@@ -42,8 +42,8 @@
   <div class="form-group">
     <label for="height" class="col-md-3 control-label">Комментарий</label>
     <div class="col-md-6">
-    {{ form.comment(class_='form-control', **{'aria-describedby': 'helpBlockComment'}) }}
-    <span id="helpBlockComment" class="help-block">Необязательное поле</span>
+    {{ form.comment(class_='form-control', rows=10, maxlength=form.MAX_COMMENT_SIZE, **{'aria-describedby': 'helpBlockComment'}) }}
+    <span id="helpBlockComment" class="help-block">Необязательное поле. Осталось <span id='charsRemail'></span> символов</span>
     </div>
   </div>
    <div class="form-group">
@@ -60,6 +60,16 @@ $('.date').datepicker({
     endDate: '0d',
     language: 'ru',
 });
+var ta = document.getElementById('comment'); 
+var remainHint = document.getElementById('charsRemail')
+var maxlen = parseInt(ta.getAttribute("maxlength"));
+
+remainHint.innerHTML = maxlen - ta.value.length;
+
+refresh_func = function() {
+    remainHint.innerHTML = maxlen - this.value.length;
+}
+ta.oninput = refresh_func;
 </script>
 {% endblock %}
 

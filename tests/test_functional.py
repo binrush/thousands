@@ -6,6 +6,7 @@ import thousands
 
 @pytest.fixture(scope="module", autouse=True)
 def enable_testing():
+    thousands.app.config['SECRET_KEY'] = 'test-secret-key'
     thousands.app.config['TESTING'] = True
 
 

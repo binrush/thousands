@@ -68,7 +68,7 @@ def summit(summit_id):
 
 @app.route('/summit/new', methods=['GET', 'POST'])
 def summit_new():
-    if current_user.is_anonymous() or not current_user.admin:
+    if current_user.is_anonymous or not current_user.admin:
         abort(401)
     f = forms.SummitForm(request.form)
     f.rid.choices = [(r['id'], r['name']) for r in g.summits_dao.get_ridges()]

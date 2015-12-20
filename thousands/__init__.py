@@ -49,7 +49,7 @@ if 'ADMIN_MAIL' in app.config:
                                (app.config['SMTP_USER'], app.config['SMTP_PASSWORD']),
                                ())
     mail_handler.setLevel(logging.ERROR)
-    handlers += mail_handler
+    handlers.append(mail_handler)
 
 for logger in loggers:
     for handler in handlers:

@@ -27,21 +27,33 @@ if 'OPENSHIFT_DATA_DIR' in os.environ:
     app.config.from_pyfile(os.path.join(os.environ['OPENSHIFT_DATA_DIR'],
                            'thousands.conf'))
 
-if app.config['DEBUG']:
-    logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
+loggers = [ app.logger, logging.getLogger('yoyo') ]
+
+if 'LOGDIR' in app.config:
+    main_handler = logging.handlers.RotatingFileHandler(
+        os.path.join(app.config['LOGDIR'], 'thousands.log'),
+        maxBytes=1024*1024*1024,
+        backupCount=10,
+        encoding='utf-8')
 else:
-    logging.basicConfig(
-        filename=os.path.join(app.config['LOGDIR'], 'thousands.log'),
-        level=logging.INFO)
-    if app.config['ADMIN_MAIL']:
-        mail_handler = SMTPHandler(app.config['SMTP_HOST'],
-                                   app.config['SMTP_FROMADDR'],
-                                   app.config['ADMIN_MAIL'],
-                                   'Thousands app failed',
-                                   (app.config['SMTP_USER'], app.config['SMTP_PASSWORD']),
-                                   ())
-        mail_handler.setLevel(logging.ERROR)
-        app.logger.addHandler(mail_handler)
+    main_handler = logging.StreamHandler()
+
+main_handler.setLevel(logging.DEBUG)
+handlers = [main_handler]
+
+if 'ADMIN_MAIL' in app.config:
+    mail_handler = SMTPHandler(app.config['SMTP_HOST'],
+                               app.config['SMTP_FROMADDR'],
+                               app.config['ADMIN_MAIL'],
+                               'Thousands app failed',
+                               (app.config['SMTP_USER'], app.config['SMTP_PASSWORD']),
+                               ())
+    mail_handler.setLevel(logging.ERROR)
+    handlers += mail_handler
+
+for logger in loggers:
+    for handler in handlers:
+        logger.addHandler(handler)
     
 
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)

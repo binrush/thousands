@@ -4,7 +4,7 @@
 {% block content %}
 {% with messages = get_flashed_messages() %}
   {% if messages %}
-<div class="alert alert-success" role="alert">
+<div class="alert alert-success flash-message" role="alert">
     {% for message in messages %}
       {{ message }}
     {% endfor %}

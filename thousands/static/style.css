@@ -59,3 +59,7 @@ a.anchor {
     top: -60px;
     visibility: hidden;
 }
+
+.flash-message {
+    margin-top: 20px;
+}

@@ -159,6 +159,7 @@ def climb_edit(summit_id, redirect_url):
                 f.summit_id.data,
                 f.date.data,
                 f.comment.data)
+            app.logger.info("Climb edited uid=%s, sid=%s", current_user.id, summit_id)
             flash(u'Ваше восхождение отредактировано')
             return redirect(redirect_url)
     else:
@@ -184,6 +185,7 @@ def profile_climb_delete(summit_id):
 
 def climb_delete(summit_id, redirect_url):
     g.climbs_dao.delete(current_user.id, summit_id)
+    app.logger.info("Climb deleted uid=%s, sid=%s", current_user.id, summit_id)
     flash(u'Ваше восхождение удалено')
     return redirect(redirect_url)
 

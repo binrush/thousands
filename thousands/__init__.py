@@ -27,34 +27,39 @@ if 'OPENSHIFT_DATA_DIR' in os.environ:
     app.config.from_pyfile(os.path.join(os.environ['OPENSHIFT_DATA_DIR'],
                            'thousands.conf'))
 
-loggers = [ app.logger, logging.getLogger('yoyo') ]
+if not app.debug:
+    loggers = [ app.logger, logging.getLogger('yoyo') ]
 
-if 'LOGDIR' in app.config:
-    main_handler = logging.handlers.RotatingFileHandler(
-        os.path.join(app.config['LOGDIR'], 'thousands.log'),
-        maxBytes=1024*1024*1024,
-        backupCount=10,
-        encoding='utf-8')
-else:
-    main_handler = logging.StreamHandler()
+    if 'LOGDIR' in app.config:
+        main_handler = logging.handlers.RotatingFileHandler(
+            os.path.join(app.config['LOGDIR'], 'thousands.log'),
+            maxBytes=1024*1024*1024,
+            backupCount=10,
+            encoding='utf-8')
+    else:
+        main_handler = logging.StreamHandler()
 
-main_handler.setLevel(logging.DEBUG)
-handlers = [main_handler]
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    main_handler.setFormatter(formatter)
 
-if 'ADMIN_MAIL' in app.config:
-    mail_handler = SMTPHandler(app.config['SMTP_HOST'],
-                               app.config['SMTP_FROMADDR'],
-                               app.config['ADMIN_MAIL'],
-                               'Thousands app failed',
-                               (app.config['SMTP_USER'], app.config['SMTP_PASSWORD']),
-                               ())
-    mail_handler.setLevel(logging.ERROR)
-    handlers.append(mail_handler)
-
-for logger in loggers:
-    for handler in handlers:
-        logger.addHandler(handler)
+    map(lambda x: x.addHandler(main_handler), loggers)
+    app.logger.setLevel(logging.INFO)
     
+    if 'ADMIN_MAIL' in app.config:
+        mail_handler = SMTPHandler(
+            app.config['SMTP_HOST'],
+            app.config['SMTP_FROMADDR'],
+            app.config['ADMIN_MAIL'],
+            'Thousands app failed',
+            (app.config['SMTP_USER'], app.config['SMTP_PASSWORD']),
+            ())
+        mail_handler.setLevel(logging.ERROR)
+        mail_handler.setFormatter(formatter)
+        map(lambda x: x.addHandler(mail_handler), loggers)
+
+else:
+    logging.getLogger('yoyo').addHandler(logging.StreamHandler())
+
 
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
 pool = psycopg2.pool.SimpleConnectionPool(1, 10, app.config['PG_DSN'])

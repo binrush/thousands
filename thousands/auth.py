@@ -90,6 +90,10 @@ def oauth_login(req, flow, get_user):
     if user is not None:
         login_user(user)
         if created:
+            app.logger.info("New user registration uid=%s, src=%s, name=%s",
+                            user.get_id(),
+                            user.src,
+                            user.name)
             flash(u'Регистрация завершена')
             return redirect(url_for('user', user_id=user.get_id()))
         else:

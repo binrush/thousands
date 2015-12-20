@@ -1,5 +1,6 @@
 # coding: utf-8
 import os
+import sys
 from flask import Flask, g
 import psycopg2
 import psycopg2.pool
@@ -9,6 +10,7 @@ from flask.ext.login import LoginManager
 from yoyo import read_migrations
 import yoyo.exceptions
 import logging
+from logging.handlers import SMTPHandler
 
 
 PG_DSN = "dbname=thousands user=postgres"
@@ -25,13 +27,27 @@ if 'OPENSHIFT_DATA_DIR' in os.environ:
     app.config.from_pyfile(os.path.join(os.environ['OPENSHIFT_DATA_DIR'],
                            'thousands.conf'))
 
+if app.config['DEBUG']:
+    logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
+else:
+    logging.basicConfig(
+        filename=os.path.join(app.config['LOGDIR'], 'thousands.log'),
+        level=logging.INFO)
+    if app.config['ADMIN_MAIL']:
+        mail_handler = SMTPHandler(app.config['SMTP_HOST'],
+                                   app.config['SMTP_FROMADDR'],
+                                   app.config['ADMIN_MAIL'],
+                                   'Thousands app failed',
+                                   (app.config['SMTP_USER'], app.config['SMTP_PASSWORD']),
+                                   ())
+        mail_handler.setLevel(logging.ERROR)
+        app.logger.addHandler(mail_handler)
+    
 
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
 pool = psycopg2.pool.SimpleConnectionPool(1, 10, app.config['PG_DSN'])
 
 migrations_dir = os.path.join(os.path.dirname(__file__), 'migrations')
-console = logging.StreamHandler()
-yoyo.migrations.logger.addHandler(console)
 conn = pool.getconn()
 yoyo.exceptions.register(psycopg2.DatabaseError)
 migrations = read_migrations(conn, psycopg2.paramstyle, migrations_dir)

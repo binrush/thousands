@@ -22,6 +22,11 @@ def move_to_front(l, fn):
     return l
 
 
+@app.route('/500')
+def error():
+    raise Exception("Exception raised")
+
+
 @app.route('/about')
 def about():
     return render_template('about.html', active_page='about')

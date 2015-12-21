@@ -25,12 +25,12 @@ def populate_database(request):
                     description, interpretation, lng, lat) VALUES \
                     (1, 'Бабай', 1015, 'Невысокая скала', \
                     'Дедушка, старейшина', 53.1, 58.1), \
-                    (1, NULL, 1007, NULL, NULL, 53.2, 58.2), \
+                    (1, 'Noname', 1007, NULL, NULL, 53.2, 58.2), \
                     (1, 'Кушай', 1048, 'Три скальных гребня', \
                     'Двойной', 53.3, 58.3)")
         cur.execute(u"INSERT INTO climbs (user_id, summit_id, comment, \
                     year, month, day)\
-                    select 1, id, '', NULL, NULL, NULL \
+                    select 1, id, 'Fun', 2011, 11, NULL\
                     FROM summits WHERE name='Кушай';")
         conn.commit()
     finally:
@@ -156,3 +156,84 @@ def test_summit_not_climbed(client_user):
         resp.data
     assert '<dd>1015</dd>' in resp.data
     assert 'Бабай' in resp.data
+
+
+def test_summit_climbed(client_user):
+    summit_id = get_summit_id(client_user, u'Кушай')
+    resp = client_user.get('/summit/' + str(summit_id))
+    assert resp.status == '200 OK'
+    assert 'href="/summit/{}/climb/edit"'.format(summit_id) in resp.data
+    assert not ('Взошли на эту вершину?' in resp.data)
+
+
+def test_summit_anonymous(client_anonymous):
+    summit_id = get_summit_id(client_anonymous, u'Бабай')
+    resp = client_anonymous.get('/summit/' + str(summit_id))
+    assert resp.status == '200 OK'
+    assert 'href="/login?r=%2Fclimb%2Fnew%2F{}"'.format(summit_id) in resp.data
+    assert 'Взошли на эту вершину?' in resp.data
+
+
+def test_climb_form_anonymous(client_anonymous):
+    summit_id = get_summit_id(client_anonymous, u'Бабай')
+    resp = client_anonymous.get('/climb/new/' + str(summit_id))
+    assert resp.status == '401 UNAUTHORIZED'
+    resp = client_anonymous.get('/climb/edit/' + str(summit_id))
+    assert resp.status == '401 UNAUTHORIZED'
+    resp = client_anonymous.get('/summit/{}/climb/edit'.format(summit_id))
+    assert resp.status == '401 UNAUTHORIZED'
+
+
+def test_climb_form_user(client_user):
+    summit_id = get_summit_id(client_user, u'Кушай')
+    resp = client_user.get('/climb/new/' + str(summit_id))
+    assert resp.status == '200 OK'
+    assert '<input id="summit_id" name="summit_id" ' + \
+            'type="hidden" value="{}">'.format(summit_id) in resp.data
+
+
+def test_climb_add(client_user):
+    summit_id = get_summit_id(client_user, u'Бабай')
+    resp = client_user.post('/climb/new/{}'.format(summit_id), data={
+        'summit_id': str(summit_id),
+        'date': '10.10.2010',
+        'comment': 'nice'})
+    assert resp.status == '302 FOUND'
+    assert '/summit/' + str(summit_id) in resp.headers['Location']
+    resp = client_user.get(resp.headers['Location'])
+    assert resp.status == '200 OK'
+    assert 'Бабай' in resp.data
+    assert '<a href="/summit/{}/climb/edit">Редактировать'.format(summit_id) \
+        in resp.data
+
+def test_climb_edit_form(client_user):
+    summit_id = get_summit_id(client_user, u'Кушай')
+    resp = client_user.get('/climb/edit/{}'.format(summit_id))
+    assert resp.status == '200 OK'
+    assert 'value="11.2011"' in resp.data
+    assert '>Fun</textarea>' in resp.data
+
+def test_climb_edit_post(client_user):
+    summit_id = get_summit_id(client_user, u'Кушай')
+    resp = client_user.post('/climb/edit/{}'.format(summit_id), data={
+        'summit_id': str(summit_id),
+        'date': '10.10.2010',
+        'comment': 'Nice'})
+    assert resp.status == '302 FOUND'
+    resp = client_user.get('/climb/edit/{}'.format(summit_id))
+    assert resp.status == '200 OK'
+    assert 'value="10.10.2010"' in resp.data
+    assert '>Nice</textarea>' in resp.data
+
+def test_climb_delete(client_user):
+    summit_id = get_summit_id(client_user, 'Noname');
+    resp = client_user.post('/climb/new/{}'.format(summit_id), data={
+        'summit_id': str(summit_id),
+        'date': '',
+        'comment': ''})
+    assert resp.status == '302 FOUND'
+    resp = client_user.get('/climb/delete/{}'.format(summit_id))
+    assert resp.status == '302 FOUND'
+    resp = client_user.get(resp.headers['Location'])
+    assert not ('Noname' in resp.data)
+

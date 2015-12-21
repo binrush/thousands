@@ -1,4 +1,5 @@
 # coding: utf8
+import urlparse
 import json
 import httplib2
 import urllib
@@ -20,12 +21,12 @@ class AuthError(Exception):
     pass
 
 
-def vk_flow(state):
+def vk_flow(state, redirect_root):
     return OAuth2WebServerFlow(
         app.config['VK_CLIENT_ID'],
         client_secret=app.config['VK_CLIENT_SECRET'],
         scope='',
-        redirect_uri='http://1000.southural.ru/login/vk',
+        redirect_uri=urlparse.urljoin(redirect_root, '/login/vk'),
         auth_uri='https://oauth.vk.com/authorize',
         token_uri='https://oauth.vk.com/access_token',
         revoke_uri=None,
@@ -34,12 +35,12 @@ def vk_flow(state):
         v=VK_API_VERSION)
 
 
-def su_flow(state):
+def su_flow(state, redirect_root):
     return OAuth2WebServerFlow(
         app.config['SU_CLIENT_ID'],
         client_secret=app.config['SU_CLIENT_SECRET'],
         scope='openid profile',
-        redirect_uri='http://1000.southural.ru/login/su',
+        redirect_uri=urlparse.urljoin(redirect_root, '/login/su'),
         auth_uri='http://www.southural.ru/oauth2/authorize',
         token_uri='http://www.southural.ru/oauth2/token',
         revoke_uri=None,
@@ -49,10 +50,10 @@ def su_flow(state):
 
 @app.route('/login')
 def login_form():
-    redirect = request.args.get('r')
+    state = request.args.get('r')
     return render_template('/login.html',
-                           vk_flow=vk_flow(redirect),
-                           su_flow=su_flow(redirect))
+                           vk_flow=vk_flow(state, request.url_root),
+                           su_flow=su_flow(state, request.url_root))
 
 
 @app.route('/login/su')

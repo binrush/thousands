@@ -149,7 +149,6 @@ class SummitsDao(Dao):
 
     def __row2summit(self, row):
             s = Summit()
-            print 'number' in row
             for k in ['id', 'name', 'name_alt', 'height', 'number',
                       'description', 'interpretation',
                       'ridge', 'rid', 'color', 'climbed', 'main', 'climbers']:

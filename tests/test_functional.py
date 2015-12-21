@@ -114,7 +114,7 @@ def test_summit_new_post_add_summit(client_admin):
     assert resp.status == "302 FOUND"
     resp = client_admin.get(resp.headers['Location'])
     assert resp.status == "200 OK"
-    assert '<dd>1010</dd>' in resp.data
+    assert '<dd>1010' in resp.data
     assert 'Караташ' in resp.data
 
 
@@ -154,7 +154,7 @@ def test_summit_not_climbed(client_user):
     assert '<a class="btn btn-primary" ' + \
         'href="/climb/new/{}">Взошли на эту вершину?</a>'.format(summit_id) in \
         resp.data
-    assert '<dd>1015</dd>' in resp.data
+    assert '<dd>1015' in resp.data
     assert 'Бабай' in resp.data
 
 

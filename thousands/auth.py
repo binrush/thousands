@@ -58,12 +58,16 @@ def login_form():
 
 @app.route('/login/su')
 def su_login():
-    return oauth_login(request, su_flow('state'), su_get_user)
+    return oauth_login(request,
+                       su_flow('state', request.url_root),
+                       su_get_user)
 
 
 @app.route('/login/vk')
 def vk_login():
-    return oauth_login(request, vk_flow('state'), vk_get_user)
+    return oauth_login(request,
+                       vk_flow('state', request.url_root),
+                       vk_get_user)
 
 
 @app.route('/login/as/<int:user_id>')

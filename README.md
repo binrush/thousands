@@ -17,6 +17,8 @@ This is a source code for http://1000.southural.ru/
 ## Sample configuration file
 
 ```python
+# Debug mode (should be disabled on production)
+DEBUG=True
 # Sessions secret key
 SECRET_KEY="somesecretkey"
 # Client secret for vk auth

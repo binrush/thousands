@@ -1,6 +1,5 @@
 # coding: utf-8
 import os
-import sys
 from flask import Flask, g
 import psycopg2
 import psycopg2.pool
@@ -29,7 +28,7 @@ if 'OPENSHIFT_DATA_DIR' in os.environ:
                            'thousands.conf'))
 
 if not app.debug:
-    loggers = [ app.logger, logging.getLogger('yoyo') ]
+    loggers = [app.logger, logging.getLogger('yoyo')]
 
     if 'LOGDIR' in app.config:
         main_handler = logging.handlers.RotatingFileHandler(
@@ -40,12 +39,13 @@ if not app.debug:
     else:
         main_handler = logging.StreamHandler()
 
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    formatter = logging.Formatter(
+        '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     main_handler.setFormatter(formatter)
 
     map(lambda x: x.addHandler(main_handler), loggers)
     app.logger.setLevel(logging.INFO)
-    
+
     if 'ADMIN_MAIL' in app.config:
         mail_handler = SMTPHandler(
             app.config['SMTP_HOST'],
@@ -81,6 +81,7 @@ climbs_dao = dao.ClimbsDao(pool)
 login_manager = LoginManager()
 login_manager.init_app(app)
 
+
 def shorten_url(attrs, new=False):
     """Shorten overly-long URLs in the text."""
     maxlen = 50
@@ -92,9 +93,11 @@ def shorten_url(attrs, new=False):
         attrs['_text'] = text[0:maxlen-3] + '...'
     return attrs
 
+
 @app.template_filter('linkify')
 def linkify(s):
     return bleach.linkify(s, [shorten_url])
+
 
 @login_manager.user_loader
 def load_user(userid):

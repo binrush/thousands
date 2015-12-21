@@ -149,7 +149,8 @@ class SummitsDao(Dao):
 
     def __row2summit(self, row):
             s = Summit()
-            for k in ['id', 'name', 'name_alt', 'height',
+            print 'number' in row
+            for k in ['id', 'name', 'name_alt', 'height', 'number',
                       'description', 'interpretation',
                       'ridge', 'rid', 'color', 'climbed', 'main', 'climbers']:
                 if k in row:
@@ -214,7 +215,11 @@ class SummitsDao(Dao):
             cur.execute(
                 """SELECT s.id, s.name, name_alt, height,
                           interpretation, s.description, rid,
-                          r.name AS ridge, lng, lat
+                          r.name AS ridge, lng, lat,
+                          (SELECT COUNT(*) FROM summits
+                              WHERE height >= s.height ) AS number,
+                          (SELECT MAX(height)=s.height FROM summits
+                              WHERE rid=s.rid) AS main
                    FROM summits s LEFT JOIN ridges r
                    ON s.rid = r.id
                    WHERE s.id=%s""", (sid, ))

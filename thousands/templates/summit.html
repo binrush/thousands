@@ -26,12 +26,17 @@
 {% endif %}
 <dl class="dl-horizontal">
     <dt>Высота</dt>
-    <dd>{{ summit.height }}</dd>
+    <dd>{{ summit.height }} <small class="text-muted" title="{{ summit.number }}-я по высоте на Южном Урале">{{ summit.number }}</small></dd>
 </dl>
 <dl class="dl-horizontal">
     <dt>Хребет</dt>
     <dd>{{ summit.ridge }}</dd>
 </dl>
+{% if summit.main %}
+<dl class="dl-horizontal">
+    <dd>Главная (высочайшая) вершина хребта</dd>
+</dl>
+{% endif %}
 <dl class="dl-horizontal">
     <dt>Координаты</dt>
     <dd><a href="{{ url_for('index', sid=summit.id) }}#12/{{ summit.coordinates[0] }}/{{ summit.coordinates[1] }}">{{ summit.format_coordinates() }}</a></dd>

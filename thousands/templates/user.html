@@ -49,7 +49,9 @@
             <small>хребет {{ c.summit.ridge }}</small>
         </h4>
         {% if c.date %}<div class="text-muted"><i>{{ c['date'].format() }}</i></div>{% endif %}
-        {{ c['comment'] }}
+        {% for line in c['comment'].splitlines() %}
+            {{ line | forceescape | linkify | safe }}<br>
+        {% endfor %}
         {% if user == current_user %}
             <div>
             <small><a href="{{ url_for('profile_climb_edit', summit_id=c.summit.id) }}">Редактировать</a></small>

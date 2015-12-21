@@ -85,7 +85,11 @@
             <a href="{{ url_for('user', user_id=c['user'].id) }}">{{ c['user'].name }}</a> 
         </h4>
         {% if c['date'] %}<div class="text-muted"><i>{{ c['date'].format() }}</i></div>{% endif %}
-        {% if c['comment'] %}{{ c['comment'] }}{% endif %}
+        {% if c['comment'] %}
+            {% for line in c['comment'].splitlines() %}
+            {{ line | forceescape | linkify | safe }}<br>
+            {% endfor %}
+        {% endif %}
         {% if c['user'] == current_user %}
         <div>
         <small><a href="{{ url_for('summit_climb_edit', summit_id=summit.id) }}">Редактировать</a></small>

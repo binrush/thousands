@@ -11,6 +11,7 @@ setup(name='thousands',
           'flask-login==0.3.2',
           'wtforms',
           'yoyo-migrations==4.2.5',
-          'google-api-python-client'],
+          'google-api-python-client',
+          'bleach'],
       tests_require=['mock'],
       test_suite="tests")

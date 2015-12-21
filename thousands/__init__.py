@@ -5,6 +5,7 @@ from flask import Flask, g
 import psycopg2
 import psycopg2.pool
 import psycopg2.extensions
+import bleach
 import dao
 from flask.ext.login import LoginManager
 from yoyo import read_migrations
@@ -80,6 +81,20 @@ climbs_dao = dao.ClimbsDao(pool)
 login_manager = LoginManager()
 login_manager.init_app(app)
 
+def shorten_url(attrs, new=False):
+    """Shorten overly-long URLs in the text."""
+    maxlen = 50
+    if not new:  # Only looking at newly-created links.
+        return attrs
+    # _text will be the same as the URL for new links.
+    text = attrs['_text']
+    if len(text) > maxlen:
+        attrs['_text'] = text[0:maxlen-3] + '...'
+    return attrs
+
+@app.template_filter('linkify')
+def linkify(s):
+    return bleach.linkify(s, [shorten_url])
 
 @login_manager.user_loader
 def load_user(userid):

@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='thousands',
-      version='0.3.0',
+      version='1.0.0',
       description='Site for South Ural moultains climbers',
       author='Rushan Shaymardanov',
       author_email='rush.ru@gmail.com',

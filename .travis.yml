@@ -16,6 +16,7 @@ script: "py.test"
 deploy:
     provider: openshift
     user: "rush.ru@gmail.com"
-    password: "5epsElIwMTqn"
+    password: "ORdlcHl8nwf+PCLmUcuKt6zSEe3u44I6mWwAgUksG6h8e4YMi3WBHDDUBqAyVXck1pe0DB1BW2Y4P9Ks3s+ePcHQHUyKEw8JHpDqRjWXn5rL4yCo6nUA0WW6UoLjY7kIlneqRVpkug9fgVo5Bczl6uqejKLLc6AYHkHe+vfbrQYcUAmdGntWRIhIKrrr7mhFxhdjRb6jzEfNHOd4jG+xBe+RCHcwndvVtppubn0tafJ2S/S7hNIKT6SmNiFA7mbXnGrMHvV6kOIPtezKXowrvcJsWPOSMXRwQA+OlmaHSWCFQsghwdx6eCnaJVjWqAee3e6HiSg6VXJd4Wc8dgMrFhdMW6+liqEifYlIa3ogzS+jokbpe/n0/jyGZMtxbFA/OJrPQLSjrjB1bP+nbmoSKyh8ie4hIO4uVS8w06uzoYgthB2PNrrvQ7ijmul7bUkvahgntDzMgnsdEozDBy3ikIEc7kxfRb/T8nd/OrIpiNB24WrR8xF6ekYlJKLfKJ6BiBgLRzTn0U0yYOttszXznz1+OUaXdsrw8YcnIQgzi60RqpJgdAVg4UvdvaKsjS2uyBK+H+9WEKfnmsLn1uAozwFxe/eLYtoDL5TX+xYFoo9/WFo1wHVy+wEl6p+xGjkEicLT/Vx188oKms6wlcHb2Fh4DiCDw4hnGcYkylVbB7s="
     domain: "binrush"
     app: "thousandsdev"
+

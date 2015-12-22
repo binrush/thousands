@@ -129,8 +129,12 @@ def climb_new(summit_id):
             f.summit_id.data,
             f.date.data,
             f.comment.data)
+        app.logger.info("Climb added uid=%s, sid=%s",
+                        current_user.id,
+                        summit_id)
         flash(u'Ваше восхождение зарегистрировано')
         return redirect(url_for('summit', summit_id=f.summit_id.data))
+
     return render_template('climb_edit.html',
                            summit=g.summits_dao.get(summit_id),
                            form=f)
@@ -159,7 +163,9 @@ def climb_edit(summit_id, redirect_url):
                 f.summit_id.data,
                 f.date.data,
                 f.comment.data)
-            app.logger.info("Climb edited uid=%s, sid=%s", current_user.id, summit_id)
+            app.logger.info("Climb edited uid=%s, sid=%s",
+                            current_user.id,
+                            summit_id)
             flash(u'Ваше восхождение отредактировано')
             return redirect(redirect_url)
     else:

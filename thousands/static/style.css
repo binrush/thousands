@@ -63,3 +63,9 @@ a.anchor {
 .flash-message {
     margin-top: 20px;
 }
+.flash-message-map {
+    position: absolute;
+    top: 70px;
+    left: 50px;
+    z-index: 314159;
+}

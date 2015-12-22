@@ -62,7 +62,17 @@
       </div>
     </nav>
   <div class="{% if active_page == 'index'%}container-map{% else %}container{% endif %}">
-      {% block content %}{% endblock %}
+    {% with messages = get_flashed_messages(category_filter=['error']) %}
+        {% if messages %}
+            <div class="alert alert-danger {% if active_page == 'index'%}flash-message-map{% else %}flash-message{% endif %}" role="alert">
+            {% for message in messages %}
+                {{ message }}
+                <a href="{{ request.url }}"><span class="glyphicon glyphicon-remove alert-link" aria-hidden="true"></span></a>
+            {% endfor %}
+            </div>
+  {% endif %}
+{% endwith %}
+    {% block content %}{% endblock %}
   </div>
 <div class="modal fade" id="authModal" tabindex="-1" role="dialog" aria-labelledby="authModalLabel" aria-hidden="true">
   <div class="modal-dialog">

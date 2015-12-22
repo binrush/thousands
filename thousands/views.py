@@ -120,8 +120,9 @@ def summit_delete(summit_id):
 
 
 @app.route('/climb/new/<int:summit_id>', methods=['GET', 'POST'])
-@login_required
 def climb_new(summit_id):
+    if not current_user.is_authenticated:
+        return redirect(url_for('summit', summit_id=summit_id))
     f = forms.ClimbForm(request.form)
     if request.method == 'POST' and f.validate():
         g.climbs_dao.create(

@@ -82,7 +82,7 @@ def test_summit(mock_summits_dao, mock_climbs_dao, client):
 def test_climb_new(mock_summits_dao, mock_users_dao, mock_climbs_dao, client):
     with client() as c:
         resp = c.get('/climb/new/2')
-        assert resp.status == '401 UNAUTHORIZED'
+        assert resp.status == '302 FOUND'
         with c.session_transaction() as sess:
             sess['user_id'] = u'5'
         resp = c.get('/climb/new/2')

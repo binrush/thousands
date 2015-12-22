@@ -26,17 +26,10 @@ def mock_flow_exception():
     flow.step2_exchange.side_effect = FlowExchangeError
     return flow
 
+
 @pytest.fixture
 def mock_get_user():
     return mock.MagicMock(return_value=(mock.MagicMock(), True))
-
-
-def test_oauth_login_error(mock_request_error):
-    with pytest.raises(auth.AuthError) as e:
-        auth.oauth_login(mock_request_error,
-                         mock.MagicMock(),
-                         mock.MagicMock())
-    assert e.value.message == 'some error description'
 
 
 def test_oauth_login_flow_exc(mock_flow_exception, mock_request):
@@ -52,4 +45,3 @@ def test_oauth_login_flow_exc(mock_flow_exception, mock_request):
 #                                 mock.MagicMock(),
 #                                 mock_get_user)
 #     print response
-

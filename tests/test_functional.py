@@ -177,7 +177,7 @@ def test_summit_anonymous(client_anonymous):
 def test_climb_form_anonymous(client_anonymous):
     summit_id = get_summit_id(client_anonymous, u'Бабай')
     resp = client_anonymous.get('/climb/new/' + str(summit_id))
-    assert resp.status == '401 UNAUTHORIZED'
+    assert resp.status == '302 FOUND'
     resp = client_anonymous.get('/climb/edit/' + str(summit_id))
     assert resp.status == '401 UNAUTHORIZED'
     resp = client_anonymous.get('/summit/{}/climb/edit'.format(summit_id))
@@ -189,7 +189,7 @@ def test_climb_form_user(client_user):
     resp = client_user.get('/climb/new/' + str(summit_id))
     assert resp.status == '200 OK'
     assert '<input id="summit_id" name="summit_id" ' + \
-            'type="hidden" value="{}">'.format(summit_id) in resp.data
+           'type="hidden" value="{}">'.format(summit_id) in resp.data
 
 
 def test_climb_add(client_user):
@@ -206,12 +206,14 @@ def test_climb_add(client_user):
     assert '<a href="/summit/{}/climb/edit">Редактировать'.format(summit_id) \
         in resp.data
 
+
 def test_climb_edit_form(client_user):
     summit_id = get_summit_id(client_user, u'Кушай')
     resp = client_user.get('/climb/edit/{}'.format(summit_id))
     assert resp.status == '200 OK'
     assert 'value="11.2011"' in resp.data
     assert '>Fun</textarea>' in resp.data
+
 
 def test_climb_edit_post(client_user):
     summit_id = get_summit_id(client_user, u'Кушай')
@@ -225,8 +227,9 @@ def test_climb_edit_post(client_user):
     assert 'value="10.10.2010"' in resp.data
     assert '>Nice</textarea>' in resp.data
 
+
 def test_climb_delete(client_user):
-    summit_id = get_summit_id(client_user, 'Noname');
+    summit_id = get_summit_id(client_user, 'Noname')
     resp = client_user.post('/climb/new/{}'.format(summit_id), data={
         'summit_id': str(summit_id),
         'date': '',
@@ -236,4 +239,3 @@ def test_climb_delete(client_user):
     assert resp.status == '302 FOUND'
     resp = client_user.get(resp.headers['Location'])
     assert not ('Noname' in resp.data)
-

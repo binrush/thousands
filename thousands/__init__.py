@@ -14,6 +14,7 @@ from logging.handlers import SMTPHandler
 
 
 PG_DSN = "dbname=thousands user=postgres"
+PG_POOL_SIZE = 20
 VK_CLIENT_ID = "4890287"
 VK_CLIENT_SECRET = "fake-vk-client-secret"
 SU_CLIENT_ID = "thousands"
@@ -63,7 +64,9 @@ else:
 
 
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
-pool = psycopg2.pool.SimpleConnectionPool(1, 10, app.config['PG_DSN'])
+pool = psycopg2.pool.SimpleConnectionPool(1,
+                                          PG_POOL_SIZE,
+                                          app.config['PG_DSN'])
 
 migrations_dir = os.path.join(os.path.dirname(__file__), 'migrations')
 conn = pool.getconn()

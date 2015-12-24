@@ -19,6 +19,7 @@ VK_CLIENT_ID = "4890287"
 VK_CLIENT_SECRET = "fake-vk-client-secret"
 SU_CLIENT_ID = "thousands"
 SU_CLIENT_SECRET = "fake-su-client-secret"
+MAIL_SUBJECT = "thousands app failed"
 
 app = Flask(__name__)
 app.config.from_object(__name__)
@@ -52,7 +53,7 @@ if not app.debug:
             app.config['SMTP_HOST'],
             app.config['SMTP_FROMADDR'],
             app.config['ADMIN_MAIL'],
-            'Thousands app failed',
+            app.config['MAIL_SUBJECT'],
             (app.config['SMTP_USER'], app.config['SMTP_PASSWORD']),
             ())
         mail_handler.setLevel(logging.ERROR)

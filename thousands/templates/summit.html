@@ -92,6 +92,9 @@
         {% endif %}
         {% if c['user'] == current_user %}
         <div>
+        <form id="climb-delete-form" method="POST">
+            {{ del_form.csrf_token }}
+        </form>
         <small><a href="{{ url_for('summit_climb_edit', summit_id=summit.id) }}">Редактировать</a></small>
         <small><a href="{{ url_for('summit_climb_delete', summit_id=summit.id) }}" class="simple-delete-confirm">Удалить</a></small>
         </div>

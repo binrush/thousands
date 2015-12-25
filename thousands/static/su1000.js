@@ -103,10 +103,20 @@ function getPointCoordinates(e) {
     marker.addTo(map);
 }
 
+function deleteEntry() {
+    answer = confirm("Вы уверены?");
+    if (answer) {
+        form = document.getElementById('climb-delete-form');
+        form.action = this.href;
+        form.submit()
+    }
+    return false;
+}
+
 function addDeleteConfirmation() {
     var confirmed_links = document.getElementsByClassName('simple-delete-confirm');
     for (i = 0; i < confirmed_links.length; i++ ) { 
-        confirmed_links[i].onclick = function() { return confirm("Are you sure?"); 
-        };
+        //confirmed_links[i].onclick = function() { return confirm("Are you sure?"); 
+        confirmed_links[i].onclick = deleteEntry; 
     }
 }

@@ -2,11 +2,13 @@
 import json
 import pytest
 import thousands
+from thousands import forms
 
 
 @pytest.fixture(scope="module", autouse=True)
 def enable_testing():
     thousands.app.config['SECRET_KEY'] = 'test-secret-key'
+    thousands.app.config['CSRF_SECRET'] = 'test-csrf-key'
     thousands.app.config['TESTING'] = True
 
 
@@ -80,6 +82,14 @@ def get_summit_id(client, name):
             return s['id']
 
 
+def get_csrf_token(client):
+    with client.session_transaction() as sess:
+        return forms.DeleteForm(
+            meta={'csrf_context': sess,
+                  'csrf_secret': thousands.app.config['CSRF_SECRET']}) \
+            .csrf_token._value()
+
+
 def test_summit_new_reject_anonymous(client_anonymous):
     resp = client_anonymous.get('/summit/new')
     assert resp.status == '401 UNAUTHORIZED'
@@ -106,11 +116,13 @@ def test_summit_new_post_shows_message_on_err(client_admin):
 
 
 def test_summit_new_post_add_summit(client_admin):
+    token = get_csrf_token(client_admin)
     resp = client_admin.post('/summit/new', data={
         "name": "Караташ",
         "coordinates": "54.123456 58.654321",
         "height": "1010",
-        "rid": "1"})
+        "rid": "1",
+        'csrf_token': token})
     assert resp.status == "302 FOUND"
     resp = client_admin.get(resp.headers['Location'])
     assert resp.status == "200 OK"
@@ -194,10 +206,12 @@ def test_climb_form_user(client_user):
 
 def test_climb_add(client_user):
     summit_id = get_summit_id(client_user, u'Бабай')
+    token = get_csrf_token(client_user)
     resp = client_user.post('/climb/new/{}'.format(summit_id), data={
         'summit_id': str(summit_id),
         'date': '10.10.2010',
-        'comment': 'nice'})
+        'comment': 'nice',
+        'csrf_token': token})
     assert resp.status == '302 FOUND'
     assert '/summit/' + str(summit_id) in resp.headers['Location']
     resp = client_user.get(resp.headers['Location'])
@@ -205,6 +219,16 @@ def test_climb_add(client_user):
     assert 'Бабай' in resp.data
     assert '<a href="/summit/{}/climb/edit">Редактировать'.format(summit_id) \
         in resp.data
+
+
+def test_climb_add_wo_token(client_user):
+    summit_id = get_summit_id(client_user, u'Бабай')
+    resp = client_user.post('/climb/new/{}'.format(summit_id), data={
+        'summit_id': str(summit_id),
+        'date': '10.10.2010',
+        'comment': 'nice'})
+    assert resp.status == '200 OK'
+    assert 'CSRF token missing' in resp.data
 
 
 def test_climb_edit_form(client_user):
@@ -217,10 +241,12 @@ def test_climb_edit_form(client_user):
 
 def test_climb_edit_post(client_user):
     summit_id = get_summit_id(client_user, u'Кушай')
+    token = get_csrf_token(client_user)
     resp = client_user.post('/climb/edit/{}'.format(summit_id), data={
         'summit_id': str(summit_id),
         'date': '10.10.2010',
-        'comment': 'Nice'})
+        'comment': 'Nice',
+        'csrf_token': token})
     assert resp.status == '302 FOUND'
     resp = client_user.get('/climb/edit/{}'.format(summit_id))
     assert resp.status == '200 OK'
@@ -228,14 +254,35 @@ def test_climb_edit_post(client_user):
     assert '>Nice</textarea>' in resp.data
 
 
+def test_climb_edit_wo_token(client_user):
+    summit_id = get_summit_id(client_user, u'Кушай')
+    resp = client_user.post('/climb/edit/{}'.format(summit_id), data={
+        'summit_id': str(summit_id),
+        'date': '10.10.2010',
+        'comment': 'nice'})
+    assert resp.status == '200 OK'
+    assert 'CSRF token missing' in resp.data
+
+
 def test_climb_delete(client_user):
+    token = get_csrf_token(client_user)
     summit_id = get_summit_id(client_user, 'Noname')
     resp = client_user.post('/climb/new/{}'.format(summit_id), data={
         'summit_id': str(summit_id),
         'date': '',
-        'comment': ''})
+        'comment': '',
+        'csrf_token': token})
     assert resp.status == '302 FOUND'
-    resp = client_user.get('/climb/delete/{}'.format(summit_id))
+    resp = client_user.post('/climb/delete/{}'.format(summit_id), data={
+        'csrf_token': token})
     assert resp.status == '302 FOUND'
     resp = client_user.get(resp.headers['Location'])
     assert not ('Noname' in resp.data)
+
+
+def test_climb_delete_wo_token(client_user):
+    summit_id = get_summit_id(client_user, u'Кушай')
+    resp = client_user.post('/climb/delete/{}'.format(summit_id), data={})
+    assert resp.status == '302 FOUND'
+    resp = client_user.get(resp.headers['Location'])
+    assert 'Invalid CSRF token' in resp.data

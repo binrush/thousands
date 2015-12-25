@@ -69,3 +69,7 @@ a.anchor {
     left: 50px;
     z-index: 314159;
 }
+
+#climb-delete-form {
+    display: none;
+}

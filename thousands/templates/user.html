@@ -38,6 +38,9 @@
             Этот восходитель еще не сообщил ни об одной посещенной вершине.
         {% endif %}
     {% else %}
+    <form id="climb-delete-form" method="POST">
+        {{ del_form.csrf_token }}
+    </form>
     <h3>Посещенные вершины <small>(всего {{ climbed | length }})</small></h3>
     <ul class="media-list">
     {% for c in climbed %}

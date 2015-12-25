@@ -15,7 +15,7 @@
 {% endif %}
 <form id="summit_edit_form" method="post" class="form-horizontal">
   {{ form.summit_id(value=summit.id) }}
-
+  {{ form.csrf_token }}
   <div class="form-group">
     <label class="col-md-3 control-label">Вершина</label>
     <div class="col-md-6">

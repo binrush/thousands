@@ -4,6 +4,7 @@ from wtforms import (
     Form, TextField, IntegerField, HiddenField,
     TextAreaField, SelectField, validators, Field)
 from wtforms.widgets import TextInput
+from wtforms.csrf.session import SessionCSRF
 import datetime
 import dao
 
@@ -77,7 +78,14 @@ class ClimbDateField(Field):
             raise validators.ValidationError('Указана дата в будущем')
 
 
-class SummitForm(Form):
+class ThousandsBaseForm(Form):
+    class Meta:
+        csrf = True
+        csrf_class = SessionCSRF
+        csrf_time_limit = datetime.timedelta(minutes=60)
+
+
+class SummitForm(ThousandsBaseForm):
     id = HiddenField('id')
     name = TextField('name', filters=[lambda x: x or None])
     name_alt = TextField('name_alt', filters=[lambda x: x or None])
@@ -90,10 +98,14 @@ class SummitForm(Form):
     description = TextAreaField('description', filters=[lambda x: x or None])
 
 
-class ClimbForm(Form):
+class ClimbForm(ThousandsBaseForm):
     MAX_COMMENT_SIZE = 1000
 
     summit_id = HiddenField('summit_id')
     date = ClimbDateField(u'Дата')
     comment = TextAreaField(u'Комментарий',
                             [validators.Length(max=MAX_COMMENT_SIZE)])
+
+
+class DeleteForm(ThousandsBaseForm):
+    pass

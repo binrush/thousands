@@ -255,6 +255,8 @@ def logout():
 @app.route('/user/<int:user_id>')
 def user(user_id):
     user = g.users_dao.get_by_id(user_id)
+    if user is None:
+        return abort(404)
     climbed = g.climbs_dao.climbed(user_id)
     return render_template(
         'user.html',

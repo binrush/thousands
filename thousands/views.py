@@ -22,9 +22,14 @@ def move_to_front(l, fn):
     return l
 
 
-@app.route('/500')
-def error():
-    raise Exception("Exception raised")
+@app.errorhandler(500)
+def server_error(e):
+    return render_template('500.html'), 500
+
+
+@app.errorhandler(404)
+def not_found(e):
+    return render_template('404.html'), 404
 
 
 @app.route('/about')

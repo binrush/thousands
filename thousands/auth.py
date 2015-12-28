@@ -3,7 +3,6 @@ import urlparse
 import json
 import httplib2
 import urllib
-import logging
 
 from flask.ext.login import login_user
 from flask import (request, g, redirect,
@@ -112,6 +111,18 @@ def oauth_login(req, flow, get_user):
     abort(401)
 
 
+def vk_get_image(url, images_dao):
+    try:
+        fd = urllib.urlopen(url)
+        if fd.getcode() == 200:
+            return images_dao.create(fd.read(), fd.info().gettype())
+        else:
+            return None
+    except IOError:
+        app.logger.exception("Failed to get image from vk: %s", url)
+        return None
+
+
 def vk_get_user(credentials):
     user = g.users_dao.get(unicode(credentials.token_response['user_id']),
                            dao.AUTH_SRC_VK)
@@ -131,15 +142,13 @@ def vk_get_user(credentials):
                                  urllib.urlencode(params))
 
     if resp.status != 200:
-        logging.error("Error getting user profile from vk api: %d",
-                      resp.status)
-        logging.error(content)
+        app.logger.error("Error getting user profile from vk api: %d, %s",
+                         resp.status, content)
         return None
 
     data = json.loads(content)['response'][0]
     if 'error' in data:
-        logging.error("Error getting profile data")
-        logging.error(data['error'])
+        app.logger.error("Error getting profile data: %s", data['error'])
         return None
 
     user = dao.User()
@@ -149,17 +158,10 @@ def vk_get_user(credentials):
         data.get('last_name', ''))
     user.src = dao.AUTH_SRC_VK
 
-    fd = urllib.urlopen(data['photo_200_orig'])
-    if fd.getcode() == 200:
-        user.image_id = g.images_dao.create(fd.read(), fd.info().gettype())
-    else:
-        user.image_id = None
-
-    fd = urllib.urlopen(data['photo_50'])
-    if fd.getcode() == 200:
-        user.preview_id = g.images_dao.create(fd.read(), fd.info().gettype())
-    else:
-        user.preview_id = None
+    user.image_id = vk_get_image(data['photo_200_orig'],
+                                 g.images_dao)
+    user.preview_id = vk_get_image(data['photo_50'],
+                                   g.images_dao)
 
     user.id = g.users_dao.create(user)
 
@@ -172,14 +174,12 @@ def su_get_user(credentials):
     resp, content = conn.request('http://www.southural.ru/oauth2/UserInfo',
                                  'POST')
     if resp.status != 200:
-        logging.error("Error getting user profile from su api: %d",
-                      resp.status)
-        logging.error(content)
+        app.logger.error("Error getting user profile from su api: %d, %s",
+                         resp.status, content)
         return None
     data = json.loads(content)
     if 'error' in data:
-        logging.error("Error getting user data from su")
-        logging.error(data['error'])
+        app.logger.error("Error getting user data from su: %s", data['error'])
         return None
 
     user = g.users_dao.get(data['sub'], dao.AUTH_SRC_SU)

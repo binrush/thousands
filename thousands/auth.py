@@ -113,7 +113,7 @@ def oauth_login(req, flow, get_user):
 
 def vk_get_image(url, images_dao):
     try:
-        fd = urllib.urlopen(url)
+        fd = urllib.urlopen(url, timeout=2)
         if fd.getcode() == 200:
             return images_dao.create(fd.read(), fd.info().gettype())
         else:

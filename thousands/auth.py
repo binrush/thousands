@@ -113,7 +113,7 @@ def oauth_login(req, flow, get_user):
 
 def vk_get_image(url, images_dao):
     try:
-        fd = urllib.urlopen(url, timeout=2)
+        fd = urllib.urlopen(url, None, 2)
         if fd.getcode() == 200:
             return images_dao.create(fd.read(), fd.info().gettype())
         else:
@@ -129,6 +129,7 @@ def vk_get_user(credentials):
     if user is not None:
         return user, False
 
+    logger.debug("Fetching user profile from vk.com")
     conn = httplib2.Http()
     credentials.authorize(conn)
     params = {
@@ -151,6 +152,7 @@ def vk_get_user(credentials):
         app.logger.error("Error getting profile data: %s", data['error'])
         return None
 
+    app.logger.debug("Storing user in database")
     user = dao.User()
     user.oauth_id = unicode(credentials.token_response['user_id'])
     user.name = u"{} {}".format(

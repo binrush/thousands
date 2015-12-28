@@ -129,7 +129,7 @@ def vk_get_user(credentials):
     if user is not None:
         return user, False
 
-    logger.debug("Fetching user profile from vk.com")
+    app.logger.debug("Fetching user profile from vk.com")
     conn = httplib2.Http()
     credentials.authorize(conn)
     params = {

@@ -20,6 +20,7 @@ VK_CLIENT_SECRET = "fake-vk-client-secret"
 SU_CLIENT_ID = "thousands"
 SU_CLIENT_SECRET = "fake-su-client-secret"
 MAIL_SUBJECT = "thousands app failed"
+LOGLEVEL="info"
 
 app = Flask(__name__)
 app.config.from_object(__name__)
@@ -46,7 +47,7 @@ if not app.debug:
     main_handler.setFormatter(formatter)
 
     map(lambda x: x.addHandler(main_handler), loggers)
-    app.logger.setLevel(logging.INFO)
+    app.logger.setLevel(getattr(logging, app.config['LOGLEVEL'].upper()))
 
     if 'ADMIN_MAIL' in app.config:
         mail_handler = SMTPHandler(

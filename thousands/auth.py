@@ -2,7 +2,8 @@
 import urlparse
 import json
 import httplib2
-import urllib
+from urllib import urlencode
+from urllib2 import urlopen
 
 from flask.ext.login import login_user
 from flask import (request, g, redirect,
@@ -113,7 +114,7 @@ def oauth_login(req, flow, get_user):
 
 def vk_get_image(url, images_dao):
     try:
-        fd = urllib.urlopen(url, None, 2)
+        fd = urlopen(url, timeout=2)
         if fd.getcode() == 200:
             return images_dao.create(fd.read(), fd.info().gettype())
         else:
@@ -140,7 +141,7 @@ def vk_get_user(credentials):
 
     resp, content = conn.request('https://api.vk.com/method/users.get',
                                  'POST',
-                                 urllib.urlencode(params))
+                                 urlencode(params))
 
     if resp.status != 200:
         app.logger.error("Error getting user profile from vk api: %d, %s",

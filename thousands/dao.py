@@ -2,9 +2,11 @@
 from contextlib import contextmanager
 import psycopg2.extras
 from flask.ext.login import UserMixin
+from flask import url_for
 import datetime
 import io
 import os
+from gpxpy import gpx
 
 AUTH_SRC_VK = 1
 AUTH_SRC_SU = 2
@@ -145,6 +147,16 @@ class Summit(object):
         ret['properties']['main'] = self.main
 
         return ret
+
+    def to_gpx(self):
+        wp = gpx.GPXWaypoint(
+            latitude=self.coordinates[0],
+            longitude=self.coordinates[1],
+            elevation=self.height,
+            name=self.format_name(),
+            description=u'хр. ' + self.ridge)
+        wp.link = url_for('summit', summit_id=self.id, _external=True)
+        return wp
 
 
 class SummitsDao(Dao):
@@ -350,7 +362,7 @@ class DatabaseImagesDao(Dao):
             else:
                 row = cur.fetchone()
                 img = Image()
-                img.name= row['name']
+                img.name = row['name']
                 img.payload = io.BytesIO(row['payload'])
                 return img
 

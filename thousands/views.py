@@ -1,13 +1,14 @@
 # coding: utf8
 from thousands import app
 from flask import (request, render_template, g, jsonify,
-                   redirect, url_for, abort, send_file, flash, session)
+                   redirect, url_for, abort, send_file, flash, session,
+                   make_response)
 from flask.ext.login import (logout_user, current_user,
                              login_required)
 import dao
 import forms
-import io
 import mimetypes
+from gpxpy.gpx import GPX
 
 
 def move_to_front(l, fn):
@@ -243,6 +244,18 @@ def summits_get():
          'features':
             [s.to_geojson()
                 for s in g.summits_dao.get_all(current_user.get_id())]})
+
+
+@app.route('/api/summits/gpx')
+def summits_get_gpx():
+    gpx = GPX()
+    gpx.waypoints = \
+        [s.to_gpx() for s in g.summits_dao.get_all()]
+    resp = make_response(gpx.to_xml())
+    resp.mimetype = 'application/gpx+xml'
+    resp.headers['Content-Disposition'] = \
+        "attachment; filename=summits.gpx"
+    return resp
 
 
 @app.route('/api/images/<image_id>')

@@ -12,6 +12,7 @@ setup(name='thousands',
           'wtforms',
           'yoyo-migrations==4.2.5',
           'google-api-python-client',
-          'bleach'],
+          'bleach',
+          'gpxpy'],
       tests_require=['mock'],
       test_suite="tests")

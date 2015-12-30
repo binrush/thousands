@@ -84,7 +84,7 @@ def login_as(user_id):
 
 def oauth_login(req, flow, get_user):
     if 'error' in req.args.keys():
-        app.logger.warning("Error during oauth processL %s (%s)",
+        app.logger.warning("Error during oauth process: %s (%s)",
                            req.args.get('error'),
                            req.args.get('error_description'))
         flash(u'Невозможно выполнить вход. Повторите попытку позже',

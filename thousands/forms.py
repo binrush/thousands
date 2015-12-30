@@ -37,11 +37,11 @@ class CoordinatesField(Field):
         if self.data is not None:
             if not (self.data[0] > 0 and self.data[1] < 90):
                 raise validators.ValidationError(
-                    'Latitude should be between 0 and 90 degrees')
+                    u'Широта должна быть между 0 и 90 градусов')
 
             if not (self.data[1] > 0 and self.data[1] < 180):
                 raise validators.ValidationError(
-                    'Longtitude should be between 0 and 180 degrees')
+                    u'Долгота должна быть между 0 и 180 градусов')
 
 
 class ClimbDateField(Field):
@@ -75,7 +75,7 @@ class ClimbDateField(Field):
             raise validators.StopValidation()
         if self.data is not None and self.data > \
                 dao.InexactDate.fromdate(datetime.date.today()):
-            raise validators.ValidationError('Указана дата в будущем')
+            raise validators.ValidationError(u'Указана дата в будущем')
 
 
 class ThousandsBaseForm(Form):

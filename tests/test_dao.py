@@ -3,6 +3,7 @@ from thousands import dao
 from mock import MagicMock
 import pytest
 import thousands
+import tempfile
 
 
 class TestInexactDate():
@@ -154,3 +155,11 @@ class TestDatabaseImagesDao():
         idao.create('3.jpg', '\x00\x11\x22')
         idao.delete('3.jpg')
         assert idao.get('3.jpg') is None
+
+
+class TestFilesystemImagesDao(TestDatabaseImagesDao):
+
+    @pytest.fixture
+    def idao(self):
+        return dao.FilesystemImagesDao(tempfile.gettempdir())
+

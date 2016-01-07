@@ -4,6 +4,7 @@ import psycopg2.extras
 from flask.ext.login import UserMixin
 import datetime
 import io
+import os
 
 AUTH_SRC_VK = 1
 AUTH_SRC_SU = 2
@@ -357,6 +358,38 @@ class DatabaseImagesDao(Dao):
         sql = "DELETE FROM images WHERE name=%s"
         with self.get_cursor() as cur:
             cur.execute(sql, (image_id, ))
+
+
+class FilesystemImagesDao():
+
+    def __init__(self, directory):
+        if not os.path.isdir(directory):
+            raise ModelException('Not a directory: ' + directory)
+        self.directory = directory
+
+    def __path(self, filename):
+        return os.path.join(self.directory, filename)
+
+    def create(self, name, data):
+        path = os.path.join(self.directory, name)
+        if os.path.exists(path):
+            return
+        with open(os.path.join(self.directory, name), 'w') as fp:
+            fp.write(data)
+
+    def get(self, image_id):
+        try:
+            img = Image()
+            img.name = image_id
+            img.payload = open(os.path.join(self.directory, image_id))
+            return img
+        except IOError:
+            return None
+
+    def delete(self, image_id):
+        path = os.path.join(self.directory, image_id)
+        if os.path.exists(path):
+            os.unlink(path)
 
 
 class Climb(object):

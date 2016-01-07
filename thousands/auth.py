@@ -121,7 +121,8 @@ def vk_get_image(url, images_dao):
             data = fd.read()
             name = hashlib.sha1(data).hexdigest() + \
                 mimetypes.guess_extension(fd.info().gettype())
-            return images_dao.create(name, data)
+            images_dao.create(name, data)
+            return name
         else:
             return None
     except IOError:

@@ -232,7 +232,6 @@ def climb_delete(summit_id, redirect_url):
                         summit_id)
         flash(u'Ваше восхождение удалено')
     else:
-        print del_form.csrf_token.errors
         flash(u'Invalid CSRF token', 'error')
     return redirect(redirect_url)
 

@@ -73,8 +73,8 @@
     <li class="media">
     <div class="media-left">
         <a href="{{ url_for('user', user_id=c['user'].id) }}">
-        {% if c['user'].preview_id %}
-        <img src="{{ url_for("image_get", image_id=c['user'].preview_id)}}" class="media-object">
+        {% if c['user'].preview %}
+        <img src="{{ url_for("image_get", image_id=c['user'].preview)}}" class="media-object">
         {% else %}
         <img src="/static/climber_sm.png" class="media-object">
         {% endif %}

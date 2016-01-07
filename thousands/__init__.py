@@ -80,7 +80,7 @@ pool.putconn(conn)
 
 summits_dao = dao.SummitsDao(pool)
 users_dao = dao.UsersDao(pool)
-images_dao = dao.ImagesDao(pool)
+images_dao = dao.DatabaseImagesDao(pool)
 climbs_dao = dao.ClimbsDao(pool)
 
 login_manager = LoginManager()

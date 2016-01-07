@@ -21,8 +21,8 @@
 <h1>{{ user.name }}</h1>
 <div class="row">
     <div class="col-md-3 text-right">
-        {% if user.image_id %}
-            <img src="{{ url_for('image_get', image_id=user.image_id)}}" class="center-block user-image-large">
+        {% if user.image %}
+            <img src="{{ url_for('image_get', image_id=user.image)}}" class="center-block user-image-large">
         {% else %}
             <img src="/static/climber.png" class="center-block user-image-large">
         {% endif %}

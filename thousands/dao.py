@@ -3,6 +3,7 @@ from contextlib import contextmanager
 import psycopg2.extras
 from flask.ext.login import UserMixin
 import datetime
+import io
 
 AUTH_SRC_VK = 1
 AUTH_SRC_SU = 2
@@ -311,7 +312,7 @@ class UsersDao(Dao):
             return self._fromrow(cur.fetchone())
 
     def create(self, user):
-        sql = """INSERT INTO users (src, oauth_id, name, image_id, preview_id)
+        sql = """INSERT INTO users (src, oauth_id, name, image, preview)
             VALUES (%s, %s, %s, %s, %s) RETURNING id;
         """
         with self.get_cursor() as cur:
@@ -330,19 +331,17 @@ class Image(object):
     pass
 
 
-class ImagesDao(Dao):
+class DatabaseImagesDao(Dao):
 
-    def create(self, data, fmt):
-        sql = "INSERT INTO images (type, payload) VALUES (%s, %s) RETURNING id"
+    def create(self, name, data):
+        sql = "INSERT INTO images (name, payload) " + \
+              "SELECT %s, %s WHERE NOT EXISTS " + \
+              "(SELECT name FROM images WHERE name=%s)"
         with self.get_cursor() as cur:
-            cur.execute(sql, (fmt, psycopg2.Binary(data)))
-            if cur.rowcount < 1:
-                return None
-            else:
-                return cur.fetchone()['id']
+            cur.execute(sql, (name, psycopg2.Binary(data), name))
 
     def get(self, image_id):
-        sql = "SELECT * FROM images WHERE id=%s"
+        sql = "SELECT * FROM images WHERE name=%s"
         with self.get_cursor() as cur:
             cur.execute(sql, (image_id, ))
             if cur.rowcount < 1:
@@ -350,10 +349,14 @@ class ImagesDao(Dao):
             else:
                 row = cur.fetchone()
                 img = Image()
-                img.id = row['id']
-                img.type = row['type']
-                img.payload = row['payload']
+                img.name= row['name']
+                img.payload = io.BytesIO(row['payload'])
                 return img
+
+    def delete(self, image_id):
+        sql = "DELETE FROM images WHERE name=%s"
+        with self.get_cursor() as cur:
+            cur.execute(sql, (image_id, ))
 
 
 class Climb(object):
@@ -371,7 +374,7 @@ class ClimbsDao(Dao):
                     comment,
                     users.id,
                     users.name,
-                    users.preview_id
+                    users.preview
                 FROM users LEFT JOIN climbs ON climbs.user_id=users.id
                 LEFT JOIN summits ON climbs.summit_id=summits.id
                 WHERE climbs.summit_id=%s
@@ -382,7 +385,7 @@ class ClimbsDao(Dao):
                 u = User()
                 u.id = row['id']
                 u.name = row['name']
-                u.preview_id = row['preview_id']
+                u.preview = row['preview']
                 climbers.append(
                     {'user': u, 'date': InexactDate.fromdict(row),
                      'comment': row['comment']})
@@ -413,9 +416,9 @@ class ClimbsDao(Dao):
 
     def top(self):
         users = []
-        sql = """SELECT users.id, users.name, users.preview_id, COUNT(climbs.*) AS climbs
+        sql = """SELECT users.id, users.name, users.preview, COUNT(climbs.*) AS climbs
                 FROM users LEFT JOIN climbs ON users.id=climbs.user_id
-                GROUP BY users.id, users.name, users.preview_id
+                GROUP BY users.id, users.name, users.preview
                 ORDER BY climbs DESC
         """
         with self.get_cursor() as cur:
@@ -424,7 +427,7 @@ class ClimbsDao(Dao):
                 u = User()
                 u.id = row['id']
                 u.name = row['name']
-                u.preview_id = row['preview_id']
+                u.preview = row['preview']
                 u.climbs = row['climbs']
                 users.append(u)
         return users

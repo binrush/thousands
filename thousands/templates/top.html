@@ -14,8 +14,8 @@
         {% for c in climbers %}
         <tr>
             <td class="vertical-align">
-                 {% if c.preview_id %}
-                 <a href="{{ url_for('user', user_id=c.id) }}"><img src="{{ url_for("image_get", image_id=c.preview_id)}}"></a>
+                 {% if c.preview%}
+                 <a href="{{ url_for('user', user_id=c.id) }}"><img src="{{ url_for("image_get", image_id=c.preview)}}"></a>
                  {% else %}
                  <a href="{{ url_for('user', user_id=c.id) }}"><img src="/static/climber_sm.png"></a>
                  {% endif %}

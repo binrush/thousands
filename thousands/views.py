@@ -7,6 +7,7 @@ from flask.ext.login import (logout_user, current_user,
 import dao
 import forms
 import io
+import mimetypes
 
 
 def move_to_front(l, fn):
@@ -245,10 +246,11 @@ def summits_get():
                 for s in g.summits_dao.get_all(current_user.get_id())]})
 
 
-@app.route('/api/images/<int:image_id>')
+@app.route('/api/images/<image_id>')
 def image_get(image_id):
     img = g.images_dao.get(image_id)
-    return send_file(io.BytesIO(img.payload), mimetype=img.type)
+    return send_file(img.payload,
+                     mimetype=mimetypes.guess_type(img.name)[0])
 
 
 @app.route('/logout')

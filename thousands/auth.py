@@ -116,7 +116,10 @@ def vk_get_image(url, images_dao):
     try:
         fd = urlopen(url, timeout=2)
         if fd.getcode() == 200:
-            return images_dao.create(fd.read(), fd.info().gettype())
+            data = fd.read()
+            name = hashlib.sha1(data).hexdigest() + \
+                mimetypes.guess_extension(fd.info().gettype())
+            return images_dao.create(name, data)
         else:
             return None
     except IOError:

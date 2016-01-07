@@ -3,6 +3,7 @@ import urlparse
 import json
 import httplib2
 import hashlib
+import mimetypes
 from urllib import urlencode
 from urllib2 import urlopen
 

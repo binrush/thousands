@@ -204,6 +204,13 @@ def test_climb_form_user(client_user):
            'type="hidden" value="{}">'.format(summit_id) in resp.data
 
 
+def test_climb_form_user_existing(client_user):
+    summit_id = get_summit_id(client_user, u'Кушай')
+    resp = client_user.get('/climb/new/' + str(summit_id))
+    assert resp.status == '302 FOUND'
+    assert '/summit/' + str(summit_id) in resp.headers['Location']
+
+
 def test_climb_add(client_user):
     summit_id = get_summit_id(client_user, u'Бабай')
     token = get_csrf_token(client_user)

@@ -143,6 +143,11 @@ def summit_delete(summit_id):
 def climb_new(summit_id):
     if not current_user.is_authenticated:
         return redirect(url_for('summit', summit_id=summit_id))
+
+    if g.climbs_dao.get(current_user.get_id(), summit_id):
+        flash(u'Вы уже сообщили о восхождении на эту вершину')
+        return redirect(url_for('summit', summit_id=summit_id))
+
     f = forms.ClimbForm(
         request.form,
         meta={'csrf_context': session,

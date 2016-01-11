@@ -197,7 +197,7 @@ def test_climb_form_anonymous(client_anonymous):
 
 
 def test_climb_form_user(client_user):
-    summit_id = get_summit_id(client_user, u'Кушай')
+    summit_id = get_summit_id(client_user, u'Бабай')
     resp = client_user.get('/climb/new/' + str(summit_id))
     assert resp.status == '200 OK'
     assert '<input id="summit_id" name="summit_id" ' + \
@@ -222,7 +222,7 @@ def test_climb_add(client_user):
 
 
 def test_climb_add_wo_token(client_user):
-    summit_id = get_summit_id(client_user, u'Бабай')
+    summit_id = get_summit_id(client_user, u'Noname')
     resp = client_user.post('/climb/new/{}'.format(summit_id), data={
         'summit_id': str(summit_id),
         'date': '10.10.2010',

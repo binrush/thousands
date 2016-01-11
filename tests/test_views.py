@@ -30,7 +30,9 @@ def mock_users_dao():
 
 @pytest.fixture
 def mock_climbs_dao():
-    return mock.MagicMock()
+    cd = mock.MagicMock()
+    cd.get.return_value = None
+    return cd
 
 
 def test_move_to_front():
@@ -76,7 +78,7 @@ def test_summit(mock_summits_dao, mock_climbs_dao, client):
         mock_climbs_dao.climbers.assert_called_with(1)
 
 
-@mock.patch('thousands.climbs_dao')
+@mock.patch('thousands.climbs_dao', new=mock_climbs_dao())
 @mock.patch('thousands.users_dao', new=mock_users_dao())
 @mock.patch('thousands.summits_dao')
 def test_climb_new(mock_summits_dao, mock_users_dao, mock_climbs_dao, client):

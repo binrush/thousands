@@ -182,6 +182,11 @@ class SummitsDao(Dao):
                 i += 1
             return summits
 
+    def __get_many(self, query, params):
+        with self.get_cursor() as cur:
+            cur.execute(query, params)
+            return self.__rate_by_field(map(self.__row2summit, cur), 'height')
+
     def get_all(self, user_id=None, sort='ridge'):
 
         if sort == 'height':
@@ -214,9 +219,34 @@ class SummitsDao(Dao):
         LEFT JOIN climbs c ON c.summit_id = s.id
         GROUP BY s.id, s.name, s.name_alt, r.name, r.color """ + order
 
-        with self.get_cursor() as cur:
-            cur.execute(query, (user_id, ))
-            return self.__rate_by_field(map(self.__row2summit, cur), 'height')
+        return self.__get_many(query, (user_id, ))
+
+    def get_by_ridge(self, rids, user_id=None):
+
+        query = """
+        SELECT s.id, s.name, s.name_alt,
+                s.height, s.lng, s.lat, r.name AS ridge, r.color,
+                count(c.user_id) AS climbers,
+            EXISTS (
+                SELECT * FROM climbs
+                WHERE summit_id=s.id AND user_id=%s
+            ) AS climbed,
+            EXISTS (
+                SELECT * FROM
+                    (SELECT rid, max(height) AS maxheight
+                        FROM summits WHERE rid=s.rid GROUP BY rid) as smtsg
+                    INNER JOIN summits smts
+                    ON smtsg.rid=smts.rid AND smts.height=smtsg.maxheight
+                    WHERE id=s.id
+            ) AS main
+        FROM summits s
+        LEFT JOIN ridges r ON s.rid=r.id
+        LEFT JOIN climbs c ON c.summit_id = s.id
+        WHERE rid IN %s
+        GROUP BY s.id, s.name, s.name_alt, r.name, r.color
+        ORDER BY r.name, s.lat DESC"""
+
+        return self.__get_many(query, (user_id, tuple(rids)))
 
     def get_ridges(self):
         with self.get_cursor() as cur:

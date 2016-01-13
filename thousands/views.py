@@ -64,6 +64,13 @@ def table():
         sort=sort)
 
 
+@app.route('/summits/download')
+def summits_download():
+    return render_template(
+        'download.html',
+        active_page='table')
+
+
 @app.route('/summit/<int:summit_id>')
 def summit(summit_id):
     s = g.summits_dao.get(summit_id)
@@ -254,8 +261,14 @@ def summits_get():
 @app.route('/api/summits/gpx')
 def summits_get_gpx():
     gpx = GPX()
-    gpx.waypoints = \
-        [s.to_gpx() for s in g.summits_dao.get_all()]
+    if 'rids' in request.args:
+        rids = (int(rid) for rid in request.args['rids'].split(','))
+        gpx.waypoints = \
+            (s.to_gpx() for s in g.summits_dao.get_by_ridge(rids=rids))
+    else:
+        gpx.waypoints = \
+            (s.to_gpx() for s in g.summits_dao.get_all())
+
     resp = make_response(gpx.to_xml())
     resp.mimetype = 'application/gpx+xml'
     resp.headers['Content-Disposition'] = \

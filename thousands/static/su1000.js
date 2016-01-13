@@ -41,6 +41,7 @@ function createMap(container, center, zoom) {
         "Спутниковые снимки": gs
     };
     L.control.layers(baseMaps).addTo(map);
+    L.Control.measureControl().addTo(map);
 
     return map;
 }

@@ -73,3 +73,12 @@ a.anchor {
 #climb-delete-form {
     display: none;
 }
+
+/* copied from leaflet-measurecontrol.css */
+.leaflet-control-draw-measure {
+    background-image: url(/static/measure-control.png);
+}
+
+.leaflet-control.enabled a {
+    background-color: #e7e7e7;
+}

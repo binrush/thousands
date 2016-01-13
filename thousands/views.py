@@ -279,6 +279,8 @@ def summits_get_gpx():
 @app.route('/api/images/<image_id>')
 def image_get(image_id):
     img = g.images_dao.get(image_id)
+    if img is None:
+        return abort(404)
     return send_file(img.payload,
                      mimetype=mimetypes.guess_type(img.name)[0])
 
@@ -303,6 +305,11 @@ def user(user_id):
             meta={'csrf_context': session,
                   'csrf_secret': app.config['CSRF_SECRET']}),
         active_page='top')
+
+
+@app.route('/user/image')
+def image_upload():
+    return render_template('image.html')
 
 
 @app.route('/top')

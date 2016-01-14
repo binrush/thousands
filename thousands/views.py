@@ -307,9 +307,11 @@ def user(user_id):
         active_page='top')
 
 
-@app.route('/user/image')
+@app.route('/user/image', methods=['POST'])
 def image_upload():
-    return render_template('image.html')
+    print request.files
+    print request.form
+    return "", 204
 
 
 @app.route('/top')

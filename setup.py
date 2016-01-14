@@ -13,6 +13,7 @@ setup(name='thousands',
           'yoyo-migrations==4.2.5',
           'google-api-python-client',
           'bleach',
-          'gpxpy'],
+          'gpxpy',
+          'Pillow'],
       tests_require=['mock'],
       test_suite="tests")

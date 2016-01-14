@@ -363,11 +363,21 @@ class UsersDao(Dao):
                 user.src,
                 user.oauth_id,
                 user.name,
-                user.image_id,
-                user.preview_id))
+                user.image,
+                user.preview))
             if cur.rowcount < 1:
                 return None
             return cur.fetchone()['id']
+
+    def update(self, user):
+        sql = """UPDATE users SET name=%s, image=%s, preview=%s
+              WHERE id=%s"""
+        with self.get_cursor() as cur:
+            cur.execute(sql, (
+                user.name,
+                user.image,
+                user.preview,
+                user.get_id()))
 
 
 class Image(object):

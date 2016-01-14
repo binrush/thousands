@@ -167,10 +167,10 @@ def vk_get_user(credentials):
         data.get('last_name', ''))
     user.src = dao.AUTH_SRC_VK
 
-    user.image_id = vk_get_image(data['photo_200_orig'],
-                                 g.images_dao)
-    user.preview_id = vk_get_image(data['photo_50'],
-                                   g.images_dao)
+    user.image = vk_get_image(data['photo_200_orig'],
+                              g.images_dao)
+    user.preview = vk_get_image(data['photo_50'],
+                                g.images_dao)
 
     user.id = g.users_dao.create(user)
 
@@ -198,8 +198,8 @@ def su_get_user(credentials):
     user.oauth_id = data['sub']
     user.name = data['name']
     user.src = dao.AUTH_SRC_SU
-    user.image_id = None
-    user.preview_id = None
+    user.image = None
+    user.preview = None
     user.id = g.users_dao.create(user)
 
     return user, True

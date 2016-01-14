@@ -9,6 +9,10 @@ import dao
 import forms
 import mimetypes
 from gpxpy.gpx import GPX
+from PIL import Image
+import json
+from io import BytesIO
+import hashlib
 
 
 def move_to_front(l, fn):
@@ -309,9 +313,42 @@ def user(user_id):
 
 @app.route('/user/image', methods=['POST'])
 def image_upload():
-    print request.files
-    print request.form
-    return "", 204
+    uploaded_file = request.files['avatar_file']
+    if uploaded_file.mimetype not in ('image/png', 'image/jpeg', 'image/gif'):
+        return abort(400)
+    crop_data = json.loads(request.form['avatar_data'])
+    box = (
+        int(crop_data['x']),
+        int(crop_data['y']),
+        int(crop_data['x']) + int(crop_data['width']),
+        int(crop_data['y']) + int(crop_data['height']),
+    )
+    img = Image.open(uploaded_file)
+    fmt = img.format
+    preview = img.crop(box).resize((50, 50))
+
+    img.thumbnail((200, 200))
+
+    data = BytesIO()
+    img.save(data, fmt)
+    img_filename = hashlib.sha1(data.getvalue()).hexdigest() + ',' + \
+        fmt.lower()
+    g.images_dao.create(img_filename, data.getvalue())
+
+    data = BytesIO()
+    preview.save(data, fmt)
+    preview_filename = hashlib.sha1(data.getvalue()).hexdigest() + ',' + \
+        fmt.lower()
+    g.images_dao.create(preview_filename, data.getvalue())
+
+    user = current_user
+    user.image = img_filename
+    user.preview = preview_filename
+    g.users_dao.update(user)
+
+    return jsonify({'state': 200,
+                    'message': 'Success',
+                    'result': url_for('image_get', image_id=img_filename)})
 
 
 @app.route('/top')

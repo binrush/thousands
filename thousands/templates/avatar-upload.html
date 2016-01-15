@@ -20,13 +20,19 @@
 
             <!-- Upload image and data -->
             <div class="avatar-upload">
+              {{ image_form.csrf_token }}
               <input type="hidden" class="avatar-src" name="avatar_src">
-              <input type="hidden" class="avatar-data" name="avatar_data">
-              <label for="avatarInput">Local upload</label>
-              <input type="file" class="avatar-input" id="avatarInput" name="avatar_file">
+              {{ image_form.x() }}
+              {{ image_form.y() }}
+              {{ image_form.width() }}
+              {{ image_form.height() }}
+                <label for="avatarInput">Выбрать файл</label>
+                {{ image_form.image(class_='avatar-input form-control', id='avatarInput') }}
+                <p class="help-block">Разрешены файлы JPG, PNG, GIF. Максимальный размер файла - 16Мб.</p>
             </div>
 
             <!-- Crop and preview -->
+            <h5>Выберите область для создания миниатюры</h5>
             <div class="row">
               <div class="col-md-9">
                 <div class="avatar-wrapper"></div>
@@ -38,7 +44,7 @@
 
           </div>
         </div>
-        <div class="modal-footer avatar-btns">
+        <div class="modal-footer">
           <button type="button" class="btn btn-default" data-dismiss="modal">Закрыть</button>
           <button type="submit" class="btn btn-primary avatar-save">Сохранить</button>
         </div>
@@ -76,10 +82,14 @@
     this.$avatarForm = this.$avatarModal.find('.avatar-form');
     this.$avatarUpload = this.$avatarForm.find('.avatar-upload');
     this.$avatarSrc = this.$avatarForm.find('.avatar-src');
-    this.$avatarData = this.$avatarForm.find('.avatar-data');
+    
+    this.$avatarDataX = this.$avatarForm.find('input[name=x]');
+    this.$avatarDataY = this.$avatarForm.find('input[name=y]');
+    this.$avatarDataWidth = this.$avatarForm.find('input[name=width]');
+    this.$avatarDataHeight = this.$avatarForm.find('input[name=height]');
+
     this.$avatarInput = this.$avatarForm.find('.avatar-input');
     this.$avatarSave = this.$avatarForm.find('.avatar-save');
-    this.$avatarBtns = this.$avatarForm.find('.avatar-btns');
 
     this.$avatarWrapper = this.$avatarModal.find('.avatar-wrapper');
     this.$avatarPreview = this.$avatarModal.find('.avatar-preview');
@@ -127,9 +137,9 @@
     },
 
     initPreview: function () {
-      var url = this.$avatar.attr('src');
+      //var url = this.$avatar.attr('src');
 
-      this.$avatarPreview.html('<img src="' + url + '">');
+      //this.$avatarPreview.html('<img src="' + url + '">');
     },
 
     initIframe: function () {
@@ -240,15 +250,11 @@
           preview: this.$avatarPreview.selector,
           strict: false,
           crop: function (e) {
-            var json = [
-                  '{"x":' + e.x,
-                  '"y":' + e.y,
-                  '"height":' + e.height,
-                  '"width":' + e.width,
-                  '"rotate":' + e.rotate + '}'
-                ].join();
-
-            _this.$avatarData.val(json);
+            _this.$avatarDataX.val(~~e.x);
+            _this.$avatarDataY.val(~~e.y);
+            _this.$avatarDataWidth.val(~~e.width);
+            _this.$avatarDataHeight.val(~~e.height);
+            //_this.$avatarData.val(json);
           }
         });
 

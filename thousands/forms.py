@@ -2,8 +2,8 @@
 
 from wtforms import (
     Form, TextField, IntegerField, HiddenField,
-    TextAreaField, SelectField, validators, Field)
-from wtforms.widgets import TextInput
+    TextAreaField, SelectField, FileField, validators, Field)
+from wtforms.widgets import TextInput, HiddenInput
 from wtforms.csrf.session import SessionCSRF
 import datetime
 import dao
@@ -109,3 +109,22 @@ class ClimbForm(ThousandsBaseForm):
 
 class DeleteForm(ThousandsBaseForm):
     pass
+
+
+class ImageUploadForm(ThousandsBaseForm):
+    x = IntegerField(widget=HiddenInput(),
+                     validators=[validators.DataRequired(),
+                                 validators.NumberRange(0)])
+    y = IntegerField(widget=HiddenInput(),
+                     validators=[validators.DataRequired(),
+                                 validators.NumberRange(0)])
+
+    width = IntegerField(widget=HiddenInput(),
+                         validators=[validators.DataRequired(),
+                                     validators.NumberRange(0)])
+
+    height = IntegerField(widget=HiddenInput(),
+                          validators=[validators.DataRequired(),
+                                      validators.NumberRange(0)])
+
+    image = FileField()

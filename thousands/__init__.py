@@ -21,6 +21,7 @@ SU_CLIENT_ID = "thousands"
 SU_CLIENT_SECRET = "fake-su-client-secret"
 MAIL_SUBJECT = "thousands app failed"
 LOGLEVEL = "info"
+MAX_CONTENT_LENGTH = 16 * 1024 * 1024
 
 app = Flask(__name__)
 app.config.from_object(__name__)

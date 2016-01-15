@@ -1,4 +1,5 @@
 # coding: utf8
+from __future__ import division
 from thousands import app
 from flask import (request, render_template, g, jsonify,
                    redirect, url_for, abort, send_file, flash, session,
@@ -10,7 +11,6 @@ import forms
 import mimetypes
 from gpxpy.gpx import GPX
 from PIL import Image
-import json
 from io import BytesIO
 import hashlib
 
@@ -36,6 +36,16 @@ def server_error(e):
 @app.errorhandler(404)
 def not_found(e):
     return render_template('404.html'), 404
+
+
+@app.errorhandler(413)
+def file_too_large(e):
+    if request.path == url_for('image_upload'):
+        return jsonify({
+            'state': 200,
+            'message': 'Ошибка: превышен максимальный размер файла'}), 200
+    else:
+        return e, 404
 
 
 @app.route('/about')
@@ -301,54 +311,65 @@ def user(user_id):
     if user is None:
         return abort(404)
     climbed = g.climbs_dao.climbed(user_id)
-    return render_template(
-        'user.html',
+    params = dict(
         user=user,
         climbed=climbed,
         del_form=forms.DeleteForm(
             meta={'csrf_context': session,
                   'csrf_secret': app.config['CSRF_SECRET']}),
         active_page='top')
+    if user == current_user:
+        params['image_form'] = forms.ImageUploadForm(
+            meta={'csrf_context': session,
+                  'csrf_secret': app.config['CSRF_SECRET']})
+    return render_template('user.html', **params)
+
+
+def save_image(images_dao, img, fmt):
+    data = BytesIO()
+    img.save(data, fmt, quality=90)
+    img_filename = hashlib.sha1(data.getvalue()).hexdigest() + '.' + \
+        fmt.lower()
+    images_dao.create(img_filename, data.getvalue())
+    return img_filename
 
 
 @app.route('/user/image', methods=['POST'])
 def image_upload():
-    uploaded_file = request.files['avatar_file']
-    if uploaded_file.mimetype not in ('image/png', 'image/jpeg', 'image/gif'):
+    form = forms.ImageUploadForm(
+        request.form,
+        meta={'csrf_context': session,
+              'csrf_secret': app.config['CSRF_SECRET']})
+
+    if not form.validate():
+        print form.errors
         return abort(400)
-    crop_data = json.loads(request.form['avatar_data'])
+
     box = (
-        int(crop_data['x']),
-        int(crop_data['y']),
-        int(crop_data['x']) + int(crop_data['width']),
-        int(crop_data['y']) + int(crop_data['height']),
+        form.x.data,
+        form.y.data,
+        form.x.data + form.width.data,
+        form.y.data + form.height.data
     )
-    img = Image.open(uploaded_file)
+    img = Image.open(request.files['image'])
     fmt = img.format
-    preview = img.crop(box).resize((50, 50))
 
-    img.thumbnail((200, 200))
+    if fmt not in ('PNG', 'JPEG', 'GIF'):
+        return abort(400)
 
-    data = BytesIO()
-    img.save(data, fmt)
-    img_filename = hashlib.sha1(data.getvalue()).hexdigest() + ',' + \
-        fmt.lower()
-    g.images_dao.create(img_filename, data.getvalue())
+    preview = img.crop(box).resize((50, 50), Image.ANTIALIAS)
+    img = img.resize((200, int(img.size[1]/(img.size[0]/200))),
+                     Image.ANTIALIAS)
 
-    data = BytesIO()
-    preview.save(data, fmt)
-    preview_filename = hashlib.sha1(data.getvalue()).hexdigest() + ',' + \
-        fmt.lower()
-    g.images_dao.create(preview_filename, data.getvalue())
+    current_user.image = save_image(g.images_dao, img, fmt)
+    current_user.preview = save_image(g.images_dao, preview, fmt)
 
-    user = current_user
-    user.image = img_filename
-    user.preview = preview_filename
-    g.users_dao.update(user)
+    g.users_dao.update(current_user)
 
     return jsonify({'state': 200,
                     'message': 'Success',
-                    'result': url_for('image_get', image_id=img_filename)})
+                    'result': url_for('image_get',
+                                      image_id=current_user.image)})
 
 
 @app.route('/top')

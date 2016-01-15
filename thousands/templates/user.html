@@ -19,7 +19,7 @@
   {% endif %}
 {% endwith %}
 <h1>{{ user.name }}</h1>
-<div class="row" id="crop-avatar">
+<div class="row">
     <div class="col-md-3">
         {% if current_user == user %}
             {% include "avatar-upload.html" %}

@@ -361,8 +361,14 @@ def image_upload():
     img = img.resize((200, int(img.size[1]/(img.size[0]/200))),
                      Image.ANTIALIAS)
 
-    current_user.image = save_image(g.images_dao, img, fmt)
-    current_user.preview = save_image(g.images_dao, preview, fmt)
+    image_name = save_image(g.images_dao, img, fmt)
+    preview_name = save_image(g.images_dao, preview, fmt)
+
+    g.images_dao.delete(current_user.image)
+    current_user.image = image_name
+
+    g.images_dao.delete(current_user.preview)
+    current_user.preview = preview_name
 
     g.users_dao.update(current_user)
 

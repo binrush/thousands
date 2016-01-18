@@ -22,6 +22,7 @@ SU_CLIENT_SECRET = "fake-su-client-secret"
 MAIL_SUBJECT = "thousands app failed"
 LOGLEVEL = "info"
 MAX_CONTENT_LENGTH = 16 * 1024 * 1024
+IMAGES_BACKEND = "database"
 
 app = Flask(__name__)
 app.config.from_object(__name__)
@@ -81,7 +82,12 @@ pool.putconn(conn)
 
 summits_dao = dao.SummitsDao(pool)
 users_dao = dao.UsersDao(pool)
-images_dao = dao.DatabaseImagesDao(pool)
+
+if app.config['IMAGES_BACKEND'] == 'filesystem':
+    images_dao = dao.FilesystemImagesDao(app.config['IMAGES_DIR'])
+else:
+    images_dao = dao.DatabaseImagesDao(pool)
+
 climbs_dao = dao.ClimbsDao(pool)
 
 login_manager = LoginManager()

@@ -143,7 +143,7 @@ def vk_get_user(credentials):
         'v': '5.37',
         'lang': 'ru',
         'user_ids': credentials.token_response['user_id'],
-        'fields': 'photo_50, photo_200_orig, city'}
+        'fields': 'photo_50, photo_200_orig, has_photo'}
 
     resp, content = conn.request('https://api.vk.com/method/users.get',
                                  'POST',
@@ -167,10 +167,14 @@ def vk_get_user(credentials):
         data.get('last_name', ''))
     user.src = dao.AUTH_SRC_VK
 
-    user.image = vk_get_image(data['photo_200_orig'],
-                              g.images_dao)
-    user.preview = vk_get_image(data['photo_50'],
-                                g.images_dao)
+    if data['has_photo']:
+        user.image = vk_get_image(data['photo_200_orig'],
+                                  g.images_dao)
+        user.preview = vk_get_image(data['photo_50'],
+                                    g.images_dao)
+    else:
+        user.image = None
+        user.preview = None
 
     user.id = g.users_dao.create(user)
 

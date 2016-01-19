@@ -3,6 +3,9 @@
 {% block description %}Все вершины Южного Урала выше тысячи метров в таблице{% endblock %}
 {% block content %}
 <h1>Все вершины Южного Урала выше тысячи метров <small>(всего {{ summits | length }})</small></h1>
+<div class="text-right">
+    <a  href="{{ url_for('summits_get_gpx') }}">Скачать координаты вершин в формате GPX</a>
+</div>
 <table id='summitsTable' class="table">
 <thead>
     <tr>

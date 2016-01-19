@@ -77,23 +77,20 @@ class InexactDate(tuple):
         else:
             return u''
 
+    def __getpart(self, idx):
+        return self[idx] if len(self) > idx else None
+
+    @property
     def year(self):
-        if len(self) > 0:
-            return self[0]
-        else:
-            return None
+        return self.__getpart(0)
 
+    @property
     def month(self):
-        if len(self) > 1:
-            return self[1]
-        else:
-            return None
+        return self.__getpart(1)
 
+    @property
     def day(self):
-        if len(self) > 2:
-            return self[2]
-        else:
-            return None
+        return self.__getpart(2)
 
 
 class Dao(object):
@@ -538,7 +535,7 @@ class ClimbsDao(Dao):
             cur.execute(
                 sql,
                 (user_id, summit_id, comment,
-                 date.year(), date.month(), date.day()))
+                 date.year, date.month, date.day))
 
     def update(self, user_id, summit_id, date=None, comment=None):
         sql = "UPDATE climbs SET year=%s, month=%s, day=%s, comment=%s" + \
@@ -546,7 +543,7 @@ class ClimbsDao(Dao):
         with self.get_cursor() as cur:
             cur.execute(
                 sql,
-                (date.year(), date.month(), date.day(),
+                (date.year, date.month, date.day,
                  comment, user_id, summit_id))
 
     def delete(self, user_id, summit_id):

@@ -9,9 +9,9 @@ import tempfile
 class TestInexactDate():
     def test_init(self):
         ied = dao.InexactDate(2010, 10, 10)
-        assert ied.year() == 2010
-        assert ied.month() == 10
-        assert ied.day() == 10
+        assert ied.year == 2010
+        assert ied.month == 10
+        assert ied.day == 10
 
         wrong_inputs = [(2010, 13), (2015, 2, 29)]
         for i in wrong_inputs:
@@ -135,13 +135,11 @@ class TestDatabaseImagesDao():
     def idao(self):
         return dao.DatabaseImagesDao(thousands.pool)
 
-
     def test_create(self, idao):
         idao.create('1.jpg', '\xff\xaa\xbb')
         img = idao.get('1.jpg')
         assert img.payload.read() == '\xff\xaa\xbb'
         idao.delete('1.jpg')
-
 
     def test_create_exsisting(self, idao):
         idao.create('2.jpg', '\xaa\xbb\xcc')
@@ -149,7 +147,6 @@ class TestDatabaseImagesDao():
         assert idao.get('2.jpg').payload.read() == \
             '\xaa\xbb\xcc'
         idao.delete('2.jpg')
-
 
     def test_delete(self, idao):
         idao.create('3.jpg', '\x00\x11\x22')
@@ -162,4 +159,3 @@ class TestFilesystemImagesDao(TestDatabaseImagesDao):
     @pytest.fixture
     def idao(self):
         return dao.FilesystemImagesDao(tempfile.gettempdir())
-

@@ -24,7 +24,7 @@ function createMap(container, center, zoom) {
             minZoom: 8,
             attribution: "Генштабовские топокарты используют сервис <a href=\"http://www.marshruty.ru/Maps/Maps.aspx\">карты Маршруты.Ру</a>"
             });
-    var osm = new L.TileLayer('https://{s}.tile.thunderforest.com/landscape/{z}/{x}/{y}.png', {
+    var thunderforest = new L.TileLayer('https://{s}.tile.thunderforest.com/landscape/{z}/{x}/{y}.png', {
             maxZoom: 20,
             minZoom: 8,
             attribution: "Карты &copy; <a href=\"http://www.thunderforest.com\">Thunderforest</a>, Данные &copy; <a href=\"http://www.openstreetmap.org/copyright\">участники OpenStreetMap</a>"
@@ -34,11 +34,18 @@ function createMap(container, center, zoom) {
             minZoom: 8
             });
 
-    var map = L.map(container, { center: center, zoom: zoom, layers: osm  });
+    /*var osm = new L.TileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 20,
+            minZoom: 8,
+            attribution: "&copy; <a href=\"http://www.openstreetmap.org/copyright\">участники OpenStreetMap</a>"
+            }); */
+
+    var map = L.map(container, { center: center, zoom: zoom, layers: thunderforest });
     var baseMaps = {
-        "OpenStreetMaps Topo": osm,
+        "Thunderforest": thunderforest,
         "Генштабовские Топокарты": topo,
         "Спутниковые снимки": gs
+        //"OpenStreetMap": osm
     };
     L.control.layers(baseMaps).addTo(map);
     L.Control.measureControl().addTo(map);

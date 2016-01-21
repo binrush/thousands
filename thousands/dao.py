@@ -316,7 +316,7 @@ class User(UserMixin):
             u'<a href="https://vk.com/id{}" target="_blank">' +
             u'Профиль ВКонтакте</a>',
         AUTH_SRC_SU:
-            u'<a href="http://www.southural.ru/authors/{}" target="_blank">' +
+            u'<a href="http://www.southural.ru/user/{}" target="_blank">' +
             u'Профиль на southural.ru</a>'
     }
 

@@ -65,7 +65,7 @@ def test_summit_returns_404_on_nonexistent(mock_summits_dao, client):
     mock_summits_dao.get = mock.MagicMock(return_value=None)
     with client() as c:
         resp = c.get('/summit/1')
-        mock_summits_dao.get.assert_called_with(1)
+        mock_summits_dao.get.assert_called_with(1, True)
         assert resp.status == '404 NOT FOUND'
 
 
@@ -74,7 +74,7 @@ def test_summit_returns_404_on_nonexistent(mock_summits_dao, client):
 def test_summit(mock_summits_dao, mock_climbs_dao, client):
     with client() as c:
         c.get('/summit/1')
-        mock_summits_dao.get.assert_called_with(1)
+        mock_summits_dao.get.assert_called_with(1, True)
         mock_climbs_dao.climbers.assert_called_with(1)
 
 

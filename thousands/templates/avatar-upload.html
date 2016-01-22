@@ -1,6 +1,6 @@
 <div id="crop-avatar">
 <div class="avatar-view">
-<img src="{% if user.image %}{{ url_for('image_get', image_id=user.image)}}{% else %}/static/climber.png{% endif %}" class="center-block user-image-large">
+<img src="{% if user.image %}{{ url_for('image_get', image_id=user.image)}}{% else %}/static/climber.png{% endif %}" class="center-block user-image-large img-responsive">
 </div>
 <p class="text-center">
 {{ user.social_link() | safe }}

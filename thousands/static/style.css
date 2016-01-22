@@ -147,3 +147,7 @@ a.anchor {
   filter: alpha(opacity=75);
   z-index: 20140628;
 }
+
+img.summit-image-main {
+    margin-bottom: 20px;
+}

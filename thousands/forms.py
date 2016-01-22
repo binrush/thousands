@@ -86,22 +86,35 @@ class ThousandsBaseForm(Form):
 
 
 class SummitForm(ThousandsBaseForm):
-    id = HiddenField('id')
-    name = TextField('name', filters=[lambda x: x or None])
-    name_alt = TextField('name_alt', filters=[lambda x: x or None])
-    height = IntegerField('height', [validators.NumberRange(1000, 1640)])
-    rid = SelectField('rid', coerce=int, choices=[(0, '---')])
-    coordinates = CoordinatesField('coordinates',
+    id = HiddenField()
+    name = TextField(u'Название', filters=[lambda x: x or None])
+    name_alt = TextField(u'Варианты названия', filters=[lambda x: x or None])
+    height = IntegerField(u'Высота', [validators.NumberRange(1000, 1640)])
+    rid = SelectField(u'Хребет', coerce=int, choices=[(0, '---')])
+    coordinates = CoordinatesField(u'Координаты',
                                    validators=[validators.DataRequired()])
-    interpretation = TextAreaField('interpretation',
+    interpretation = TextAreaField(u'Расшифровка названия',
                                    filters=[lambda x: x or None])
-    description = TextAreaField('description', filters=[lambda x: x or None])
+    description = TextAreaField(u'Описание', filters=[lambda x: x or None])
+
+
+class SummitImageForm(ThousandsBaseForm):
+    summit_id = HiddenField()
+    comment = TextField(u'Название', filters=[lambda x: x or None])
+
+
+class SummitImageEditForm(SummitImageForm):
+    action = TextField(validators=[validators.AnyOf(('update', 'delete'))])
+
+
+class SummitImageUploadForm(SummitImageForm):
+    image = FileField(u'Файл изображения')
 
 
 class ClimbForm(ThousandsBaseForm):
     MAX_COMMENT_SIZE = 1000
 
-    summit_id = HiddenField('summit_id')
+    summit_id = HiddenField()
     date = ClimbDateField(u'Дата')
     comment = TextAreaField(u'Комментарий',
                             [validators.Length(max=MAX_COMMENT_SIZE)])

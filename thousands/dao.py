@@ -156,6 +156,14 @@ class Summit(object):
         return wp
 
 
+class SummitImage(object):
+
+    def __init__(self, **kwargs):
+        for k in kwargs:
+            if k in ('image', 'preview', 'summit_id', 'comment', 'main'):
+                setattr(self, k, kwargs[k])
+
+
 class SummitsDao(Dao):
 
     def __row2summit(self, row):
@@ -250,7 +258,7 @@ class SummitsDao(Dao):
             cur.execute("SELECT id, name FROM ridges ORDER BY name")
             return [{"id": row['id'], "name": row['name']} for row in cur]
 
-    def get(self, sid):
+    def get(self, sid, images=False):
         with self.get_cursor() as cur:
             cur.execute(
                 """SELECT s.id, s.name, name_alt, height,
@@ -266,7 +274,17 @@ class SummitsDao(Dao):
             if cur.rowcount < 1:
                 return None
 
-            return self.__row2summit(cur.fetchone())
+            summit = self.__row2summit(cur.fetchone())
+            summit.images = []
+
+            if images:
+                cur.execute("SELECT image, summit_id, preview, comment " +
+                            " FROM summits_images " +
+                            " WHERE summit_id=%s ORDER BY main", (sid, ))
+                for row in cur:
+                    summit.images.append(SummitImage(**row))
+
+            return summit
 
     def create(self, summit):
         with self.get_cursor() as cur:
@@ -307,6 +325,33 @@ class SummitsDao(Dao):
     def delete(self, summit_id):
         with self.get_cursor() as cur:
             cur.execute("DELETE FROM summits WHERE id=%s", (summit_id, ))
+
+    def get_image(self, image_id):
+        query = "SELECT * FROM summits_images WHERE image=%s"
+        with self.get_cursor() as cur:
+            cur.execute(query, (image_id, ))
+            if cur.rowcount == 1:
+                row = cur.fetchone()
+                return SummitImage(**row)
+
+    def create_image(self, summit_id, image, preview, comment):
+        query = """INSERT INTO summits_images (summit_id, image, preview, comment)
+                VALUES (%s, %s, %s, %s)"""
+        with self.get_cursor() as cur:
+            cur.execute(query, (summit_id, image, preview, comment))
+
+    def update_image(self, image_id, comment):
+        """
+            Only updating of comment makes sense
+        """
+        with self.get_cursor() as cur:
+            cur.execute("UPDATE summits_images SET comment=%s WHERE image=%s",
+                        (image_id, comment))
+
+    def delete_image(self, image_id):
+        with self.get_cursor() as cur:
+            cur.execute("DELETE FROM summits_images WHERE image=%s",
+                        (image_id, ))
 
 
 class User(UserMixin):

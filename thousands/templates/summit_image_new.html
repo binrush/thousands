@@ -1,0 +1,48 @@
+{% extends "layout.html" %}
+{% block title %}Добавить фотографию вершины{% endblock %}
+{% block content %}
+<h2>Добавить фотографию вершины</h2>
+{% if form.errors %}
+<div id="form-errors" class="alert alert-danger">
+    <ul id="form-error-list">
+        {% for field_name, field_errors in form.errors|dictsort if field_errors %}
+            {% for error in field_errors %}
+                <li>{{ form[field_name].label }}: {{ error }}</li>
+            {% endfor %}
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+<form id="summit_image_form" method="post" class="form-horizontal" enctype="multipart/form-data">
+  {{ form.summit_id(value=summit.id) }}
+  {{ form.csrf_token }}
+  <div class="form-group">
+    <label class="col-md-3 control-label">Вершина</label>
+    <div class="col-md-6">
+      <p class="form-control-static">
+        <a  href="{{ url_for('summit', summit_id=summit.id) }}">
+            {% if summit.name %}{{ summit.format_name() }}, {% endif %}{{ summit.height }}, хребет {{ summit.ridge }}
+        </a>
+      </p>
+    </div>
+  </div>
+  <div class="form-group">
+    {{ form.image.label(class_='col-md-3 control-label') }}
+    <div class="col-md-6">
+    {{ form.image(class_='form-control') }}
+    </div>
+  </div>
+
+  <div class="form-group">
+    {{ form.comment.label(class_='col-md-3 control-label') }}
+    <div class="col-md-6">
+    {{ form.comment(class_='form-control') }}
+    </div>
+  </div>
+   <div class="form-group">
+    <div class="col-md-offset-3 col-md-6">
+      <button type="submit" class="btn btn-primary">Сохранить</button>
+    </div>
+  </div>
+</form>
+{% endblock %}

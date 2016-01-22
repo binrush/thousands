@@ -24,7 +24,7 @@
         {% if current_user == user %}
             {% include "avatar-upload.html" %}
         {% else %}
-        <img src="{% if user.image %}{{ url_for('image_get', image_id=user.image)}}{% else %}/static/climber.png{% endif %}" class="center-block user-image-large">
+        <img src="{% if user.image %}{{ url_for('image_get', image_id=user.image)}}{% else %}/static/climber.png{% endif %}" class="user-image-large center-block img-responsive">
         <p class="text-center">
         {{ user.social_link() | safe }}
         </p>

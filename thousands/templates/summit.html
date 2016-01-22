@@ -16,52 +16,67 @@
 {% if current_user.admin %}
 <a href="{{ url_for('summit_edit', summit_id=summit.id) }}"><span class="glyphicon glyphicon-edit"></span></a>
 <a href="{{ url_for('summit_delete', summit_id=summit.id) }}" class="simple-delete-confirm"><span class="glyphicon glyphicon-remove"></span></a>
+<a href="{{ url_for('summit_image_new', summit_id=summit.id) }}"><span class="glyphicon glyphicon-picture"></span></a>
 {% endif %}
 </h1>
-{% if summit.name_alt %}
-<dl class="dl-horizontal">
-    <dt>Варианты названий</dt>
-    <dd>{{ summit.name_alt }}</dd>
-</dl>
-{% endif %}
-<dl class="dl-horizontal">
-    <dt>Высота</dt>
-    <dd>{{ summit.height }} <small class="text-muted" title="{{ summit.number }}-я по высоте на Южном Урале">{{ summit.number }}</small></dd>
-</dl>
-<dl class="dl-horizontal">
-    <dt>Хребет</dt>
-    <dd>{{ summit.ridge }}</dd>
-</dl>
-{% if summit.main %}
-<dl class="dl-horizontal">
-    <dd>Главная (высочайшая) вершина хребта</dd>
-</dl>
-{% endif %}
-<dl class="dl-horizontal">
-    <dt>Координаты</dt>
-    <dd><a href="{{ url_for('index', sid=summit.id) }}#12/{{ summit.coordinates[0] }}/{{ summit.coordinates[1] }}">{{ summit.format_coordinates() }}</a></dd>
-</dl>
-{% if summit.interpretation %}
-<dl class="dl-horizontal">
-    <dt>Расшифровка названия</dt>
-    <dd>{{ summit.interpretation | safe }}</dd>
-</dl>
-{% endif %}
-{% if summit.description %}
-<dl class="dl-horizontal">
-    <dt>Дополнительная информация</dt>
-    <dd>{{ summit.description | safe }}</dd>
-</dl>
-{% endif %}
-{% if not current_user.is_authenticated %}
-    <dl class="dl-horizontal">
-        <dd><a class="btn btn-primary" href="{{ url_for('login_form', r=url_for('climb_new', summit_id=summit.id)) }}" data-remote="false" data-toggle="modal" data-target="#authModal">Взошли на эту вершину?</a></dd>
-    </dl>
-{% elif climbers | length  == 0 or current_user != climbers[0]['user'] %}
-    <dl class="dl-horizontal">
-        <dd><a class="btn btn-primary" href="{{ url_for('climb_new', summit_id=summit.id) }}">Взошли на эту вершину?</a></dd>
-    </dl>
-{% endif %}
+<div class="row">
+    <div class="col-md-4">
+        {% if summit.images | length > 0 %}
+        <img src="{{ url_for('image_get', image_id=summit.images[0].image )}}" class="img-responsive center-block summit-image-main">
+        {% for img in summit.images %}
+        <a href="{{ url_for('image_get', image_id=img.image) }}" alt="{{ img.comment }}" data-gallery title={{ img.comment }}>
+            <img src="{{ url_for('image_get', image_id=img.preview) }}">
+        </a>
+        {% endfor %}
+        {% endif %}
+    </div>
+    <div class="col-md-8">
+        {% if summit.name_alt %}
+        <dl class="dl-horizontal">
+            <dt>Варианты названий</dt>
+            <dd>{{ summit.name_alt }}</dd>
+        </dl>
+        {% endif %}
+        <dl class="dl-horizontal">
+            <dt>Высота</dt>
+            <dd>{{ summit.height }} <small class="text-muted" title="{{ summit.number }}-я по высоте на Южном Урале">{{ summit.number }}</small></dd>
+        </dl>
+        <dl class="dl-horizontal">
+            <dt>Хребет</dt>
+            <dd>{{ summit.ridge }}</dd>
+        </dl>
+        {% if summit.main %}
+        <dl class="dl-horizontal">
+            <dd>Главная (высочайшая) вершина хребта</dd>
+        </dl>
+        {% endif %}
+        <dl class="dl-horizontal">
+            <dt>Координаты</dt>
+            <dd><a href="{{ url_for('index', sid=summit.id) }}#12/{{ summit.coordinates[0] }}/{{ summit.coordinates[1] }}">{{ summit.format_coordinates() }}</a></dd>
+        </dl>
+        {% if summit.interpretation %}
+        <dl class="dl-horizontal">
+            <dt>Расшифровка названия</dt>
+            <dd>{{ summit.interpretation | safe }}</dd>
+        </dl>
+        {% endif %}
+        {% if summit.description %}
+        <dl class="dl-horizontal">
+            <dt>Дополнительная информация</dt>
+            <dd>{{ summit.description | safe }}</dd>
+        </dl>
+        {% endif %}
+        {% if not current_user.is_authenticated %}
+            <dl class="dl-horizontal">
+                <dd><a class="btn btn-primary" href="{{ url_for('login_form', r=url_for('climb_new', summit_id=summit.id)) }}" data-remote="false" data-toggle="modal" data-target="#authModal">Взошли на эту вершину?</a></dd>
+            </dl>
+        {% elif climbers | length  == 0 or current_user != climbers[0]['user'] %}
+            <dl class="dl-horizontal">
+                <dd><a class="btn btn-primary" href="{{ url_for('climb_new', summit_id=summit.id) }}">Взошли на эту вершину?</a></dd>
+            </dl>
+        {% endif %}
+    </div>
+</div>
 <h3>
     Восходители
 </h3>
@@ -102,5 +117,40 @@
     </div>
     </li>
     {% endfor %}
+<div id="blueimp-gallery" class="blueimp-gallery">
+    <!-- The container for the modal slides -->
+    <div class="slides"></div>
+    <!-- Controls for the borderless lightbox -->
+    <h3 class="title"></h3>
+    <a class="prev">‹</a>
+    <a class="next">›</a>
+    <a class="close">×</a>
+    <a class="play-pause"></a>
+    <ol class="indicator"></ol>
+    <!-- The modal dialog, which will be used to wrap the lightbox content -->
+    <div class="modal fade">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title"></h4>
+                </div>
+                <div class="modal-body next"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default pull-left prev">
+                        <i class="glyphicon glyphicon-chevron-left"></i>
+                        Previous
+                    </button>
+                    <button type="button" class="btn btn-primary next">
+                        Next
+                        <i class="glyphicon glyphicon-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 </ul>
+
+<script src="/static/bootstrap-image-gallery.min.js"></script>
 {% endblock %}

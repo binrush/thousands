@@ -13,48 +13,48 @@
     </ul>
 </div>
 {% endif %}
-<form id="summit_edit_form" method="post" class="form-horizontal">
+<form id="summit_edit_form" method="post" class="form-horizontal" enctype="multipart/form-data">
   {{ form.id }}
   {{ form.csrf_token }}
   <div class="form-group">
-    <label for="name" class="col-md-3 control-label">Название</label>
+    {{ form.name.label(class_='col-md-3 control-label') }}
     <div class="col-md-6">
     {{ form.name(class_='form-control') }}
     </div>
   </div>
   <div class="form-group">
-    <label for="name_alt" class="col-md-3 control-label">Варианты названий</label>
+    {{ form.name_alt.label(class_='col-md-3 control-label') }}
     <div class="col-md-6">
     {{ form.name_alt(class_='form-control') }}
     </div>
   </div>
   <div class="form-group">
-    <label for="height" class="col-md-3 control-label">Высота</label>
+    {{ form.height.label(class_='col-md-3 control-label') }}
     <div class="col-md-6">
     {{ form.height(class_='form-control') }}
     </div>
   </div>
   <div class="form-group">
-    <label for="coordinates" class="col-md-3 control-label">Координаты</label>
+    {{ form.coordinates.label(class_='col-md-3 control-label') }}
     <div class="col-md-6">
     {{ form.coordinates(class_='form-control') }}
     <div id="coordinates-pick-map"></div>
     </div>
   </div>
   <div class="form-group">
-    <label for="rid" class="col-md-3 control-label">Хребет</label>
+    {{ form.rid.label(class_='col-md-3 control-label') }}
     <div class="col-md-6">
     {{ form.rid(class_='form-control') }}
     </div>
   </div>
   <div class="form-group">
-    <label for="description" class="col-md-3 control-label">Расшифровка названия</label>
+    {{ form.interpretation.label(class_='col-md-3 control-label') }}
     <div class="col-md-6">
     {{ form.interpretation(class_='form-control', rows=10) }}
     </div>
   </div>
   <div class="form-group">
-    <label for="description" class="col-md-3 control-label">Дополнительная информация</label>
+    {{ form.description.label(class_='col-md-3 control-label') }}
     <div class="col-md-6">
     {{ form.description(class_='form-control', rows=10) }}
     </div>

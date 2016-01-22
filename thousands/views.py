@@ -28,6 +28,15 @@ def move_to_front(l, fn):
     return l
 
 
+def save_image(images_dao, img, fmt):
+    data = BytesIO()
+    img.save(data, fmt, quality=90)
+    img_filename = hashlib.sha1(data.getvalue()).hexdigest() + '.' + \
+        fmt.lower()
+    images_dao.create(img_filename, data.getvalue())
+    return img_filename
+
+
 @app.errorhandler(500)
 def server_error(e):
     return render_template('500.html'), 500
@@ -87,7 +96,7 @@ def summits_download():
 
 @app.route('/summit/<int:summit_id>')
 def summit(summit_id):
-    s = g.summits_dao.get(summit_id)
+    s = g.summits_dao.get(summit_id, True)
     if s is None:
         return abort(404)
     climbers = move_to_front(g.climbs_dao.climbers(summit_id),
@@ -158,6 +167,58 @@ def summit_delete(summit_id):
         abort(401)
     g.summits_dao.delete(summit_id)
     return redirect(url_for('index'))
+
+
+@app.route('/summit/<int:summit_id>/image/new', methods=['GET', 'POST'])
+@login_required
+def summit_image_new(summit_id):
+    if not current_user.admin:
+        abort(401)
+    form = forms.SummitImageUploadForm(
+        request.form,
+        meta={'csrf_context': session,
+              'csrf_secret': app.config['CSRF_SECRET']})
+    if request.method == 'POST' and form.validate():
+        img = Image.open(request.files['image'])
+        fmt = img.format
+        image_name = save_image(g.images_dao, img, fmt)
+        img.thumbnail((75, 75))
+        preview_name = save_image(g.images_dao, img, fmt)
+        g.summits_dao.create_image(
+            form.summit_id.data,
+            image_name,
+            preview_name,
+            form.comment.data)
+        return redirect(url_for('summit', summit_id=form.summit_id.data))
+
+    return render_template('summit_image_new.html',
+                           form=form,
+                           summit=g.summits_dao.get(summit_id))
+
+
+@app.route('/summit/image/edit/<image_id>',
+           methods=['GET', 'POST'])
+def summit_image_edit(image_id):
+    summit_image = g.summits_dao.get_image(image_id)
+    form = forms.SummitImageEditForm(
+        request.form,
+        summit_image,
+        meta={'csrf_context': session,
+              'csrf_secret': app.config['CSRF_SECRET']})
+    if request.method == 'POST' and form.validate:
+        if form.action.data == 'delete':
+            g.images_dao.delete(summit_image.image)
+            g.images_dao.delete(summit_image.preview)
+            g.summits_dao.delete_image(image_id)
+        elif form.action.data == 'update':
+            g.summits_dao.update_image(form.comment)
+        return redirect(url_for('summit', summit_id=summit_image.summit_id))
+
+    return render_template(
+        'summit_image_edit.html',
+        summit=g.summits_dao.get(summit_image.summit_id),
+        image=image_id,
+        form=form)
 
 
 @app.route('/climb/new/<int:summit_id>', methods=['GET', 'POST'])
@@ -325,15 +386,6 @@ def user(user_id):
     return render_template('user.html', **params)
 
 
-def save_image(images_dao, img, fmt):
-    data = BytesIO()
-    img.save(data, fmt, quality=90)
-    img_filename = hashlib.sha1(data.getvalue()).hexdigest() + '.' + \
-        fmt.lower()
-    images_dao.create(img_filename, data.getvalue())
-    return img_filename
-
-
 @app.route('/user/image', methods=['POST'])
 def image_upload():
     form = forms.ImageUploadForm(
@@ -342,7 +394,6 @@ def image_upload():
               'csrf_secret': app.config['CSRF_SECRET']})
 
     if not form.validate():
-        print form.errors
         return abort(400)
 
     box = (

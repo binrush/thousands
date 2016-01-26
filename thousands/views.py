@@ -2,7 +2,7 @@
 from __future__ import division
 from thousands import app
 from flask import (request, render_template, g, jsonify,
-                   redirect, url_for, abort, send_file, flash, session,
+                   redirect, url_for, abort, send_file, flash,
                    make_response)
 from flask.ext.login import (logout_user, current_user,
                              login_required)
@@ -87,13 +87,6 @@ def table():
         sort=sort)
 
 
-@app.route('/summits/download')
-def summits_download():
-    return render_template(
-        'download.html',
-        active_page='table')
-
-
 @app.route('/summit/<int:summit_id>')
 def summit(summit_id):
     s = g.summits_dao.get(summit_id, True)
@@ -105,9 +98,7 @@ def summit(summit_id):
         'summit.html',
         summit=s,
         climbers=climbers,
-        del_form=forms.DeleteForm(
-            meta={'csrf_context': session,
-                  'csrf_secret': app.config['CSRF_SECRET']}),
+        del_form=forms.DeleteForm(),
         active_page='table')
 
 
@@ -115,18 +106,16 @@ def summit(summit_id):
 def summit_new():
     if current_user.is_anonymous or not current_user.admin:
         abort(401)
-    f = forms.SummitForm(
-        request.form,
-        meta={'csrf_context': session,
-              'csrf_secret': app.config['CSRF_SECRET']})
-    f.rid.choices = [(r['id'], r['name']) for r in g.summits_dao.get_ridges()]
-    if request.method == 'POST' and f.validate():
+    form = forms.SummitForm()
+    form.rid.choices = \
+        [(r['id'], r['name']) for r in g.summits_dao.get_ridges()]
+    if form.validate_on_submit():
         summit = dao.Summit()
-        f.populate_obj(summit)
-        summit.lat, summit.lng = f.coordinates.data
+        form.populate_obj(summit)
+        summit.lat, summit.lng = form.coordinates.data
         return redirect(url_for('summit',
                                 summit_id=g.summits_dao.create(summit)))
-    return render_template('summit_edit.html', form=f)
+    return render_template('summit_edit.html', form=form)
 
 
 @app.route('/summit/edit/<int:summit_id>', methods=['GET', 'POST'])
@@ -134,30 +123,20 @@ def summit_new():
 def summit_edit(summit_id):
     if not current_user.admin:
         abort(401)
-    if request.method == 'POST':
-        f = forms.SummitForm(
-            request.form,
-            meta={'csrf_context': session,
-                  'csrf_secret': app.config['CSRF_SECRET']})
-        f.rid.choices = \
-            [(r['id'], r['name']) for r in g.summits_dao.get_ridges()]
-        if f.validate():
-            summit = dao.Summit()
-            f.populate_obj(summit)
-            g.summits_dao.update(summit)
-            return redirect(url_for('summit', summit_id=summit.id))
-    else:
-        s = g.summits_dao.get(summit_id)
-        if s is None:
-            return abort(404)
-        f = forms.SummitForm(
-            None,
-            s,
-            meta={'csrf_context': session,
-                  'csrf_secret': app.config['CSRF_SECRET']})
-        f.rid.choices = \
-            [(r['id'], r['name']) for r in g.summits_dao.get_ridges()]
-    return render_template('summit_edit.html', form=f)
+
+    s = g.summits_dao.get(summit_id)
+    if s is None:
+        abort(404)
+    form = forms.SummitForm(obj=g.summits_dao.get(summit_id))
+    form.rid.choices = \
+        [(r['id'], r['name']) for r in g.summits_dao.get_ridges()]
+    if form.validate_on_submit():
+        summit = dao.Summit()
+        form.populate_obj(summit)
+        g.summits_dao.update(summit)
+        return redirect(url_for('summit', summit_id=summit.id))
+
+    return render_template('summit_edit.html', form=form)
 
 
 @app.route('/summit/delete/<int:summit_id>', methods=['POST'])
@@ -165,7 +144,9 @@ def summit_edit(summit_id):
 def summit_delete(summit_id):
     if not current_user.admin:
         abort(401)
-    g.summits_dao.delete(summit_id)
+    form = forms.DeleteForm()
+    if form.validate_on_submit():
+        g.summits_dao.delete(summit_id)
     return redirect(url_for('index'))
 
 
@@ -174,11 +155,8 @@ def summit_delete(summit_id):
 def summit_images(summit_id):
     if not current_user.admin:
         abort(401)
-    form = forms.SummitImageUploadForm(
-        request.form,
-        meta={'csrf_context': session,
-              'csrf_secret': app.config['CSRF_SECRET']})
-    if request.method == 'POST' and form.validate():
+    form = forms.SummitImageUploadForm()
+    if form.validate_on_submit():
         img = Image.open(request.files['image'])
         fmt = img.format
         image_name = save_image(g.images_dao, img, fmt)
@@ -200,12 +178,8 @@ def summit_images(summit_id):
            methods=['GET', 'POST'])
 def summit_image_edit(image_id):
     summit_image = g.summits_dao.get_image(image_id)
-    form = forms.SummitImageEditForm(
-        request.form,
-        summit_image,
-        meta={'csrf_context': session,
-              'csrf_secret': app.config['CSRF_SECRET']})
-    if request.method == 'POST' and form.validate:
+    form = forms.SummitImageEditForm(obj=summit_image)
+    if form.validate_on_submit():
         if form.action.data == 'delete':
             g.images_dao.delete(summit_image.image)
             g.images_dao.delete(summit_image.preview)
@@ -231,25 +205,22 @@ def climb_new(summit_id):
         flash(u'Вы уже сообщили о восхождении на эту вершину')
         return redirect(url_for('summit', summit_id=summit_id))
 
-    f = forms.ClimbForm(
-        request.form,
-        meta={'csrf_context': session,
-              'csrf_secret': app.config['CSRF_SECRET']})
-    if request.method == 'POST' and f.validate():
+    form = forms.ClimbForm()
+    if form.validate_on_submit():
         g.climbs_dao.create(
             current_user.get_id(),
-            f.summit_id.data,
-            f.date.data,
-            f.comment.data)
+            form.summit_id.data,
+            form.date.data,
+            form.comment.data)
         app.logger.info("Climb added uid=%s, sid=%s",
                         current_user.id,
                         summit_id)
         flash(u'Ваше восхождение зарегистрировано')
-        return redirect(url_for('summit', summit_id=f.summit_id.data))
+        return redirect(url_for('summit', summit_id=form.summit_id.data))
 
     return render_template('climb_edit.html',
                            summit=g.summits_dao.get(summit_id),
-                           form=f)
+                           form=form)
 
 
 @app.route('/summit/<int:summit_id>/climb/edit', methods=['GET', 'POST'])
@@ -267,33 +238,22 @@ def profile_climb_edit(summit_id):
 
 
 def climb_edit(summit_id, redirect_url):
-    if request.method == 'POST':
-        f = forms.ClimbForm(
-            request.form,
-            meta={'csrf_context': session,
-                  'csrf_secret': app.config['CSRF_SECRET']})
-        if f.validate():
-            g.climbs_dao.update(
-                current_user.id,
-                f.summit_id.data,
-                f.date.data,
-                f.comment.data)
-            app.logger.info("Climb edited uid=%s, sid=%s",
-                            current_user.id,
-                            summit_id)
-            flash(u'Ваше восхождение отредактировано')
-            return redirect(redirect_url)
-    else:
-        climb = g.climbs_dao.get(current_user.id, summit_id)
-        f = forms.ClimbForm(
-            None,
-            climb,
-            summit=summit_id,
-            meta={'csrf_context': session,
-                  'csrf_secret': app.config['CSRF_SECRET']})
+    climb = g.climbs_dao.get(current_user.id, summit_id)
+    form = forms.ClimbForm(obj=climb)
+    if form.validate_on_submit():
+        g.climbs_dao.update(
+            current_user.id,
+            form.summit_id.data,
+            form.date.data,
+            form.comment.data)
+        app.logger.info("Climb edited uid=%s, sid=%s",
+                        current_user.id,
+                        summit_id)
+        flash(u'Ваше восхождение отредактировано')
+        return redirect(redirect_url)
     return render_template('climb_edit.html',
                            summit=g.summits_dao.get(summit_id),
-                           form=f)
+                           form=form)
 
 
 @app.route('/summit/<int:summit_id>/climb/delete/', methods=['POST'])
@@ -310,11 +270,8 @@ def profile_climb_delete(summit_id):
 
 
 def climb_delete(summit_id, redirect_url):
-    del_form = forms.DeleteForm(
-        request.form,
-        meta={'csrf_context': session,
-              'csrf_secret': app.config['CSRF_SECRET']})
-    if del_form.validate():
+    del_form = forms.DeleteForm()
+    if del_form.validate_on_submit():
         g.climbs_dao.delete(current_user.id, summit_id)
         app.logger.info("Climb deleted uid=%s, sid=%s",
                         current_user.id,
@@ -376,23 +333,16 @@ def user(user_id):
     params = dict(
         user=user,
         climbed=climbed,
-        del_form=forms.DeleteForm(
-            meta={'csrf_context': session,
-                  'csrf_secret': app.config['CSRF_SECRET']}),
+        del_form=forms.DeleteForm(),
         active_page='top')
     if user == current_user:
-        params['image_form'] = forms.ImageUploadForm(
-            meta={'csrf_context': session,
-                  'csrf_secret': app.config['CSRF_SECRET']})
+        params['image_form'] = forms.ImageUploadForm()
     return render_template('user.html', **params)
 
 
 @app.route('/user/image', methods=['POST'])
 def image_upload():
-    form = forms.ImageUploadForm(
-        request.form,
-        meta={'csrf_context': session,
-              'csrf_secret': app.config['CSRF_SECRET']})
+    form = forms.ImageUploadForm()
 
     if not form.validate():
         return abort(400)

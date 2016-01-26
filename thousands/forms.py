@@ -1,10 +1,11 @@
 # coding: utf-8
 
+from flask_wtf import Form
+from flask_wtf.file import FileField
 from wtforms import (
-    Form, TextField, IntegerField, HiddenField,
-    TextAreaField, SelectField, FileField, validators, Field)
+    TextField, IntegerField, HiddenField,
+    TextAreaField, SelectField, validators, Field)
 from wtforms.widgets import TextInput, HiddenInput
-from wtforms.csrf.session import SessionCSRF
 import datetime
 import dao
 
@@ -78,14 +79,7 @@ class ClimbDateField(Field):
             raise validators.ValidationError(u'Указана дата в будущем')
 
 
-class ThousandsBaseForm(Form):
-    class Meta:
-        csrf = True
-        csrf_class = SessionCSRF
-        csrf_time_limit = datetime.timedelta(minutes=60)
-
-
-class SummitForm(ThousandsBaseForm):
+class SummitForm(Form):
     id = HiddenField()
     name = TextField(u'Название', filters=[lambda x: x or None])
     name_alt = TextField(u'Варианты названия', filters=[lambda x: x or None])
@@ -98,20 +92,20 @@ class SummitForm(ThousandsBaseForm):
     description = TextAreaField(u'Описание', filters=[lambda x: x or None])
 
 
-class SummitImageForm(ThousandsBaseForm):
+class SummitImageForm(Form):
     summit_id = HiddenField()
     comment = TextField(u'Название', validators=[validators.DataRequired()])
 
 
-class SummitImageEditForm(SummitImageForm):
+class SummitImageEditForm(Form):
     action = TextField(validators=[validators.AnyOf(('update', 'delete'))])
 
 
-class SummitImageUploadForm(SummitImageForm):
+class SummitImageUploadForm(Form):
     image = FileField(u'Файл изображения')
 
 
-class ClimbForm(ThousandsBaseForm):
+class ClimbForm(Form):
     MAX_COMMENT_SIZE = 1000
 
     summit_id = HiddenField()
@@ -120,11 +114,11 @@ class ClimbForm(ThousandsBaseForm):
                             [validators.Length(max=MAX_COMMENT_SIZE)])
 
 
-class DeleteForm(ThousandsBaseForm):
+class DeleteForm(Form):
     pass
 
 
-class ImageUploadForm(ThousandsBaseForm):
+class ImageUploadForm(Form):
     x = IntegerField(widget=HiddenInput(),
                      validators=[validators.DataRequired(),
                                  validators.NumberRange(0)])

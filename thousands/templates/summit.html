@@ -16,16 +16,19 @@
 {% if current_user.admin %}
 <a href="{{ url_for('summit_edit', summit_id=summit.id) }}"><span class="glyphicon glyphicon-edit"></span></a>
 <a href="{{ url_for('summit_delete', summit_id=summit.id) }}" class="simple-delete-confirm"><span class="glyphicon glyphicon-remove"></span></a>
-<a href="{{ url_for('summit_image_new', summit_id=summit.id) }}"><span class="glyphicon glyphicon-picture"></span></a>
+<a href="{{ url_for('summit_images', summit_id=summit.id) }}"><span class="glyphicon glyphicon-picture"></span></a>
 {% endif %}
 </h1>
 <div class="row">
     <div class="col-md-4">
         {% if summit.images | length > 0 %}
-        <img src="{{ url_for('image_get', image_id=summit.images[0].image )}}" class="img-responsive center-block summit-image-main">
         {% for img in summit.images %}
-        <a href="{{ url_for('image_get', image_id=img.image) }}" alt="{{ img.comment }}" data-gallery title={{ img.comment }}>
-            <img src="{{ url_for('image_get', image_id=img.preview) }}">
+        <a href="{{ url_for('image_get', image_id=img.image) }}" alt="{{ img.comment }}" data-gallery title="{{ img.comment }}">
+            {% if loop.index0 == 0 %}
+                <img src="{{ url_for('image_get', image_id=img.image) }}" class="img-responsive center-block summit-image-main">
+            {% else %}
+                <img src="{{ url_for('image_get', image_id=img.preview) }}">
+            {% endif %}
         </a>
         {% endfor %}
         {% endif %}
@@ -117,6 +120,8 @@
     </div>
     </li>
     {% endfor %}
+</ul>
+
 <div id="blueimp-gallery" class="blueimp-gallery">
     <!-- The container for the modal slides -->
     <div class="slides"></div>
@@ -129,7 +134,7 @@
     <ol class="indicator"></ol>
     <!-- The modal dialog, which will be used to wrap the lightbox content -->
     <div class="modal fade">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" aria-hidden="true">&times;</button>
@@ -150,7 +155,6 @@
         </div>
     </div>
 </div>
-</ul>
 
 <script src="/static/bootstrap-image-gallery.min.js"></script>
 {% endblock %}

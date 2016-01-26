@@ -100,7 +100,7 @@ class SummitForm(ThousandsBaseForm):
 
 class SummitImageForm(ThousandsBaseForm):
     summit_id = HiddenField()
-    comment = TextField(u'Название', filters=[lambda x: x or None])
+    comment = TextField(u'Название', validators=[validators.DataRequired()])
 
 
 class SummitImageEditForm(SummitImageForm):

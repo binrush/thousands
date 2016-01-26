@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
-{% block title %}Добавить фотографию вершины{% endblock %}
+{% block title %}Добавить фотографию вершины {{ summit.format_name() }}, хребет {{ summit.ridge }}{% endblock %}
 {% block content %}
-<h2>Добавить фотографию вершины</h2>
+<h1>Фотографии вершины {{ summit.format_name() }}, хребет {{ summit.ridge }}</h1>
 {% if form.errors %}
 <div id="form-errors" class="alert alert-danger">
     <ul id="form-error-list">
@@ -13,19 +13,10 @@
     </ul>
 </div>
 {% endif %}
+<h2>Загрузить новую</h2>
 <form id="summit_image_form" method="post" class="form-horizontal" enctype="multipart/form-data">
   {{ form.summit_id(value=summit.id) }}
   {{ form.csrf_token }}
-  <div class="form-group">
-    <label class="col-md-3 control-label">Вершина</label>
-    <div class="col-md-6">
-      <p class="form-control-static">
-        <a  href="{{ url_for('summit', summit_id=summit.id) }}">
-            {% if summit.name %}{{ summit.format_name() }}, {% endif %}{{ summit.height }}, хребет {{ summit.ridge }}
-        </a>
-      </p>
-    </div>
-  </div>
   <div class="form-group">
     {{ form.image.label(class_='col-md-3 control-label') }}
     <div class="col-md-6">
@@ -41,8 +32,22 @@
   </div>
    <div class="form-group">
     <div class="col-md-offset-3 col-md-6">
-      <button type="submit" class="btn btn-primary">Сохранить</button>
+      <button type="submit" class="btn btn-primary">Загрузить</button>
     </div>
   </div>
 </form>
+<h2>Загруженные фотографии</h2>
+<ul class="media-list">
+    {% for img in summit.images %}
+    <li class="media">
+    <div class="media-left">
+        <img src="{{ url_for("image_get", image_id=img.preview)}}" class="media-object">
+    </div>
+    <div class="media-body">
+        <h4 class="media-heading">{{ img.comment }}</h4>
+        <small><a href="{{ url_for('summit_image_edit', image_id=img.image) }}">Редактировать</a></small>
+    </div>
+    </li>
+    {% endfor %}
+</ul>
 {% endblock %}

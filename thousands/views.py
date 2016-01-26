@@ -169,9 +169,9 @@ def summit_delete(summit_id):
     return redirect(url_for('index'))
 
 
-@app.route('/summit/<int:summit_id>/image/new', methods=['GET', 'POST'])
+@app.route('/summit/<int:summit_id>/images', methods=['GET', 'POST'])
 @login_required
-def summit_image_new(summit_id):
+def summit_images(summit_id):
     if not current_user.admin:
         abort(401)
     form = forms.SummitImageUploadForm(
@@ -191,9 +191,9 @@ def summit_image_new(summit_id):
             form.comment.data)
         return redirect(url_for('summit', summit_id=form.summit_id.data))
 
-    return render_template('summit_image_new.html',
+    return render_template('summit_images.html',
                            form=form,
-                           summit=g.summits_dao.get(summit_id))
+                           summit=g.summits_dao.get(summit_id, True))
 
 
 @app.route('/summit/image/edit/<image_id>',
@@ -211,8 +211,9 @@ def summit_image_edit(image_id):
             g.images_dao.delete(summit_image.preview)
             g.summits_dao.delete_image(image_id)
         elif form.action.data == 'update':
-            g.summits_dao.update_image(form.comment)
-        return redirect(url_for('summit', summit_id=summit_image.summit_id))
+            g.summits_dao.update_image(image_id, form.comment.data)
+        return redirect(url_for('summit_images',
+                                summit_id=summit_image.summit_id))
 
     return render_template(
         'summit_image_edit.html',

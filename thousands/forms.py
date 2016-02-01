@@ -97,11 +97,11 @@ class SummitImageForm(Form):
     comment = TextField(u'Название', validators=[validators.DataRequired()])
 
 
-class SummitImageEditForm(Form):
+class SummitImageEditForm(SummitImageForm):
     action = TextField(validators=[validators.AnyOf(('update', 'delete'))])
 
 
-class SummitImageUploadForm(Form):
+class SummitImageUploadForm(SummitImageForm):
     image = FileField(u'Файл изображения')
 
 

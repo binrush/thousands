@@ -15,7 +15,6 @@
 {% endif %}
 <h2>Загрузить новую</h2>
 <form id="summit_image_form" method="post" class="form-horizontal" enctype="multipart/form-data">
-  {{ form.summit_id(value=summit.id) }}
   {{ form.csrf_token }}
   <div class="form-group">
     {{ form.image.label(class_='col-md-3 control-label') }}

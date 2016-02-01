@@ -156,7 +156,7 @@ def summit_images(summit_id):
         g.images_dao.create(preview)
 
         g.summits_dao.create_image(
-            form.summit_id.data,
+            summit_id,
             image.name,
             preview.name,
             form.comment.data)

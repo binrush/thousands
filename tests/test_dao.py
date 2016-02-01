@@ -1,9 +1,26 @@
 # coding: utf8
 from thousands import dao
-from mock import MagicMock
+from thousands import model
+import mock
 import pytest
 import thousands
 import tempfile
+
+
+@pytest.fixture(scope='module', autouse=True)
+def prepare_database(request):
+    conn = thousands.pool.getconn()
+    try:
+        cur = conn.cursor()
+        cur.execute(u"DELETE FROM images")
+        conn.commit()
+    finally:
+            thousands.pool.putconn(conn)
+
+    def cleanup():
+        pass
+
+    request.addfinalizer(cleanup)
 
 
 class TestInexactDate():
@@ -107,14 +124,14 @@ class TestSummitDao():
     def test_row2summit(self):
         row = {'id': 1, 'height': 1640, 'ridge': "Yamantau",
                "lat": 65.4321, "lng": 12.3456}
-        sd = dao.SummitsDao(MagicMock())
+        sd = dao.SummitsDao(mock.MagicMock())
         summit = sd._SummitsDao__row2summit(row)
         assert summit.id == 1
         assert summit.ridge == "Yamantau"
         assert summit.coordinates == (65.4321, 12.3456)
 
     def test_rate_by_field(self):
-        sd = dao.SummitsDao(MagicMock())
+        sd = dao.SummitsDao(mock.MagicMock())
         s1 = dao.Summit()
         s1.name = "Summit1"
         s1.height = 1000
@@ -129,6 +146,21 @@ class TestSummitDao():
         assert [v.number for v in res] == [3, 1, 2]
 
 
+class TestImage():
+
+    def test_resize(self):
+        cases = (
+            ((50, 50), (100, 100), (50, 50)),
+            ((50, None), (100, 200), (50, 100)),
+            ((None, 50), (100, 200), (25, 50)),
+            ((50, None), (200, 100), (50, 25)))
+        for c in cases:
+            assert model.Image.resize(c[0], c[1]) == c[2]
+
+        with pytest.raises(model.ModelException):
+            model.Image.resize((None, None), (50, 50))
+
+
 class TestDatabaseImagesDao():
 
     @pytest.fixture
@@ -136,20 +168,13 @@ class TestDatabaseImagesDao():
         return dao.DatabaseImagesDao(thousands.pool)
 
     def test_create(self, idao):
-        idao.create('1.jpg', '\xff\xaa\xbb')
+        idao.create(model.Image('1.jpg', '\xff\xaa\xbb'))
         img = idao.get('1.jpg')
-        assert img.payload.read() == '\xff\xaa\xbb'
+        assert img.payload == '\xff\xaa\xbb'
         idao.delete('1.jpg')
 
-    def test_create_exsisting(self, idao):
-        idao.create('2.jpg', '\xaa\xbb\xcc')
-        idao.create('2.jpg', '\xdd\xee\xff')
-        assert idao.get('2.jpg').payload.read() == \
-            '\xaa\xbb\xcc'
-        idao.delete('2.jpg')
-
     def test_delete(self, idao):
-        idao.create('3.jpg', '\x00\x11\x22')
+        idao.create(model.Image('3.jpg', '\x00\x11\x22'))
         idao.delete('3.jpg')
         assert idao.get('3.jpg') is None
 

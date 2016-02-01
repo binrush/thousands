@@ -7,12 +7,11 @@ from flask import (request, render_template, g, jsonify,
 from flask.ext.login import (logout_user, current_user,
                              login_required)
 import dao
+import model
 import forms
 import mimetypes
+import io
 from gpxpy.gpx import GPX
-from PIL import Image
-from io import BytesIO
-import hashlib
 
 
 def move_to_front(l, fn):
@@ -26,15 +25,6 @@ def move_to_front(l, fn):
             break
         i += 1
     return l
-
-
-def save_image(images_dao, img, fmt):
-    data = BytesIO()
-    img.save(data, fmt, quality=90)
-    img_filename = hashlib.sha1(data.getvalue()).hexdigest() + '.' + \
-        fmt.lower()
-    images_dao.create(img_filename, data.getvalue())
-    return img_filename
 
 
 @app.errorhandler(500)
@@ -157,15 +147,18 @@ def summit_images(summit_id):
         abort(401)
     form = forms.SummitImageUploadForm()
     if form.validate_on_submit():
-        img = Image.open(request.files['image'])
-        fmt = img.format
-        image_name = save_image(g.images_dao, img, fmt)
-        img.thumbnail((75, 75))
-        preview_name = save_image(g.images_dao, img, fmt)
+        fd = request.files['image']
+        image = model.Image.modified(fd)
+        fd.seek(0)
+        preview = model.Image.modified(fd, thumbnail=(75, 75))
+
+        g.images_dao.create(image)
+        g.images_dao.create(preview)
+
         g.summits_dao.create_image(
             form.summit_id.data,
-            image_name,
-            preview_name,
+            image.name,
+            preview.name,
             form.comment.data)
         return redirect(url_for('summit', summit_id=form.summit_id.data))
 
@@ -314,7 +307,7 @@ def image_get(image_id):
     img = g.images_dao.get(image_id)
     if img is None:
         return abort(404)
-    return send_file(img.payload,
+    return send_file(io.BytesIO(img.payload),
                      mimetype=mimetypes.guess_type(img.name)[0])
 
 
@@ -345,6 +338,8 @@ def image_upload():
     form = forms.ImageUploadForm()
 
     if not form.validate():
+        app.logger.warn('Avatar upload: form validation failed:' +
+                        str(form.errors))
         return abort(400)
 
     box = (
@@ -353,24 +348,20 @@ def image_upload():
         form.x.data + form.width.data,
         form.y.data + form.height.data
     )
-    img = Image.open(request.files['image'])
-    fmt = img.format
+    fs = request.files['image']
 
-    if fmt not in ('PNG', 'JPEG', 'GIF'):
-        return abort(400)
+    image = model.Image.modified(fs, size=(200, None))
+    fs.seek(0)
+    preview = model.Image.modified(fs, size=(50, 50), crop=box)
 
-    preview = img.crop(box).resize((50, 50), Image.ANTIALIAS)
-    img = img.resize((200, int(img.size[1]/(img.size[0]/200))),
-                     Image.ANTIALIAS)
-
-    image_name = save_image(g.images_dao, img, fmt)
-    preview_name = save_image(g.images_dao, preview, fmt)
+    g.images_dao.create(image)
+    g.images_dao.create(preview)
 
     g.images_dao.delete(current_user.image)
-    current_user.image = image_name
+    current_user.image = image.name
 
     g.images_dao.delete(current_user.preview)
-    current_user.preview = preview_name
+    current_user.preview = preview.name
 
     g.users_dao.update(current_user)
 

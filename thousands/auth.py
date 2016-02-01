@@ -2,8 +2,6 @@
 import urlparse
 import json
 import httplib2
-import hashlib
-import mimetypes
 from urllib import urlencode
 from urllib2 import urlopen
 
@@ -13,6 +11,7 @@ from flask import (request, g, redirect,
 from oauth2client.client import FlowExchangeError, OAuth2WebServerFlow
 
 import dao
+import model
 
 from thousands import app
 
@@ -118,11 +117,9 @@ def vk_get_image(url, images_dao):
     try:
         fd = urlopen(url, timeout=2)
         if fd.getcode() == 200:
-            data = fd.read()
-            name = hashlib.sha1(data).hexdigest() + \
-                mimetypes.guess_extension(fd.info().gettype())
-            images_dao.create(name, data)
-            return name
+            image = model.Image(fd)
+            images_dao.create(image)
+            return image.name
         else:
             return None
     except IOError:

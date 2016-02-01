@@ -1,9 +1,8 @@
 # coding: utf-8
 from contextlib import contextmanager
 import psycopg2.extras
-import io
 import os
-from model import (Summit, SummitImage, InexactDate, User)
+from model import (Summit, SummitImage, InexactDate, User, Image)
 
 
 class DaoException(Exception):
@@ -269,18 +268,13 @@ class UsersDao(Dao):
                 user.get_id()))
 
 
-class Image(object):
-    pass
-
-
 class DatabaseImagesDao(Dao):
 
-    def create(self, name, data):
+    def create(self, image):
         sql = "INSERT INTO images (name, payload) " + \
-              "SELECT %s, %s WHERE NOT EXISTS " + \
-              "(SELECT name FROM images WHERE name=%s)"
+              "VALUES (%s, %s)"
         with self.get_cursor() as cur:
-            cur.execute(sql, (name, psycopg2.Binary(data), name))
+            cur.execute(sql, (image.name, psycopg2.Binary(image.payload)))
 
     def get(self, image_id):
         sql = "SELECT * FROM images WHERE name=%s"
@@ -290,9 +284,7 @@ class DatabaseImagesDao(Dao):
                 return None
             else:
                 row = cur.fetchone()
-                img = Image()
-                img.name = row['name']
-                img.payload = io.BytesIO(row['payload'])
+                img = Image(row['name'], bytes(row['payload']))
                 return img
 
     def delete(self, image_id):
@@ -311,19 +303,15 @@ class FilesystemImagesDao():
     def __path(self, filename):
         return os.path.join(self.directory, filename)
 
-    def create(self, name, data):
-        path = os.path.join(self.directory, name)
-        if os.path.exists(path):
-            return
-        with open(os.path.join(self.directory, name), 'w') as fp:
-            fp.write(data)
+    def create(self, img):
+        with open(os.path.join(self.directory, img.name), 'w') as fp:
+            fp.write(img.payload)
 
     def get(self, image_id):
         try:
-            img = Image()
-            img.name = image_id
-            img.payload = open(os.path.join(self.directory, image_id))
-            return img
+            return Image(
+                image_id,
+                open(os.path.join(self.directory, image_id)).read())
         except IOError:
             return None
 

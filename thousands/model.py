@@ -3,6 +3,9 @@ from flask.ext.login import UserMixin
 from flask import url_for
 import datetime
 from gpxpy import gpx
+from PIL import Image as PILImage
+import io
+import hashlib
 
 AUTH_SRC_VK = 1
 AUTH_SRC_SU = 2
@@ -160,7 +163,50 @@ class User(UserMixin):
 
 
 class Image(object):
-    pass
+
+    def __init__(self, name, payload):
+        self.name = name
+        self.payload = payload
+
+    @classmethod
+    def fromfd(cls, fd, fmt):
+        payload = fd.read()
+        return cls(hashlib.sha1(payload).hexdigest() + '.' + fmt.lower(),
+                   payload)
+
+    @classmethod
+    def modified(cls, fd, size=None, thumbnail=None, crop=None):
+        if size and thumbnail:
+            raise ModelException(
+                "Only one of size and thumblail can be specified")
+        buf = io.BytesIO()
+        img = PILImage.open(fd)
+        fmt = img.format
+        if crop:
+            img = img.crop(crop)
+        if size:
+            img = img.resize(
+                Image.resize(size, img.size),
+                PILImage.ANTIALIAS)
+        if thumbnail:
+            img.thumbnail(thumbnail, PILImage.ANTIALIAS)
+        img.save(buf, fmt)
+        buf.seek(0)
+        return cls.fromfd(buf, fmt)
+
+    @staticmethod
+    def resize(new, old):
+        """
+            returns new size keeping aspect ratio if required
+        """
+        if new[0] and new[1]:
+            return new
+        elif new[0]:
+            return (new[0], int(old[1]/(old[0]/new[0])))
+        elif new[1]:
+            return (int(old[0]/(old[1]/new[1])), new[1])
+        else:
+            raise ModelException("Either width or height must be specified")
 
 
 class Climb(object):

@@ -1,4 +1,5 @@
 # coding: utf-8
+from __future__ import division
 from flask.ext.login import UserMixin
 from flask import url_for
 import datetime

@@ -124,14 +124,14 @@ class TestSummitDao():
     def test_row2summit(self):
         row = {'id': 1, 'height': 1640, 'ridge': "Yamantau",
                "lat": 65.4321, "lng": 12.3456}
-        sd = dao.SummitsDao(mock.MagicMock())
+        sd = dao.SummitsDao(mock.MagicMock(), mock.MagicMock())
         summit = sd._SummitsDao__row2summit(row)
         assert summit.id == 1
         assert summit.ridge == "Yamantau"
         assert summit.coordinates == (65.4321, 12.3456)
 
     def test_rate_by_field(self):
-        sd = dao.SummitsDao(mock.MagicMock())
+        sd = dao.SummitsDao(mock.MagicMock(), mock.MagicMock())
         s1 = dao.Summit()
         s1.name = "Summit1"
         s1.height = 1000

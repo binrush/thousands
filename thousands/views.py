@@ -155,11 +155,12 @@ def summit_images(summit_id):
         g.images_dao.create(image)
         g.images_dao.create(preview)
 
-        g.summits_dao.create_image(
-            summit_id,
-            image.name,
-            preview.name,
-            form.comment.data)
+        g.summits_images_dao.create(model.SummitImage(
+            image=image.name,
+            preview=preview.name,
+            summit_id=summit_id,
+            comment=form.comment.data,
+            main=form.main.data))
         return redirect(url_for('summit', summit_id=summit_id))
 
     return render_template('summit_images.html',
@@ -170,15 +171,17 @@ def summit_images(summit_id):
 @app.route('/summit/image/edit/<image_id>',
            methods=['GET', 'POST'])
 def summit_image_edit(image_id):
-    summit_image = g.summits_dao.get_image(image_id)
+    summit_image = g.summits_images_dao.get(image_id)
     form = forms.SummitImageEditForm(obj=summit_image)
     if form.validate_on_submit():
         if form.action.data == 'delete':
             g.images_dao.delete(summit_image.image)
             g.images_dao.delete(summit_image.preview)
-            g.summits_dao.delete_image(image_id)
+            g.summits_images_dao.delete(image_id)
         elif form.action.data == 'update':
-            g.summits_dao.update_image(image_id, form.comment.data)
+            g.summits_images_dao.update(image_id,
+                                        form.comment.data,
+                                        form.main.data)
         return redirect(url_for('summit_images',
                                 summit_id=summit_image.summit_id))
 

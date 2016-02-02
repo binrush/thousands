@@ -84,7 +84,8 @@ migrations.to_apply().apply()
 conn.commit()
 pool.putconn(conn)
 
-summits_dao = dao.SummitsDao(pool)
+summits_images_dao = dao.SummitsImagesDao(pool)
+summits_dao = dao.SummitsDao(pool, summits_images_dao)
 users_dao = dao.UsersDao(pool)
 
 if app.config['IMAGES_BACKEND'] == 'filesystem':
@@ -123,6 +124,7 @@ def load_user(userid):
 @app.before_request
 def before_request():
     g.summits_dao = summits_dao
+    g.summits_images_dao = summits_images_dao
     g.users_dao = users_dao
     g.images_dao = images_dao
     g.climbs_dao = climbs_dao

@@ -129,7 +129,7 @@ def vk_get_image(url, images_dao):
 
 def vk_get_user(credentials):
     user = g.users_dao.get(unicode(credentials.token_response['user_id']),
-                           dao.AUTH_SRC_VK)
+                           model.AUTH_SRC_VK)
     if user is not None:
         return user, False
 
@@ -162,7 +162,7 @@ def vk_get_user(credentials):
     user.name = u"{} {}".format(
         data.get('first_name', ''),
         data.get('last_name', ''))
-    user.src = dao.AUTH_SRC_VK
+    user.src = model.AUTH_SRC_VK
 
     if data['has_photo']:
         user.image = vk_get_image(data['photo_200_orig'],
@@ -192,13 +192,13 @@ def su_get_user(credentials):
         app.logger.error("Error getting user data from su: %s", data['error'])
         return None
 
-    user = g.users_dao.get(data['sub'], dao.AUTH_SRC_SU)
+    user = g.users_dao.get(data['sub'], model.AUTH_SRC_SU)
     if user is not None:
         return user, False
     user = dao.User()
     user.oauth_id = data['sub']
     user.name = data['name']
-    user.src = dao.AUTH_SRC_SU
+    user.src = model.AUTH_SRC_SU
     user.image = None
     user.preview = None
     user.id = g.users_dao.create(user)

@@ -31,9 +31,12 @@ if 'THOUSANDS_CONF' in os.environ:
 if 'OPENSHIFT_DATA_DIR' in os.environ:
     app.config.from_pyfile(os.path.join(os.environ['OPENSHIFT_DATA_DIR'],
                            'thousands.conf'))
+loggers = [
+    logging.getLogger('yoyo'),
+    logging.getLogger('thousands')]
 
 if not app.debug:
-    loggers = [app.logger, logging.getLogger('yoyo')]
+    loggers.append(app.logger)
 
     if 'LOGDIR' in app.config:
         main_handler = logging.handlers.RotatingFileHandler(
@@ -64,8 +67,9 @@ if not app.debug:
         map(lambda x: x.addHandler(mail_handler), loggers)
 
 else:
-    logging.getLogger('yoyo').addHandler(logging.StreamHandler())
-
+    for l in loggers:
+        l.addHandler(logging.StreamHandler())
+        l.setLevel(logging.DEBUG)
 
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
 pool = psycopg2.pool.SimpleConnectionPool(1,

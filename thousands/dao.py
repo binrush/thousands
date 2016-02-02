@@ -2,7 +2,10 @@
 from contextlib import contextmanager
 import psycopg2.extras
 import os
+import logging
 from model import (Summit, SummitImage, InexactDate, User, Image)
+
+logger = logging.getLogger(__name__)
 
 
 class DaoException(Exception):
@@ -271,6 +274,8 @@ class UsersDao(Dao):
 class DatabaseImagesDao(Dao):
 
     def create(self, image):
+        logger.debug('Saving image %s to database, len=%s',
+                     image.name, len(image.payload))
         sql = "INSERT INTO images (name, payload) " + \
               "VALUES (%s, %s)"
         with self.get_cursor() as cur:

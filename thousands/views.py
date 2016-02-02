@@ -148,7 +148,7 @@ def summit_images(summit_id):
     form = forms.SummitImageUploadForm()
     if form.validate_on_submit():
         fd = form.image.data
-        image = model.Image.modified(fd)
+        image = model.Image.modified(fd, thumbnail=(800, 800))
         fd.seek(0)
         preview = model.Image.modified(fd, thumbnail=(75, 75))
 

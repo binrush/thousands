@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 {% block title %}Редактировать фотографию вершины{% endblock %}
 {% block content %}
-<h2>Редактировать фотографию вершины</h2>
+<h1>Редактировать фотографию вершины</h1>
 {% if form.errors %}
 <div id="form-errors" class="alert alert-danger">
     <ul id="form-error-list">
@@ -43,6 +43,7 @@
    <div class="form-group">
     <div class="col-md-offset-3 col-md-6">
       <button type="submit" class="btn btn-primary" name="action" value="update">Сохранить</button>
+      <button type="submit" class="btn btn-primary" name="action" value="main">Сделать основной</button>
       <button type="submit" class="btn btn-danger simple-delete-confirm" name="action" value="delete">Удалить</button>
     </div>
   </div>

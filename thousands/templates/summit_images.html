@@ -1,7 +1,12 @@
 {% extends "layout.html" %}
 {% block title %}Добавить фотографию вершины {{ summit.format_name() }}, хребет {{ summit.ridge }}{% endblock %}
 {% block content %}
-<h1>Фотографии вершины {{ summit.format_name() }}, хребет {{ summit.ridge }}</h1>
+<h1>Фотографии вершины</h1>
+<ol class="breadcrumb">
+  <li>Хребет {{ summit.ridge }}</li>
+  <li><a href="{{ url_for('summit', summit_id=summit.id) }}">{{ summit.format_name() }}</a></li>
+  <li class="active">Фотографии</li>
+</ol>
 {% if form.errors %}
 <div id="form-errors" class="alert alert-danger">
     <ul id="form-error-list">

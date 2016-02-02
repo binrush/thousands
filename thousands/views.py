@@ -147,7 +147,7 @@ def summit_images(summit_id):
         abort(401)
     form = forms.SummitImageUploadForm()
     if form.validate_on_submit():
-        fd = request.files['image']
+        fd = form.image.data
         image = model.Image.modified(fd)
         fd.seek(0)
         preview = model.Image.modified(fd, thumbnail=(75, 75))
@@ -160,7 +160,7 @@ def summit_images(summit_id):
             image.name,
             preview.name,
             form.comment.data)
-        return redirect(url_for('summit', summit_id=form.summit_id.data))
+        return redirect(url_for('summit', summit_id=summit_id))
 
     return render_template('summit_images.html',
                            form=form,
@@ -337,7 +337,7 @@ def user(user_id):
 def image_upload():
     form = forms.ImageUploadForm()
 
-    if not form.validate():
+    if not form.validate_on_submit():
         app.logger.warn('Avatar upload: form validation failed:' +
                         str(form.errors))
         return abort(400)
@@ -348,7 +348,7 @@ def image_upload():
         form.x.data + form.width.data,
         form.y.data + form.height.data
     )
-    fs = request.files['image']
+    fs = form.image.data
 
     image = model.Image.modified(fs, size=(200, None))
     fs.seek(0)

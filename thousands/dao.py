@@ -207,7 +207,7 @@ class SummitsDao(Dao):
         """
         with self.get_cursor() as cur:
             cur.execute("UPDATE summits_images SET comment=%s WHERE image=%s",
-                        (image_id, comment))
+                        (comment, image_id))
 
     def delete_image(self, image_id):
         with self.get_cursor() as cur:

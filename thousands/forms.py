@@ -1,9 +1,10 @@
 # coding: utf-8
 
 from flask_wtf import Form
-from flask_wtf.file import FileField
+from flask_wtf.file import (
+    FileField, FileAllowed, FileRequired)
 from wtforms import (
-    TextField, IntegerField, HiddenField,
+    TextField, IntegerField, HiddenField, BooleanField,
     TextAreaField, SelectField, validators, Field)
 from wtforms.widgets import TextInput, HiddenInput
 import datetime
@@ -95,6 +96,7 @@ class SummitForm(Form):
 class SummitImageForm(Form):
     summit_id = HiddenField()
     comment = TextField(u'Название', validators=[validators.DataRequired()])
+    main = BooleanField(u'Основное фото')
 
 
 class SummitImageEditForm(SummitImageForm):
@@ -102,7 +104,9 @@ class SummitImageEditForm(SummitImageForm):
 
 
 class SummitImageUploadForm(SummitImageForm):
-    image = FileField(u'Файл изображения')
+    image = FileField(u'Файл изображения', validators=[
+        FileRequired(),
+        FileAllowed(['jpg', 'jpeg'])])
 
 
 class ClimbForm(Form):
@@ -120,18 +124,16 @@ class DeleteForm(Form):
 
 class ImageUploadForm(Form):
     x = IntegerField(widget=HiddenInput(),
-                     validators=[validators.DataRequired(),
-                                 validators.NumberRange(0)])
+                     validators=[validators.NumberRange(0)])
     y = IntegerField(widget=HiddenInput(),
-                     validators=[validators.DataRequired(),
-                                 validators.NumberRange(0)])
+                     validators=[validators.NumberRange(0)])
 
     width = IntegerField(widget=HiddenInput(),
-                         validators=[validators.DataRequired(),
-                                     validators.NumberRange(0)])
+                         validators=[validators.NumberRange(0)])
 
     height = IntegerField(widget=HiddenInput(),
-                          validators=[validators.DataRequired(),
-                                      validators.NumberRange(0)])
+                          validators=[validators.NumberRange(0)])
 
-    image = FileField()
+    image = FileField(validators=[
+        FileRequired(),
+        FileAllowed(['jpg', 'jpeg', 'png', 'gif'])])

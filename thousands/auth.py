@@ -12,6 +12,7 @@ from oauth2client.client import FlowExchangeError, OAuth2WebServerFlow
 
 import dao
 import model
+import mimetypes
 
 from thousands import app
 
@@ -117,7 +118,9 @@ def vk_get_image(url, images_dao):
     try:
         fd = urlopen(url, timeout=2)
         if fd.getcode() == 200:
-            image = model.Image(fd)
+            image = model.Image.fromfd(
+                fd,
+                mimetypes.guess_extension(fd.info().gettype()))
             images_dao.create(image)
             return image.name
         else:

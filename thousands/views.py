@@ -360,10 +360,12 @@ def image_upload():
     g.images_dao.create(image)
     g.images_dao.create(preview)
 
-    g.images_dao.delete(current_user.image)
+    if current_user.image:
+        g.images_dao.delete(current_user.image)
     current_user.image = image.name
 
-    g.images_dao.delete(current_user.preview)
+    if current_user.preview:
+        g.images_dao.delete(current_user.preview)
     current_user.preview = preview.name
 
     g.users_dao.update(current_user)

@@ -85,7 +85,7 @@ class SummitForm(Form):
     name = TextField(u'Название', filters=[lambda x: x or None])
     name_alt = TextField(u'Варианты названия', filters=[lambda x: x or None])
     height = IntegerField(u'Высота', [validators.NumberRange(1000, 1640)])
-    rid = SelectField(u'Хребет', coerce=int, choices=[(0, '---')])
+    ridge_id = SelectField(u'Хребет', choices=[(0, '---')])
     coordinates = CoordinatesField(u'Координаты',
                                    validators=[validators.DataRequired()])
     interpretation = TextAreaField(u'Расшифровка названия',

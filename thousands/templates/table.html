@@ -34,9 +34,9 @@
         </td>
         <td class="text-left">
             {% if s.main %}
-            <b><a href="/summit/{{ s.id }}" title="Главная (высочайшая) вершина хребта">{{s.format_name() }}</a></b>
+            <b><a href="{{ url_for('summit', ridge_id=s.ridge_id, summit_id=s.id) }}" title="Главная (высочайшая) вершина хребта">{{s.format_name() }}</a></b>
             {% else %}
-            <a href="/summit/{{ s.id }}">{{s.format_name() }}</a>
+            <a href="{{ url_for('summit', ridge_id=s.ridge_id, summit_id=s.id) }}">{{s.format_name() }}</a>
             {% endif %}
         </td>
         <td>

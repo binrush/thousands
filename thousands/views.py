@@ -65,7 +65,7 @@ def index():
         hl_summit=hl_summit)
 
 
-@app.route('/table')
+@app.route('/summits')
 def table():
     sort = request.args.get('sort', 'ridge')
     return render_template(
@@ -77,8 +77,8 @@ def table():
         sort=sort)
 
 
-@app.route('/summit/<int:summit_id>')
-def summit(summit_id):
+@app.route('/<ridge_id>/<summit_id>')
+def summit(ridge_id, summit_id):
     s = g.summits_dao.get(summit_id, True)
     if s is None:
         return abort(404)
@@ -92,7 +92,7 @@ def summit(summit_id):
         active_page='table')
 
 
-@app.route('/summit/new', methods=['GET', 'POST'])
+@app.route('/summits/new', methods=['GET', 'POST'])
 def summit_new():
     if current_user.is_anonymous or not current_user.admin:
         abort(401)
@@ -108,9 +108,9 @@ def summit_new():
     return render_template('summit_edit.html', form=form)
 
 
-@app.route('/summit/edit/<int:summit_id>', methods=['GET', 'POST'])
+@app.route('/<ridge_id>/<int:summit_id>/edit', methods=['GET', 'POST'])
 @login_required
-def summit_edit(summit_id):
+def summit_edit(ridge_id, summit_id):
     if not current_user.admin:
         abort(401)
 
@@ -118,7 +118,7 @@ def summit_edit(summit_id):
     if s is None:
         abort(404)
     form = forms.SummitForm(obj=g.summits_dao.get(summit_id))
-    form.rid.choices = \
+    form.ridge_id.choices = \
         [(r['id'], r['name']) for r in g.summits_dao.get_ridges()]
     if form.validate_on_submit():
         summit = dao.Summit()

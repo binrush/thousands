@@ -14,7 +14,7 @@
 <h1>
 {{ summit.format_name() }} 
 {% if current_user.admin %}
-<a href="{{ url_for('summit_edit', summit_id=summit.id) }}"><span class="glyphicon glyphicon-edit"></span></a>
+<a href="{{ url_for('summit_edit', ridge_id=summit.ridge_id, summit_id=summit.id) }}"><span class="glyphicon glyphicon-edit"></span></a>
 <a href="{{ url_for('summit_delete', summit_id=summit.id) }}" class="simple-delete-confirm"><span class="glyphicon glyphicon-remove"></span></a>
 <a href="{{ url_for('summit_images', summit_id=summit.id) }}"><span class="glyphicon glyphicon-picture"></span></a>
 {% endif %}

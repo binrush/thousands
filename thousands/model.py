@@ -123,6 +123,7 @@ class Summit(object):
         ret['properties']['height'] = self.height
         ret['properties']['name'] = self.format_name()
         ret['properties']['ridge'] = self.ridge
+        ret['properties']['ridge_id'] = self.ridge_id
         ret['properties']['color'] = self.color
         ret['properties']['climbed'] = self.climbed
         ret['properties']['main'] = self.main

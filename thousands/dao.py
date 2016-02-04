@@ -38,7 +38,7 @@ class SummitsDao(Dao):
             s = Summit()
             for k in ['id', 'name', 'name_alt', 'height', 'number',
                       'description', 'interpretation',
-                      'ridge', 'rid', 'color', 'climbed', 'main', 'climbers']:
+                      'ridge', 'ridge_id', 'color', 'climbed', 'main', 'climbers']:
                 if k in row:
                     setattr(s, k, row[k])
             s.coordinates = (row['lat'], row['lng'])
@@ -72,7 +72,7 @@ class SummitsDao(Dao):
             order = "ORDER BY r.name, s.lat DESC"
 
         query = """
-        SELECT s.id, s.name, s.name_alt,
+        SELECT s.id, s.name, s.name_alt, s.ridge_id,
                 s.height, s.lng, s.lat, r.name AS ridge, r.color,
                 count(c.user_id) AS climbers,
             EXISTS (
@@ -81,16 +81,16 @@ class SummitsDao(Dao):
             ) AS climbed,
             EXISTS (
                 SELECT * FROM
-                    (SELECT rid, max(height) AS maxheight
-                        FROM summits WHERE rid=s.rid GROUP BY rid) as smtsg
+                    (SELECT ridge_id, max(height) AS maxheight
+                        FROM summits WHERE ridge_id=s.ridge_id GROUP BY ridge_id) as smtsg
                     INNER JOIN summits smts
-                    ON smtsg.rid=smts.rid AND smts.height=smtsg.maxheight
+                    ON smtsg.ridge_id=smts.ridge_id AND smts.height=smtsg.maxheight
                     WHERE id=s.id
             ) AS main
         FROM summits s
-        LEFT JOIN ridges r ON s.rid=r.id
+        LEFT JOIN ridges r ON s.ridge_id=r.id
         LEFT JOIN climbs c ON c.summit_id = s.id
-        GROUP BY s.id, s.name, s.name_alt, r.name, r.color """ + order
+        GROUP BY s.id, s.name, s.name_alt, r.name, r.color, s.ridge_id """ + order
 
         return self.__get_many(query, (user_id, ))
 
@@ -106,16 +106,16 @@ class SummitsDao(Dao):
             ) AS climbed,
             EXISTS (
                 SELECT * FROM
-                    (SELECT rid, max(height) AS maxheight
-                        FROM summits WHERE rid=s.rid GROUP BY rid) as smtsg
+                    (SELECT ridge_id, max(height) AS maxheight
+                        FROM summits WHERE ridge_id=s.ridge_id GROUP BY ridge_id) as smtsg
                     INNER JOIN summits smts
-                    ON smtsg.rid=smts.rid AND smts.height=smtsg.maxheight
+                    ON smtsg.ridge_id=smts.ridge_id AND smts.height=smtsg.maxheight
                     WHERE id=s.id
             ) AS main
         FROM summits s
         LEFT JOIN ridges r ON s.rid=r.id
         LEFT JOIN climbs c ON c.summit_id = s.id
-        WHERE rid IN %s
+        WHERE ridge_id IN %s
         GROUP BY s.id, s.name, s.name_alt, r.name, r.color
         ORDER BY r.name, s.lat DESC"""
 
@@ -130,14 +130,14 @@ class SummitsDao(Dao):
         with self.get_cursor() as cur:
             cur.execute(
                 """SELECT s.id, s.name, name_alt, height,
-                          interpretation, s.description, rid,
+                          interpretation, s.description, ridge_id,
                           r.name AS ridge, lng, lat,
                           (SELECT COUNT(*) FROM summits
                               WHERE height >= s.height ) AS number,
                           (SELECT MAX(height)=s.height FROM summits
-                              WHERE rid=s.rid) AS main
+                              WHERE ridge_id=s.ridge_id) AS main
                    FROM summits s LEFT JOIN ridges r
-                   ON s.rid = r.id
+                   ON s.ridge_id = r.id
                    WHERE s.id=%s""", (sid, ))
             if cur.rowcount < 1:
                 return None

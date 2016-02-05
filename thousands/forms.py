@@ -81,7 +81,6 @@ class ClimbDateField(Field):
 
 
 class SummitForm(Form):
-    id = HiddenField()
     name = TextField(u'Название', filters=[lambda x: x or None])
     name_alt = TextField(u'Варианты названия', filters=[lambda x: x or None])
     height = IntegerField(u'Высота', [validators.NumberRange(1000, 1640)])
@@ -112,7 +111,6 @@ class SummitImageUploadForm(SummitImageForm):
 class ClimbForm(Form):
     MAX_COMMENT_SIZE = 1000
 
-    summit_id = HiddenField()
     date = ClimbDateField(u'Дата')
     comment = TextAreaField(u'Комментарий',
                             [validators.Length(max=MAX_COMMENT_SIZE)])

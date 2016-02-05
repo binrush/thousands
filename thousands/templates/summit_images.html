@@ -4,7 +4,7 @@
 <h1>Фотографии вершины</h1>
 <ol class="breadcrumb">
   <li>Хребет {{ summit.ridge }}</li>
-  <li><a href="{{ url_for('summit', summit_id=summit.id) }}">{{ summit.format_name() }}</a></li>
+  <li><a href="{{ url_for('summit', ridge_id=summit.ridge_id, summit_id=summit.id) }}">{{ summit.format_name() }}</a></li>
   <li class="active">Фотографии</li>
 </ol>
 {% if form.errors %}
@@ -58,7 +58,7 @@
     </div>
     <div class="media-body">
         <h4 class="media-heading">{{ img.comment }}</h4>
-        <small><a href="{{ url_for('summit_image_edit', image_id=img.image) }}">Редактировать</a></small>
+        <small><a href="{{ url_for('summit_image_edit', ridge_id=summit.ridge_id, summit_id=summit.id, image_id=img.image) }}">Редактировать</a></small>
     </div>
     </li>
     {% endfor %}

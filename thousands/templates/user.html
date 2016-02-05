@@ -49,7 +49,7 @@
         <a class="anchor" name="{{c.summit.id}}"></a>
         <div class="media-body">
         <h4 class="media-heading">
-            <a href="{{ url_for('summit', summit_id=c.summit.id)}}">{{ c.summit.format_name() }}</a>
+            <a href="{{ url_for('summit', ridge_id=c.summit.ridge_id, summit_id=c.summit.id)}}">{{ c.summit.format_name() }}</a>
             <small>хребет {{ c.summit.ridge }}</small>
         </h4>
         {% if c.date %}<div class="text-muted"><i>{{ c['date'].format() }}</i></div>{% endif %}
@@ -58,8 +58,8 @@
         {% endfor %}
         {% if user == current_user %}
             <div>
-            <small><a href="{{ url_for('profile_climb_edit', summit_id=c.summit.id) }}">Редактировать</a></small>
-            <small><a href="{{ url_for('profile_climb_delete', summit_id=c.summit.id) }}" class="simple-delete-confirm">Удалить</a></small>
+            <small><a href="{{ url_for('profile_climb_edit', ridge_id=c.summit.ridge_id, summit_id=c.summit.id) }}">Редактировать</a></small>
+            <small><a href="{{ url_for('profile_climb_delete', ridge_id=c.summit.ridge_id, summit_id=c.summit.id) }}" class="simple-delete-confirm">Удалить</a></small>
             </div>
         {% endif %}
         </div>

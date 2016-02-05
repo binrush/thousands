@@ -114,7 +114,7 @@ function getPointCoordinates(e) {
 function deleteEntry() {
     answer = confirm("Вы уверены?");
     if (answer) {
-        form = document.getElementById('climb-delete-form');
+        form = document.getElementById('delete-form');
         form.action = this.href;
         form.submit()
     }

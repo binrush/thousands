@@ -145,7 +145,8 @@ class SummitImage(object):
 
     def __init__(self, **kwargs):
         for k in kwargs:
-            if k in ('image', 'preview', 'summit_id', 'comment', 'main'):
+            if k in ('image', 'preview',
+                     'summit_id', 'comment', 'main'):
                 setattr(self, k, kwargs[k])
 
 

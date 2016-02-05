@@ -73,13 +73,13 @@ class TestSummit():
     @pytest.fixture
     def summit1(self):
         summit1 = dao.Summit()
-        summit1.id = 1
+        summit1.id = 'small_yamantau'
         summit1.name = "Small Yamantau"
         summit1.height = 1519
         summit1.name_alt = "Kuyantau"
         summit1.coordinates = (53.1111, 58.2222)
         summit1.ridge = 'Yamantau'
-        summit1.rid = 1
+        summit1.ridge_id = 'yamantau'
         summit1.color = 'aaaaaa'
         summit1.climbed = False
         summit1.main = False
@@ -106,13 +106,14 @@ class TestSummit():
              'type': 'Feature',
              'properties': {
                  'ridge': 'Yamantau',
+                 'ridge_id': 'yamantau',
                  'name': 'Small Yamantau',
                  'color': 'aaaaaa',
                  'climbed': False,
                  'main': False,
                  'height': 1519
                  },
-             'id': 1}
+             'id': 'small_yamantau'}
 
     def test_format_coordinates(self, summit1):
         assert summit1.format_coordinates() == \

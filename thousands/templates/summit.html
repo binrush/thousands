@@ -11,12 +11,16 @@
 </div>
   {% endif %}
 {% endwith %}
+<ol class="breadcrumb">
+    <li><a href="#">хребет {{ summit.ridge }}</a></li>
+    <li class="active">вершина {{ summit.name }}</li>
+</ol>
 <h1>
 {{ summit.format_name() }} 
 {% if current_user.admin %}
 <a href="{{ url_for('summit_edit', ridge_id=summit.ridge_id, summit_id=summit.id) }}"><span class="glyphicon glyphicon-edit"></span></a>
-<a href="{{ url_for('summit_delete', summit_id=summit.id) }}" class="simple-delete-confirm"><span class="glyphicon glyphicon-remove"></span></a>
-<a href="{{ url_for('summit_images', summit_id=summit.id) }}"><span class="glyphicon glyphicon-picture"></span></a>
+<a href="{{ url_for('summit_delete', ridge_id=summit.ridge_id, summit_id=summit.id) }}" class="simple-delete-confirm"><span class="glyphicon glyphicon-remove"></span></a>
+<a href="{{ url_for('summit_images', ridge_id=summit.ridge_id, summit_id=summit.id) }}"><span class="glyphicon glyphicon-picture"></span></a>
 {% endif %}
 </h1>
 <div class="row">
@@ -74,15 +78,18 @@
         {% endif %}
         {% if not current_user.is_authenticated %}
             <dl class="dl-horizontal">
-                <dd><a class="btn btn-primary" href="{{ url_for('login_form', r=url_for('climb_new', summit_id=summit.id)) }}" data-remote="false" data-toggle="modal" data-target="#authModal">Взошли на эту вершину?</a></dd>
+                <dd><a class="btn btn-primary" href="{{ url_for('login_form', r=url_for('climb_new', ridge_id=summit.ridge_id, summit_id=summit.id)) }}" data-remote="false" data-toggle="modal" data-target="#authModal">Взошли на эту вершину?</a></dd>
             </dl>
         {% elif climbers | length  == 0 or current_user != climbers[0]['user'] %}
             <dl class="dl-horizontal">
-                <dd><a class="btn btn-primary" href="{{ url_for('climb_new', summit_id=summit.id) }}">Взошли на эту вершину?</a></dd>
+                <dd><a class="btn btn-primary" href="{{ url_for('climb_new', ridge_id=summit.ridge_id, summit_id=summit.id) }}">Взошли на эту вершину?</a></dd>
             </dl>
         {% endif %}
     </div>
 </div>
+<form id="delete-form" method="POST">
+    {{ del_form.csrf_token }}
+</form>
 <h3>
     Восходители
 </h3>
@@ -113,11 +120,8 @@
         {% endif %}
         {% if c['user'] == current_user %}
         <div>
-        <form id="climb-delete-form" method="POST">
-            {{ del_form.csrf_token }}
-        </form>
-        <small><a href="{{ url_for('summit_climb_edit', summit_id=summit.id) }}">Редактировать</a></small>
-        <small><a href="{{ url_for('summit_climb_delete', summit_id=summit.id) }}" class="simple-delete-confirm">Удалить</a></small>
+        <small><a href="{{ url_for('summit_climb_edit', ridge_id=summit.ridge_id, summit_id=summit.id) }}">Редактировать</a></small>
+        <small><a href="{{ url_for('summit_climb_delete', ridge_id=summit.ridge_id, summit_id=summit.id) }}" class="simple-delete-confirm">Удалить</a></small>
         </div>
         {% endif %}
     </div>

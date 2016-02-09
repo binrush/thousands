@@ -83,6 +83,7 @@ class TestSummit():
         summit1.color = 'aaaaaa'
         summit1.climbed = False
         summit1.main = False
+        summit1.has_image = False
         return summit1
 
     @pytest.fixture
@@ -111,6 +112,7 @@ class TestSummit():
                  'color': 'aaaaaa',
                  'climbed': False,
                  'main': False,
+                 'has_image': False,
                  'height': 1519
                  },
              'id': 'small_yamantau'}

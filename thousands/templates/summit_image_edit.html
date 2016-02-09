@@ -20,7 +20,7 @@
     <label class="col-md-3 control-label">Вершина</label>
     <div class="col-md-6">
       <p class="form-control-static">
-        <a  href="{{ url_for('summit', summit_id=summit.id) }}">
+        <a  href="{{ url_for('summit', ridge_id=summit.ridge_id, summit_id=summit.id) }}">
             {% if summit.name %}{{ summit.format_name() }}, {% endif %}{{ summit.height }}, хребет {{ summit.ridge }}
         </a>
       </p>

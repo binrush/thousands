@@ -52,11 +52,11 @@ def test_index(client):
 @mock.patch('thousands.summits_dao')
 def test_table(mock_summits_dao, mock_users_dao, client):
     with client() as c:
-        c.get('/table')
+        c.get('/summits')
         mock_summits_dao.get_all.assert_called_with(None, 'ridge')
         with c.session_transaction() as sess:
             sess['user_id'] = u'5'
-        c.get('/table?sort=name')
+        c.get('/summits?sort=name')
         mock_summits_dao.get_all.assert_called_with(u'5', 'name')
 
 
@@ -64,8 +64,8 @@ def test_table(mock_summits_dao, mock_users_dao, client):
 def test_summit_returns_404_on_nonexistent(mock_summits_dao, client):
     mock_summits_dao.get = mock.MagicMock(return_value=None)
     with client() as c:
-        resp = c.get('/summit/1')
-        mock_summits_dao.get.assert_called_with(1, True)
+        resp = c.get('/ridge/summit')
+        mock_summits_dao.get.assert_called_with('summit', True)
         assert resp.status == '404 NOT FOUND'
 
 
@@ -73,9 +73,9 @@ def test_summit_returns_404_on_nonexistent(mock_summits_dao, client):
 @mock.patch('thousands.summits_dao')
 def test_summit(mock_summits_dao, mock_climbs_dao, client):
     with client() as c:
-        c.get('/summit/1')
-        mock_summits_dao.get.assert_called_with(1, True)
-        mock_climbs_dao.climbers.assert_called_with(1)
+        c.get('/ridge/summit')
+        mock_summits_dao.get.assert_called_with('summit', True)
+        mock_climbs_dao.climbers.assert_called_with('summit')
 
 
 @mock.patch('thousands.climbs_dao', new=mock_climbs_dao())
@@ -83,12 +83,12 @@ def test_summit(mock_summits_dao, mock_climbs_dao, client):
 @mock.patch('thousands.summits_dao')
 def test_climb_new(mock_summits_dao, mock_users_dao, mock_climbs_dao, client):
     with client() as c:
-        resp = c.get('/climb/new/2')
+        resp = c.get('/ridge/summit/climb')
         assert resp.status == '302 FOUND'
         with c.session_transaction() as sess:
             sess['user_id'] = u'5'
-        resp = c.get('/climb/new/2')
-        mock_summits_dao.get.assert_called_with(2)
+        resp = c.get('/ridge/summit/climb')
+        mock_summits_dao.get.assert_called_with('summit')
         # mock_users_dao.get_by_id.assert_called_with(u'5')
 
         # resp = c.post('/climb/new/1',

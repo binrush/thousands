@@ -87,6 +87,7 @@ pool.putconn(conn)
 summits_images_dao = dao.SummitsImagesDao(pool)
 summits_dao = dao.SummitsDao(pool, summits_images_dao)
 users_dao = dao.UsersDao(pool)
+ridges_dao = dao.RidgesDao(pool)
 
 if app.config['IMAGES_BACKEND'] == 'filesystem':
     images_dao = dao.FilesystemImagesDao(app.config['IMAGES_DIR'])
@@ -123,6 +124,7 @@ def load_user(userid):
 
 @app.before_request
 def before_request():
+    g.ridges_dao = ridges_dao
     g.summits_dao = summits_dao
     g.summits_images_dao = summits_images_dao
     g.users_dao = users_dao

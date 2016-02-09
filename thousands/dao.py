@@ -1,9 +1,12 @@
 # coding: utf-8
 from contextlib import contextmanager
 import psycopg2.extras
+import psycopg2
 import os
 import logging
-from model import (Summit, SummitImage, InexactDate, User, Image)
+from model import (Summit, SummitImage, Ridge,
+                   InexactDate, User, Image)
+from transliterate import translit
 
 logger = logging.getLogger(__name__)
 
@@ -28,6 +31,24 @@ class Dao(object):
             self.pool.putconn(conn)
 
 
+class RidgesDao(Dao):
+
+    def get_all(self):
+        query = """SELECT r.id, r.name, count(*) as summits_num
+                 FROM ridges r LEFT JOIN summits ON r.id=summits.ridge_id
+                 GROUP BY r.id ORDER BY summits_num DESC"""
+        with self.get_cursor() as cur:
+            cur.execute(query)
+            return [Ridge(**row) for row in cur]
+
+    def get(self, ridge_id):
+        query = """SELECT id, name, description FROM ridges
+                    WHERE id=%s"""
+        with self.get_cursor() as cur:
+            cur.execute(query, (ridge_id, ))
+            return Ridge(**(cur.fetchone()))
+
+
 class SummitsDao(Dao):
 
     def __init__(self, pool, summits_images_dao):
@@ -38,7 +59,8 @@ class SummitsDao(Dao):
             s = Summit()
             for k in ['id', 'name', 'name_alt', 'height', 'number',
                       'description', 'interpretation',
-                      'ridge', 'rid', 'color', 'climbed', 'main', 'climbers']:
+                      'ridge', 'ridge_id', 'color', 'climbed',
+                      'main', 'climbers']:
                 if k in row:
                     setattr(s, k, row[k])
             s.coordinates = (row['lat'], row['lng'])
@@ -72,7 +94,7 @@ class SummitsDao(Dao):
             order = "ORDER BY r.name, s.lat DESC"
 
         query = """
-        SELECT s.id, s.name, s.name_alt,
+        SELECT s.id, s.name, s.name_alt, s.ridge_id,
                 s.height, s.lng, s.lat, r.name AS ridge, r.color,
                 count(c.user_id) AS climbers,
             EXISTS (
@@ -81,16 +103,19 @@ class SummitsDao(Dao):
             ) AS climbed,
             EXISTS (
                 SELECT * FROM
-                    (SELECT rid, max(height) AS maxheight
-                        FROM summits WHERE rid=s.rid GROUP BY rid) as smtsg
+                    (SELECT ridge_id, max(height) AS maxheight
+                        FROM summits WHERE ridge_id=s.ridge_id
+                        GROUP BY ridge_id) as smtsg
                     INNER JOIN summits smts
-                    ON smtsg.rid=smts.rid AND smts.height=smtsg.maxheight
+                    ON smtsg.ridge_id=smts.ridge_id
+                        AND smts.height=smtsg.maxheight
                     WHERE id=s.id
             ) AS main
         FROM summits s
-        LEFT JOIN ridges r ON s.rid=r.id
+        LEFT JOIN ridges r ON s.ridge_id=r.id
         LEFT JOIN climbs c ON c.summit_id = s.id
-        GROUP BY s.id, s.name, s.name_alt, r.name, r.color """ + order
+        GROUP BY s.id, s.name, s.name_alt,
+            r.name, r.color, s.ridge_id """ + order
 
         return self.__get_many(query, (user_id, ))
 
@@ -106,16 +131,18 @@ class SummitsDao(Dao):
             ) AS climbed,
             EXISTS (
                 SELECT * FROM
-                    (SELECT rid, max(height) AS maxheight
-                        FROM summits WHERE rid=s.rid GROUP BY rid) as smtsg
+                    (SELECT ridge_id, max(height) AS maxheight
+                        FROM summits
+                        WHERE ridge_id=s.ridge_id GROUP BY ridge_id) as smtsg
                     INNER JOIN summits smts
-                    ON smtsg.rid=smts.rid AND smts.height=smtsg.maxheight
+                    ON smtsg.ridge_id=smts.ridge_id
+                        AND smts.height=smtsg.maxheight
                     WHERE id=s.id
             ) AS main
         FROM summits s
         LEFT JOIN ridges r ON s.rid=r.id
         LEFT JOIN climbs c ON c.summit_id = s.id
-        WHERE rid IN %s
+        WHERE ridge_id IN %s
         GROUP BY s.id, s.name, s.name_alt, r.name, r.color
         ORDER BY r.name, s.lat DESC"""
 
@@ -126,19 +153,20 @@ class SummitsDao(Dao):
             cur.execute("SELECT id, name FROM ridges ORDER BY name")
             return [{"id": row['id'], "name": row['name']} for row in cur]
 
-    def get(self, sid, images=False):
+    def get(self, summit_id, images=False):
         with self.get_cursor() as cur:
             cur.execute(
                 """SELECT s.id, s.name, name_alt, height,
-                          interpretation, s.description, rid,
+                          interpretation, s.description, ridge_id,
                           r.name AS ridge, lng, lat,
                           (SELECT COUNT(*) FROM summits
                               WHERE height >= s.height ) AS number,
                           (SELECT MAX(height)=s.height FROM summits
-                              WHERE rid=s.rid) AS main
+                              WHERE ridge_id=s.ridge_id) AS main
                    FROM summits s LEFT JOIN ridges r
-                   ON s.rid = r.id
-                   WHERE s.id=%s""", (sid, ))
+                   ON s.ridge_id = r.id
+                   WHERE s.id=%s""",
+                (summit_id, ))
             if cur.rowcount < 1:
                 return None
 
@@ -146,33 +174,52 @@ class SummitsDao(Dao):
             summit.images = []
 
             if images:
-                summit.images = self.summits_images_dao.get_by_summit(sid)
+                summit.images = \
+                    self.summits_images_dao.get_by_summit(summit_id)
 
             return summit
 
     def create(self, summit):
         with self.get_cursor() as cur:
             query = """INSERT INTO summits
-                (name, name_alt, height, description, rid, lat, lng) VALUES
-                (%(name)s, %(name_alt)s, %(height)s,
-                %(description)s, %(rid)s, round(%(lat)s, 6), round(%(lng)s, 6))
-                RETURNING id"""
-            cur.execute(query, {
-                'name': summit.name,
-                'name_alt': summit.name_alt,
-                'height': summit.height,
-                'description': summit.description,
-                'rid': summit.rid,
-                'lat': summit.coordinates[0],
-                'lng': summit.coordinates[1]})
-            return cur.fetchone()['id']
+                (id, name, name_alt, height, description, ridge_id, lat, lng)
+                VALUES  (%(id)s, %(name)s, %(name_alt)s, %(height)s,
+                    %(description)s, %(ridge_id)s, round(%(lat)s, 6),
+                    round(%(lng)s, 6))"""
+            key_base = translit(summit.name, 'ru', reversed=True) \
+                .replace('\'', '') \
+                .replace(' ', '_') \
+                .lower() if summit.name else str(summit.height)
+            key = key_base
+            i = 1
+            while True:
+                cur.execute("""SELECT COUNT(*) FROM summits
+                            WHERE id=%s""",
+                            (key, ))
+                if cur.fetchone()[0] == 0:
+
+                    cur.execute(query, {
+                        'id': key,
+                        'name': summit.name,
+                        'name_alt': summit.name_alt,
+                        'height': summit.height,
+                        'description': summit.description,
+                        'ridge_id': summit.ridge_id,
+                        'lat': summit.coordinates[0],
+                        'lng': summit.coordinates[1]})
+                    summit.id = key
+                    return summit
+                key = key_base + '-' + str(i)
+                i += 1
 
     def update(self, summit):
         with self.get_cursor() as cur:
             query = """UPDATE summits SET
-                name=%(name)s, name_alt=%(name_alt)s, height=%(height)s,
-                description=%(description)s, interpretation=%(interpretation)s,
-                rid=%(rid)s, lat=round(%(lat)s, 6), lng=round(%(lng)s, 6)
+                    name=%(name)s, name_alt=%(name_alt)s, height=%(height)s,
+                    description=%(description)s,
+                    interpretation=%(interpretation)s,
+                    ridge_id=%(ridge_id)s, lat=round(%(lat)s, 6),
+                    lng=round(%(lng)s, 6)
                 WHERE id=%(id)s"""
             cur.execute(query, {
                 'name': summit.name,
@@ -180,24 +227,25 @@ class SummitsDao(Dao):
                 'height': summit.height,
                 'description': summit.description,
                 'interpretation': summit.interpretation,
-                'rid': summit.rid,
                 'lat': summit.coordinates[0],
                 'lng': summit.coordinates[1],
-                'id': summit.id})
+                'id': summit.id,
+                'ridge_id': summit.ridge_id})
             return summit
 
     def delete(self, summit_id):
         with self.get_cursor() as cur:
-            cur.execute("DELETE FROM summits WHERE id=%s", (summit_id, ))
+            cur.execute("DELETE FROM summits WHERE id=%s",
+                        (summit_id, ))
 
 
 class SummitsImagesDao(Dao):
 
     def get_by_summit(self, summit_id):
         with self.get_cursor() as cur:
-            cur.execute("SELECT image, summit_id, preview, comment " +
-                        " FROM summits_images " +
-                        " WHERE summit_id=%s ORDER BY main DESC",
+            cur.execute("""SELECT image, summit_id, preview, comment
+                        FROM summits_images WHERE summit_id=%s
+                        ORDER BY main DESC""",
                         (summit_id, ))
             return [SummitImage(**row) for row in cur]
 
@@ -210,7 +258,8 @@ class SummitsImagesDao(Dao):
                 return SummitImage(**row)
 
     def create(self, summit_image):
-        query = """INSERT INTO summits_images (summit_id, image, preview, comment, main)
+        query = """INSERT INTO summits_images
+                    (summit_id, image, preview, comment, main)
                 VALUES (%s, %s, %s, %s, %s)"""
         with self.get_cursor() as cur:
             if summit_image.main:
@@ -367,8 +416,7 @@ class ClimbsDao(Dao):
                     users.preview
                 FROM users LEFT JOIN climbs ON climbs.user_id=users.id
                 LEFT JOIN summits ON climbs.summit_id=summits.id
-                WHERE climbs.summit_id=%s
-                ORDER BY year, month, day;"""
+                WHERE climbs.summit_id=%s ORDER BY year, month, day;"""
         with self.get_cursor() as cur:
             cur.execute(sql, (summit_id, ))
             for row in cur:
@@ -385,8 +433,9 @@ class ClimbsDao(Dao):
         climbed = []
         sql = """SELECT
                     year, month, day, comment,
-                    summits.id, summits.name, height, ridges.name AS ridge
-                FROM ridges LEFT JOIN summits ON ridges.id=summits.rid
+                    summits.id, summits.ridge_id,
+                    summits.name, height, ridges.name AS ridge
+                FROM ridges LEFT JOIN summits ON ridges.id=summits.ridge_id
                 LEFT JOIN climbs ON summits.id=climbs.summit_id
                 WHERE climbs.user_id=%s
                 ORDER BY year, month, day"""
@@ -396,6 +445,7 @@ class ClimbsDao(Dao):
                 s = Summit()
                 s.name = row['name']
                 s.ridge = row['ridge']
+                s.ridge_id = row['ridge_id']
                 s.id = row['id']
                 s.height = row['height']
                 climbed.append(
@@ -422,11 +472,11 @@ class ClimbsDao(Dao):
                 users.append(u)
         return users
 
-    def get(self, user_id, summit_id):
+    def get(self, user, summit):
         sql = "SELECT year, month, day, comment" + \
             " FROM climbs WHERE user_id=%s AND summit_id=%s"
         with self.get_cursor() as cur:
-            cur.execute(sql, (user_id, summit_id))
+            cur.execute(sql, (user.get_id(), summit.id))
             if cur.rowcount < 1:
                 return None
             row = cur.fetchone()
@@ -436,13 +486,13 @@ class ClimbsDao(Dao):
             climb.comment = row['comment']
         return climb
 
-    def create(self, user_id, summit_id, date=None, comment=None):
+    def create(self, user, summit, date=None, comment=None):
         sql = "INSERT INTO climbs (user_id, summit_id, comment, year, month, day)" + \
             " VALUES (%s, %s, %s, %s, %s, %s)"
         with self.get_cursor() as cur:
             cur.execute(
                 sql,
-                (user_id, summit_id, comment,
+                (user.get_id(), summit.id, comment,
                  date.year, date.month, date.day))
 
     def update(self, user_id, summit_id, date=None, comment=None):

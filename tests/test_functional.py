@@ -14,28 +14,30 @@ def enable_testing():
 @pytest.fixture(scope="module", autouse=True)
 def populate_database(request):
     conn = thousands.pool.getconn()
+    conn.autocommit = False
     try:
         cur = conn.cursor()
         cur.execute(u"INSERT INTO ridges (id, name, color) \
-                    VALUES (1, 'Крыкты-Тау', 'fafafa')")
+                    VALUES ('krykty-tau', 'Крыкты-Тау', 'fafafa')")
         cur.execute(u"INSERT INTO users (id, oauth_id, src, name) \
                     VALUES (1, 12345, 1, 'Иван Кузнецов')")
         cur.execute(u"INSERT INTO users (id, oauth_id, src, name, admin) \
                     VALUES (2, '54321', 1, 'admin', true)")
-        cur.execute(u"INSERT INTO summits (rid, name, height, \
+        cur.execute(u"INSERT INTO summits (id, ridge_id, name, height, \
                     description, interpretation, lng, lat) VALUES \
-                    (1, 'Бабай', 1015, 'Невысокая скала', \
+                    ('babay', 'krykty-tau', 'Бабай', 1015, 'Невысокая скала', \
                     'Дедушка, старейшина', 53.1, 58.1), \
-                    (1, 'Noname', 1007, NULL, NULL, 53.2, 58.2), \
-                    (1, 'Кушай', 1048, 'Три скальных гребня', \
+                    ('noname', 'krykty-tau', 'Noname', \
+                        1007, NULL, NULL, 53.2, 58.2), \
+                    ('kushay', 'krykty-tau', 'Кушай', \
+                        1048, 'Три скальных гребня', \
                     'Двойной', 53.3, 58.3)")
         cur.execute(u"INSERT INTO climbs (user_id, summit_id, comment, \
                     year, month, day)\
-                    select 1, id, 'Fun', 2011, 11, NULL\
-                    FROM summits WHERE name='Кушай';")
+                    VALUES (1, 'kushay', 'Fun', 2011, 11, NULL)")
         conn.commit()
     finally:
-            thousands.pool.putconn(conn)
+        thousands.pool.putconn(conn)
 
     def cleanup():
         conn = thousands.pool.getconn()
@@ -82,24 +84,24 @@ def get_summit_id(client, name):
 
 
 def test_summit_new_reject_anonymous(client_anonymous):
-    resp = client_anonymous.get('/summit/new')
+    resp = client_anonymous.get('/summits/new')
     assert resp.status == '401 UNAUTHORIZED'
 
 
 def test_summit_new_reject_nonadmin(client_user):
-    resp = client_user.get('/summit/new')
+    resp = client_user.get('/summits/new')
     assert resp.status == '401 UNAUTHORIZED'
 
 
 def test_summit_new_get_shows_form(client_admin):
-    resp = client_admin.get('/summit/new')
+    resp = client_admin.get('/summits/new')
     assert resp.status == '200 OK'
-    assert '<option value="1">Крыкты-Тау</option>' in resp.data
+    assert '<option value="krykty-tau">Крыкты-Тау</option>' in resp.data
     assert '<div id="coordinates-pick-map"' in resp.data
 
 
 def test_summit_new_post_shows_message_on_err(client_admin):
-    resp = client_admin.post('/summit/new', data={"name": "Караташ"})
+    resp = client_admin.post('/summits/new', data={"name": "Караташ"})
     assert resp.status == '200 OK'
     assert 'value="Караташ' in resp.data
     assert '<ul id="form-error-list">'
@@ -107,11 +109,11 @@ def test_summit_new_post_shows_message_on_err(client_admin):
 
 
 def test_summit_new_post_add_summit(client_admin):
-    resp = client_admin.post('/summit/new', data={
+    resp = client_admin.post('/summits/new', data={
         "name": "Караташ",
         "coordinates": "54.123456 58.654321",
         "height": "1010",
-        "rid": "1"})
+        "ridge_id": "krykty-tau"})
     assert resp.status == "302 FOUND"
     resp = client_admin.get(resp.headers['Location'])
     assert resp.status == "200 OK"
@@ -120,12 +122,12 @@ def test_summit_new_post_add_summit(client_admin):
 
 
 def test_table(client_user):
-    resp = client_user.get('/table')
+    resp = client_user.get('/summits')
     assert resp.status == "200 OK"
     assert resp.data.index('Кушай') < \
         resp.data.index('1007') < \
         resp.data.index('Бабай')
-    resp = client_user.get('/table?sort=height')
+    resp = client_user.get('/summits?sort=height')
     assert resp.data.index('Вы взошли на эту вершину') < \
         resp.data.index('Кушай') < \
         resp.data.index('Бабай') < \
@@ -149,69 +151,61 @@ def test_summits_api(client_user):
 
 
 def test_summit_not_climbed(client_user):
-    summit_id = get_summit_id(client_user, u'Бабай')
-    resp = client_user.get('/summit/' + str(summit_id))
+    resp = client_user.get('/krykty-tau/' + str('babay'))
     assert resp.status == '200 OK'
     assert '<a class="btn btn-primary" ' + \
-        'href="/climb/new/{}">Взошли на эту вершину?</a>'.format(summit_id) in \
+        'href="/krykty-tau/babay/climb">Взошли на эту вершину?</a>' in \
         resp.data
     assert '<dd>1015' in resp.data
     assert 'Бабай' in resp.data
 
 
 def test_summit_climbed(client_user):
-    summit_id = get_summit_id(client_user, u'Кушай')
-    resp = client_user.get('/summit/' + str(summit_id))
+    resp = client_user.get('/krykty-tau/kushay')
     assert resp.status == '200 OK'
-    assert 'href="/summit/{}/climb/edit"'.format(summit_id) in resp.data
+    assert 'href="/krykty-tau/kushay/climb/edit"' in resp.data
     assert not ('Взошли на эту вершину?' in resp.data)
 
 
 def test_summit_anonymous(client_anonymous):
-    summit_id = get_summit_id(client_anonymous, u'Бабай')
-    resp = client_anonymous.get('/summit/' + str(summit_id))
+    resp = client_anonymous.get('/krykty-tau/babay')
     assert resp.status == '200 OK'
-    assert 'href="/login?r=%2Fclimb%2Fnew%2F{}"'.format(summit_id) in resp.data
+    assert 'href="/login?r=%2Fkrykty-tau%2Fbabay%2Fclimb"' in resp.data
     assert 'Взошли на эту вершину?' in resp.data
 
 
 def test_climb_form_anonymous(client_anonymous):
-    summit_id = get_summit_id(client_anonymous, u'Бабай')
-    resp = client_anonymous.get('/climb/new/' + str(summit_id))
+    resp = client_anonymous.get('/krykty-tau/babay/climb')
     assert resp.status == '302 FOUND'
-    resp = client_anonymous.get('/climb/edit/' + str(summit_id))
+    resp = client_anonymous.get('/climb/krykty-tau/babay/edit')
     assert resp.status == '401 UNAUTHORIZED'
-    resp = client_anonymous.get('/summit/{}/climb/edit'.format(summit_id))
+    resp = client_anonymous.get('/krykty-tau/babay/climb/edit')
     assert resp.status == '401 UNAUTHORIZED'
 
 
 def test_climb_form_user(client_user):
-    summit_id = get_summit_id(client_user, u'Бабай')
-    resp = client_user.get('/climb/new/' + str(summit_id))
+    resp = client_user.get('/krykty-tau/babay/climb')
     assert resp.status == '200 OK'
-    assert '<input id="summit_id" name="summit_id" ' + \
-           'type="hidden" value="{}">'.format(summit_id) in resp.data
+    assert '<form id="summit_edit_form"' in resp.data
 
 
 def test_climb_form_user_existing(client_user):
-    summit_id = get_summit_id(client_user, u'Кушай')
-    resp = client_user.get('/climb/new/' + str(summit_id))
+    resp = client_user.get('/krykty-tau/kushay/climb')
     assert resp.status == '302 FOUND'
-    assert '/summit/' + str(summit_id) in resp.headers['Location']
+    assert '/krykty-tau/kushay' in resp.headers['Location']
 
 
 def test_climb_add(client_user):
-    summit_id = get_summit_id(client_user, u'Бабай')
-    resp = client_user.post('/climb/new/{}'.format(summit_id), data={
-        'summit_id': str(summit_id),
+    resp = client_user.post('/krykty-tau/babay/climb', data={
+        'summit_id': 'babay',
         'date': '10.10.2010',
         'comment': 'nice'})
     assert resp.status == '302 FOUND'
-    assert '/summit/' + str(summit_id) in resp.headers['Location']
+    assert '/krykty-tau/babay' in resp.headers['Location']
     resp = client_user.get(resp.headers['Location'])
     assert resp.status == '200 OK'
     assert 'Бабай' in resp.data
-    assert '<a href="/summit/{}/climb/edit">Редактировать'.format(summit_id) \
+    assert '<a href="/krykty-tau/babay/climb/edit">Редактировать' \
         in resp.data
 
 
@@ -227,21 +221,18 @@ def test_climb_add_wo_token(client_user):
 
 
 def test_climb_edit_form(client_user):
-    summit_id = get_summit_id(client_user, u'Кушай')
-    resp = client_user.get('/climb/edit/{}'.format(summit_id))
+    resp = client_user.get('/krykty-tau/kushay/climb/edit')
     assert resp.status == '200 OK'
     assert 'value="11.2011"' in resp.data
     assert '>Fun</textarea>' in resp.data
 
 
 def test_climb_edit_post(client_user):
-    summit_id = get_summit_id(client_user, u'Кушай')
-    resp = client_user.post('/climb/edit/{}'.format(summit_id), data={
-        'summit_id': str(summit_id),
+    resp = client_user.post('/krykty-tau/kushay/climb/edit', data={
         'date': '10.10.2010',
         'comment': 'Nice'})
     assert resp.status == '302 FOUND'
-    resp = client_user.get('/climb/edit/{}'.format(summit_id))
+    resp = client_user.get('/krykty-tau/kushay/climb/edit')
     assert resp.status == '200 OK'
     assert 'value="10.10.2010"' in resp.data
     assert '>Nice</textarea>' in resp.data
@@ -259,13 +250,11 @@ def test_climb_edit_wo_token(client_user):
 
 
 def test_climb_delete(client_user):
-    summit_id = get_summit_id(client_user, 'Noname')
-    resp = client_user.post('/climb/new/{}'.format(summit_id), data={
-        'summit_id': str(summit_id),
+    resp = client_user.post('/krykty-tau/noname/climb', data={
         'date': '',
         'comment': ''})
     assert resp.status == '302 FOUND'
-    resp = client_user.post('/climb/delete/{}'.format(summit_id), data={})
+    resp = client_user.post('/climb/krykty-tau/noname/delete', data={})
     assert resp.status == '302 FOUND'
     resp = client_user.get(resp.headers['Location'])
     assert not ('Noname' in resp.data)

@@ -65,7 +65,22 @@ def index():
         hl_summit=hl_summit)
 
 
-@app.route('/table')
+# @app.route('/<ridge_id>')
+# def ridge(ridge_id):
+#     return render_template(
+#         'ridge.html',
+#         ridge=g.ridges_dao.get(ridge_id))
+#
+#
+# @app.route('/ridges')
+# def ridges():
+#     return render_template(
+#         'ridges.html',
+#         active_page='ridges',
+#         ridges=g.ridges_dao.get_all())
+
+
+@app.route('/summits')
 def table():
     sort = request.args.get('sort', 'ridge')
     return render_template(
@@ -77,8 +92,8 @@ def table():
         sort=sort)
 
 
-@app.route('/summit/<int:summit_id>')
-def summit(summit_id):
+@app.route('/<ridge_id>/<summit_id>')
+def summit(ridge_id, summit_id):
     s = g.summits_dao.get(summit_id, True)
     if s is None:
         return abort(404)
@@ -92,46 +107,52 @@ def summit(summit_id):
         active_page='table')
 
 
-@app.route('/summit/new', methods=['GET', 'POST'])
+@app.route('/summits/new', methods=['GET', 'POST'])
 def summit_new():
     if current_user.is_anonymous or not current_user.admin:
         abort(401)
     form = forms.SummitForm()
-    form.rid.choices = \
+    form.ridge_id.choices = \
         [(r['id'], r['name']) for r in g.summits_dao.get_ridges()]
     if form.validate_on_submit():
         summit = dao.Summit()
         form.populate_obj(summit)
         summit.lat, summit.lng = form.coordinates.data
+        summit = g.summits_dao.create(summit)
         return redirect(url_for('summit',
-                                summit_id=g.summits_dao.create(summit)))
+                                ridge_id=summit.ridge_id,
+                                summit_id=summit.id))
     return render_template('summit_edit.html', form=form)
 
 
-@app.route('/summit/edit/<int:summit_id>', methods=['GET', 'POST'])
+@app.route('/<ridge_id>/<summit_id>/edit', methods=['GET', 'POST'])
 @login_required
-def summit_edit(summit_id):
+def summit_edit(ridge_id, summit_id):
+    print dir(request.url_rule)
     if not current_user.admin:
         abort(401)
 
-    s = g.summits_dao.get(summit_id)
-    if s is None:
+    summit = g.summits_dao.get(summit_id)
+    if summit is None:
         abort(404)
-    form = forms.SummitForm(obj=g.summits_dao.get(summit_id))
-    form.rid.choices = \
+    form = forms.SummitForm(obj=summit)
+    form.ridge_id.choices = \
         [(r['id'], r['name']) for r in g.summits_dao.get_ridges()]
     if form.validate_on_submit():
         summit = dao.Summit()
+        summit.id = summit_id
         form.populate_obj(summit)
         g.summits_dao.update(summit)
-        return redirect(url_for('summit', summit_id=summit.id))
+        return redirect(url_for('summit',
+                                summit_id=summit.id,
+                                ridge_id=summit.ridge_id))
 
     return render_template('summit_edit.html', form=form)
 
 
-@app.route('/summit/delete/<int:summit_id>', methods=['POST'])
+@app.route('/<ridge_id>/<summit_id>/delete', methods=['POST'])
 @login_required
-def summit_delete(summit_id):
+def summit_delete(ridge_id, summit_id):
     if not current_user.admin:
         abort(401)
     form = forms.DeleteForm()
@@ -140,9 +161,9 @@ def summit_delete(summit_id):
     return redirect(url_for('index'))
 
 
-@app.route('/summit/<int:summit_id>/images', methods=['GET', 'POST'])
+@app.route('/<ridge_id>/<summit_id>/images', methods=['GET', 'POST'])
 @login_required
-def summit_images(summit_id):
+def summit_images(ridge_id, summit_id):
     if not current_user.admin:
         abort(401)
     form = forms.SummitImageUploadForm()
@@ -161,16 +182,18 @@ def summit_images(summit_id):
             summit_id=summit_id,
             comment=form.comment.data,
             main=form.main.data))
-        return redirect(url_for('summit', summit_id=summit_id))
+        return redirect(url_for('summit_images',
+                                summit_id=summit_id,
+                                ridge_id=ridge_id))
 
     return render_template('summit_images.html',
                            form=form,
                            summit=g.summits_dao.get(summit_id, True))
 
 
-@app.route('/summit/image/edit/<image_id>',
+@app.route('/<ridge_id>/<summit_id>/images/<image_id>/edit',
            methods=['GET', 'POST'])
-def summit_image_edit(image_id):
+def summit_image_edit(ridge_id, summit_id, image_id):
     summit_image = g.summits_images_dao.get(image_id)
     form = forms.SummitImageEditForm(obj=summit_image)
     if form.validate_on_submit():
@@ -183,7 +206,8 @@ def summit_image_edit(image_id):
                                         form.comment.data,
                                         form.main.data)
         return redirect(url_for('summit_images',
-                                summit_id=summit_image.summit_id))
+                                ridge_id=ridge_id,
+                                summit_id=summit_id))
 
     return render_template(
         'summit_image_edit.html',
@@ -192,40 +216,49 @@ def summit_image_edit(image_id):
         form=form)
 
 
-@app.route('/climb/new/<int:summit_id>', methods=['GET', 'POST'])
-def climb_new(summit_id):
+@app.route('/<ridge_id>/<summit_id>/climb', methods=['GET', 'POST'])
+def climb_new(ridge_id, summit_id):
     if not current_user.is_authenticated:
-        return redirect(url_for('summit', summit_id=summit_id))
+        return redirect(url_for('summit',
+                                ridge_id=ridge_id,
+                                summit_id=summit_id))
 
-    if g.climbs_dao.get(current_user.get_id(), summit_id):
+    summit = g.summits_dao.get(summit_id)
+    if g.climbs_dao.get(current_user, summit):
         flash(u'Вы уже сообщили о восхождении на эту вершину')
-        return redirect(url_for('summit', summit_id=summit_id))
+        return redirect(url_for('summit',
+                                ridge_id=ridge_id,
+                                summit_id=summit_id))
 
     form = forms.ClimbForm()
     if form.validate_on_submit():
         g.climbs_dao.create(
-            current_user.get_id(),
-            form.summit_id.data,
+            current_user,
+            g.summits_dao.get(summit_id),
             form.date.data,
             form.comment.data)
-        app.logger.info("Climb added uid=%s, sid=%s",
-                        current_user.id,
-                        summit_id)
+        app.logger.info("Climb added uid=%s, summit_id=%s",
+                        current_user.id, summit_id)
         flash(u'Ваше восхождение зарегистрировано')
-        return redirect(url_for('summit', summit_id=form.summit_id.data))
+        return redirect(url_for('summit',
+                                ridge_id=ridge_id,
+                                summit_id=summit_id))
 
     return render_template('climb_edit.html',
                            summit=g.summits_dao.get(summit_id),
                            form=form)
 
 
-@app.route('/summit/<int:summit_id>/climb/edit', methods=['GET', 'POST'])
+@app.route('/<ridge_id>/<summit_id>/climb/edit', methods=['GET', 'POST'])
 @login_required
-def summit_climb_edit(summit_id):
-    return climb_edit(summit_id, url_for('summit', summit_id=summit_id))
+def summit_climb_edit(ridge_id, summit_id):
+    return climb_edit(summit_id,
+                      url_for('summit',
+                              ridge_id=ridge_id,
+                              summit_id=summit_id))
 
 
-@app.route('/climb/edit/<int:summit_id>', methods=['GET', 'POST'])
+@app.route('/climb/<ridge_id>/<summit_id>/edit', methods=['GET', 'POST'])
 @login_required
 def profile_climb_edit(summit_id):
     return climb_edit(summit_id,
@@ -234,12 +267,13 @@ def profile_climb_edit(summit_id):
 
 
 def climb_edit(summit_id, redirect_url):
-    climb = g.climbs_dao.get(current_user.id, summit_id)
+    summit = g.summits_dao.get(summit_id)
+    climb = g.climbs_dao.get(current_user, summit)
     form = forms.ClimbForm(obj=climb)
     if form.validate_on_submit():
         g.climbs_dao.update(
             current_user.id,
-            form.summit_id.data,
+            summit_id,
             form.date.data,
             form.comment.data)
         app.logger.info("Climb edited uid=%s, sid=%s",
@@ -248,19 +282,22 @@ def climb_edit(summit_id, redirect_url):
         flash(u'Ваше восхождение отредактировано')
         return redirect(redirect_url)
     return render_template('climb_edit.html',
-                           summit=g.summits_dao.get(summit_id),
+                           summit=summit,
                            form=form)
 
 
-@app.route('/summit/<int:summit_id>/climb/delete/', methods=['POST'])
+@app.route('/<ridge_id>/<summit_id>/climb/delete', methods=['POST'])
 @login_required
-def summit_climb_delete(summit_id):
-    return climb_delete(summit_id, url_for('summit', summit_id=summit_id))
+def summit_climb_delete(ridge_id, summit_id):
+    return climb_delete(summit_id,
+                        url_for('summit',
+                                ridge_id=ridge_id,
+                                summit_id=summit_id))
 
 
-@app.route('/climb/delete/<int:summit_id>', methods=['POST'])
+@app.route('/climb/<ridge_id>/<summit_id>/delete', methods=['POST'])
 @login_required
-def profile_climb_delete(summit_id):
+def profile_climb_delete(ridge_id, summit_id):
     return climb_delete(summit_id,
                         url_for('user', user_id=current_user.get_id()))
 

@@ -14,6 +14,7 @@ setup(name='thousands',
           'google-api-python-client',
           'bleach',
           'gpxpy',
-          'Pillow'],
+          'Pillow',
+          'transliterate'],
       tests_require=['mock'],
       test_suite="tests")

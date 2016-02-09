@@ -1,0 +1,36 @@
+{% extends "layout.html" %}
+{% block title %}Хребты{% endblock %}
+{% block description %}Хребты Южного Урала{% endblock %}
+{% block content %}
+{% with messages = get_flashed_messages(category_filter=['message']) %}
+  {% if messages %}
+<div class="alert alert-success flash-message" role="alert">
+    {% for message in messages %}
+      {{ message }}
+    {% endfor %}
+</div>
+  {% endif %}
+{% endwith %}
+<h1>Хребты</h1>
+<table class="table">
+<thead>
+    <tr>
+        <th class="{% if sort == 'name' %}info{% else %}clickable-cell active{% endif %}">
+            <a {% if sort != 'name' %}href="{{ url_for('table', sort='name') }}"{% endif %}>Название</a>
+        </th>
+        <th class="{% if sort == 'height' %}info{% else %}clickable-cell active{% endif %}">
+            <a {% if sort != 'height' %}href="{{ url_for('table', sort='height') }}"{% endif %}>Вершин</a>
+        </th>
+    </tr>
+</thead>
+<tbody>
+    {% for r in ridges %}
+    <tr>
+        <td><a href="{{url_for('ridge', ridge_id=r.id)}}">{{ r.name }}</td>
+        <td>{{ r.summits_num }}</td>
+    </tr>
+    {% endfor %}
+</tbody>
+</table>
+
+{% endblock %}

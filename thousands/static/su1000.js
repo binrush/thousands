@@ -54,7 +54,7 @@ function createMap(container, center, zoom) {
 }
 
 function pointPopupCode(feature) {
-    name = "<a href=\"/summit/" + feature.id + "\">" + feature.properties.name + "</a>";
+    name = "<a href=\"/" + feature.properties.ridge_id + "/" + feature.id + "\">" + feature.properties.name + "</a>";
     return name +
         "<br>Высота: " + feature.properties.height + 
         "<br>Хребет: " + feature.properties.ridge;
@@ -114,7 +114,7 @@ function getPointCoordinates(e) {
 function deleteEntry() {
     answer = confirm("Вы уверены?");
     if (answer) {
-        form = document.getElementById('climb-delete-form');
+        form = document.getElementById('delete-form');
         form.action = this.href;
         form.submit()
     }

@@ -11,10 +11,12 @@
 </div>
   {% endif %}
 {% endwith %}
+{#
 <ol class="breadcrumb">
     <li><a href="#">хребет {{ summit.ridge }}</a></li>
     <li class="active">вершина {{ summit.name }}</li>
 </ol>
+#}
 <h1>
 {{ summit.format_name() }} 
 {% if current_user.admin %}
@@ -24,7 +26,7 @@
 {% endif %}
 </h1>
 <div class="row">
-    <div class="col-md-4">
+    <div class="col-md-4" id="summit-images">
         {% if summit.images | length > 0 %}
         {% for img in summit.images %}
         <a href="{{ url_for('image_get', image_id=img.image) }}" alt="{{ img.comment }}" data-gallery title="{{ img.comment }}">
@@ -37,8 +39,8 @@
         {% endfor %}
         {% else %}
             <img src="/static/mnt_dummy.png" class="img-responsive center-block summit-image-main">
-            <p>Есть фотография этой вершины? Можете <a href="">поделиться ей</a> с нашим проектом.</p>
         {% endif %}
+        <p>Есть фотография этой вершины? Можете <a href="">поделиться ей</a> с нашим проектом.</p>
     </div>
     <div class="col-md-8">
         {% if summit.name_alt %}
@@ -90,9 +92,9 @@
 <form id="delete-form" method="POST">
     {{ del_form.csrf_token }}
 </form>
-<h3>
-    Восходители
-</h3>
+<div class="row">
+    <div class="col-md-8">
+<h3>Восходители</h3>
 {% if climbers | length == 0 %}
 Никто пока не сообщил о восхождении на эту вершину.
 {% endif %}
@@ -128,40 +130,9 @@
     </li>
     {% endfor %}
 </ul>
-
-<div id="blueimp-gallery" class="blueimp-gallery">
-    <!-- The container for the modal slides -->
-    <div class="slides"></div>
-    <!-- Controls for the borderless lightbox -->
-    <h3 class="title"></h3>
-    <a class="prev">‹</a>
-    <a class="next">›</a>
-    <a class="close">×</a>
-    <a class="play-pause"></a>
-    <ol class="indicator"></ol>
-    <!-- The modal dialog, which will be used to wrap the lightbox content -->
-    <div class="modal fade">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button type="button" class="close" aria-hidden="true">&times;</button>
-                    <h4 class="modal-title"></h4>
-                </div>
-                <div class="modal-body next"></div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-default pull-left prev">
-                        <i class="glyphicon glyphicon-chevron-left"></i>
-                        Previous
-                    </button>
-                    <button type="button" class="btn btn-primary next">
-                        Next
-                        <i class="glyphicon glyphicon-chevron-right"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
     </div>
 </div>
-
-<script src="/static/bootstrap-image-gallery.min.js"></script>
+<script>
+baguetteBox.run('#summit-images');
+</script>
 {% endblock %}

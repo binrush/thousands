@@ -88,7 +88,7 @@ def test_climb_new(mock_summits_dao, mock_users_dao, mock_climbs_dao, client):
         with c.session_transaction() as sess:
             sess['user_id'] = u'5'
         resp = c.get('/ridge/summit/climb')
-        mock_summits_dao.get.assert_called_with('ridge', 'summit')
+        mock_summits_dao.get.assert_called_with('summit')
         # mock_users_dao.get_by_id.assert_called_with(u'5')
 
         # resp = c.post('/climb/new/1',

@@ -1,9 +1,11 @@
 # coding: utf-8
 from contextlib import contextmanager
 import psycopg2.extras
+import psycopg2
 import os
 import logging
-from model import (Summit, SummitImage, InexactDate, User, Image)
+from model import (Summit, SummitImage, Ridge,
+                   InexactDate, User, Image)
 from transliterate import translit
 
 logger = logging.getLogger(__name__)
@@ -27,6 +29,24 @@ class Dao(object):
             yield conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
         finally:
             self.pool.putconn(conn)
+
+
+class RidgesDao(Dao):
+
+    def get_all(self):
+        query = """SELECT r.id, r.name, count(*) as summits_num
+                 FROM ridges r LEFT JOIN summits ON r.id=summits.ridge_id
+                 GROUP BY r.id ORDER BY summits_num DESC"""
+        with self.get_cursor() as cur:
+            cur.execute(query)
+            return [Ridge(**row) for row in cur]
+
+    def get(self, ridge_id):
+        query = """SELECT id, name, description FROM ridges
+                    WHERE id=%s"""
+        with self.get_cursor() as cur:
+            cur.execute(query, (ridge_id, ))
+            return Ridge(**(cur.fetchone()))
 
 
 class SummitsDao(Dao):

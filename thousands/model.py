@@ -5,6 +5,7 @@ from flask import url_for
 import datetime
 from gpxpy import gpx
 from PIL import Image as PILImage
+from collections import namedtuple
 import io
 import hashlib
 
@@ -14,6 +15,18 @@ AUTH_SRC_SU = 2
 
 class ModelException(Exception):
     pass
+
+
+class Point(namedtuple('Point', ['lat', 'lng'])):
+        pass
+
+
+class ThousandsObject(object):
+
+    def __init__(self, **props):
+        for p in props:
+            if p in self.__slots__:
+                setattr(self, p, props[p])
 
 
 class InexactDate(tuple):
@@ -93,6 +106,11 @@ class InexactDate(tuple):
         return self.__getpart(2)
 
 
+class Ridge(ThousandsObject):
+
+    __slots__ = ('id', 'name', 'description', 'summits_num')
+
+
 class Summit(object):
 
     def __to_mins_secs(self, value):
@@ -100,9 +118,6 @@ class Summit(object):
         mins = (value - deg)*60
         secs = (mins - int(mins))*60
         return u"{}{}{}'{}''".format(deg, u'\u00b0', int(mins), secs)
-
-    def format_name(self):
-        return self.name if self.name else str(self.height)
 
     def format_coordinates(self):
         return u'{} {} ({}{} {}{})'.format(
@@ -112,6 +127,9 @@ class Summit(object):
             'N' if self.coordinates[0] >= 0 else 'S',
             self.__to_mins_secs(self.coordinates[1]),
             'E' if self.coordinates[1] >= 0 else 'W')
+
+    def format_name(self):
+        return self.name if self.name else str(self.height)
 
     def to_geojson(self):
         ret = {'type': 'Feature',
@@ -141,13 +159,9 @@ class Summit(object):
         return wp
 
 
-class SummitImage(object):
+class SummitImage(ThousandsObject):
 
-    def __init__(self, **kwargs):
-        for k in kwargs:
-            if k in ('image', 'preview',
-                     'summit_id', 'comment', 'main'):
-                setattr(self, k, kwargs[k])
+    __slots__ = ('image', 'preview', 'summit_id', 'comment', 'main')
 
 
 class User(UserMixin):

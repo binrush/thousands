@@ -65,14 +65,19 @@ def index():
         hl_summit=hl_summit)
 
 
-@app.route('/ridges')
-def ridges():
-    return render_template('ridges.html')
-
-
-@app.route('/<ridge_id>')
-def ridge(ridge_id):
-    return render_template('ridge.html')
+# @app.route('/<ridge_id>')
+# def ridge(ridge_id):
+#     return render_template(
+#         'ridge.html',
+#         ridge=g.ridges_dao.get(ridge_id))
+#
+#
+# @app.route('/ridges')
+# def ridges():
+#     return render_template(
+#         'ridges.html',
+#         active_page='ridges',
+#         ridges=g.ridges_dao.get_all())
 
 
 @app.route('/summits')

@@ -38,6 +38,9 @@
             {% else %}
             <a href="{{ url_for('summit', ridge_id=s.ridge_id, summit_id=s.id) }}">{{s.format_name() }}</a>
             {% endif %}
+            {% if s.has_image %}
+                <span class="glyphicon glyphicon-camera" aria-hidden="true" title="Есть фотографии"></span> 
+            {% endif %}
         </td>
         <td>
             {% if s.main %}

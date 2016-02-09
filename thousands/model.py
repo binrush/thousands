@@ -145,7 +145,7 @@ class Summit(object):
         ret['properties']['color'] = self.color
         ret['properties']['climbed'] = self.climbed
         ret['properties']['main'] = self.main
-
+        ret['properties']['has_image'] = self.has_image
         return ret
 
     def to_gpx(self):

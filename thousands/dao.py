@@ -60,7 +60,7 @@ class SummitsDao(Dao):
             for k in ['id', 'name', 'name_alt', 'height', 'number',
                       'description', 'interpretation',
                       'ridge', 'ridge_id', 'color', 'climbed',
-                      'main', 'climbers']:
+                      'main', 'climbers', 'has_image']:
                 if k in row:
                     setattr(s, k, row[k])
             s.coordinates = (row['lat'], row['lng'])
@@ -101,6 +101,10 @@ class SummitsDao(Dao):
                 SELECT * FROM climbs
                 WHERE summit_id=s.id AND user_id=%s
             ) AS climbed,
+            EXISTS (
+                SELECT * FROM summits_images
+                WHERE summit_id=s.id
+            ) AS has_image,
             EXISTS (
                 SELECT * FROM
                     (SELECT ridge_id, max(height) AS maxheight

@@ -18,7 +18,21 @@ class ModelException(Exception):
 
 
 class Point(namedtuple('Point', ['lat', 'lng'])):
-        pass
+
+    def __to_mins_secs(self, value):
+        deg = int(value)
+        mins = (value - deg)*60
+        secs = (mins - int(mins))*60
+        return u"{}{}{}'{}''".format(deg, u'\u00b0', int(mins), secs)
+
+    def format(self):
+        return u'{} {} ({}{} {}{})'.format(
+            self.lat,
+            self.lng,
+            self.__to_mins_secs(self.lat),
+            'N' if self.lat >= 0 else 'S',
+            self.__to_mins_secs(self.lng),
+            'E' if self.lng >= 0 else 'W')
 
 
 class ThousandsObject(object):
@@ -111,22 +125,12 @@ class Ridge(ThousandsObject):
     __slots__ = ('id', 'name', 'description', 'summits_num')
 
 
-class Summit(object):
+class Summit(ThousandsObject):
 
-    def __to_mins_secs(self, value):
-        deg = int(value)
-        mins = (value - deg)*60
-        secs = (mins - int(mins))*60
-        return u"{}{}{}'{}''".format(deg, u'\u00b0', int(mins), secs)
-
-    def format_coordinates(self):
-        return u'{} {} ({}{} {}{})'.format(
-            self.coordinates[0],
-            self.coordinates[1],
-            self.__to_mins_secs(self.coordinates[0]),
-            'N' if self.coordinates[0] >= 0 else 'S',
-            self.__to_mins_secs(self.coordinates[1]),
-            'E' if self.coordinates[1] >= 0 else 'W')
+    __slots__ = ('id', 'name', 'name_alt', 'height', 'number',
+                 'description', 'interpretation',
+                 'ridge', 'ridge_id', 'color', 'climbed',
+                 'main', 'climbers', 'has_image', 'coordinates')
 
     def format_name(self):
         return self.name if self.name else str(self.height)
@@ -137,7 +141,7 @@ class Summit(object):
                'properties': {}}
         ret['id'] = self.id
         ret['geometry']['coordinates'] = \
-            [self.coordinates[1], self.coordinates[0]]
+            [self.coordinates.lng, self.coordinates.lat]
         ret['properties']['height'] = self.height
         ret['properties']['name'] = self.format_name()
         ret['properties']['ridge'] = self.ridge

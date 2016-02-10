@@ -24,14 +24,14 @@ def populate_database(request):
         cur.execute(u"INSERT INTO users (id, oauth_id, src, name, admin) \
                     VALUES (2, '54321', 1, 'admin', true)")
         cur.execute(u"INSERT INTO summits (id, ridge_id, name, height, \
-                    description, interpretation, lng, lat) VALUES \
+                    description, interpretation, coordinates) VALUES \
                     ('babay', 'krykty-tau', 'Бабай', 1015, 'Невысокая скала', \
-                    'Дедушка, старейшина', 53.1, 58.1), \
+                    'Дедушка, старейшина', point(53.1, 58.1)), \
                     ('noname', 'krykty-tau', 'Noname', \
-                        1007, NULL, NULL, 53.2, 58.2), \
+                        1007, NULL, NULL, point(53.2, 58.2)), \
                     ('kushay', 'krykty-tau', 'Кушай', \
                         1048, 'Три скальных гребня', \
-                    'Двойной', 53.3, 58.3)")
+                    'Двойной', point(53.3, 58.3))")
         cur.execute(u"INSERT INTO climbs (user_id, summit_id, comment, \
                     year, month, day)\
                     VALUES (1, 'kushay', 'Fun', 2011, 11, NULL)")
@@ -141,13 +141,14 @@ def test_summits_api(client_user):
     data = json.loads(resp.data)
     assert len(data['features']) >= 3
     for s in data['features']:
-        if s['properties']['name'] == u'Кушай':
+        if s['id'] == 'kushay':
+            assert s['properties']['name'] == u'Кушай'
             assert s['properties']['height'] == 1048
             assert s['properties']['climbed']
             assert s['properties']['main']
             assert s['properties']['color'] == 'fafafa'
-            break
-        raise Exception("Summit not found")
+            return
+    raise Exception("Summit not found")
 
 
 def test_summit_not_climbed(client_user):

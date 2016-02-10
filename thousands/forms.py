@@ -8,7 +8,7 @@ from wtforms import (
     TextAreaField, SelectField, validators, Field)
 from wtforms.widgets import TextInput, HiddenInput
 import datetime
-import dao
+import model
 
 
 class CoordinatesField(Field):
@@ -26,7 +26,7 @@ class CoordinatesField(Field):
     def process_formdata(self, valuelist):
         if valuelist and valuelist[0]:
             try:
-                self.data = tuple(map(float, valuelist[0].split(' ')))
+                self.data = model.Point(*(map(float, valuelist[0].split(' '))))
             except ValueError:
                 raise validators.ValidationError(
                     u'Неправильно заданы координаты')
@@ -66,7 +66,7 @@ class ClimbDateField(Field):
     def process_formdata(self, valuelist):
         if valuelist:
             try:
-                self.data = dao.InexactDate.fromstring(valuelist[0])
+                self.data = model.InexactDate.fromstring(valuelist[0])
             except ValueError:
                 raise validators.ValidationError(u'Неправильно указана дата')
         else:
@@ -76,7 +76,7 @@ class ClimbDateField(Field):
         if self.process_errors:
             raise validators.StopValidation()
         if self.data is not None and self.data > \
-                dao.InexactDate.fromdate(datetime.date.today()):
+                model.InexactDate.fromdate(datetime.date.today()):
             raise validators.ValidationError(u'Указана дата в будущем')
 
 

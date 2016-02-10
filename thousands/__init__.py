@@ -71,10 +71,24 @@ else:
         l.addHandler(logging.StreamHandler())
         l.setLevel(logging.DEBUG)
 
-psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
 pool = psycopg2.pool.SimpleConnectionPool(1,
                                           PG_POOL_SIZE,
                                           app.config['PG_DSN'])
+
+conn = pool.getconn()
+try:
+    cur = conn.cursor()
+    cur.execute("SELECT NULL::point")
+    point_oid = cur.description[0][1]
+finally:
+    pool.putconn(conn)
+
+
+Point = psycopg2.extensions.new_type((point_oid,), "Point", dao.cast_point)
+psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
+psycopg2.extensions.register_type(Point)
+psycopg2.extensions.register_adapter(dao.Point, dao.adapt_point)
+
 
 migrations_dir = os.path.join(os.path.dirname(__file__), 'migrations')
 conn = pool.getconn()

@@ -1,14 +1,34 @@
 # coding: utf-8
 from contextlib import contextmanager
-import psycopg2.extras
-import psycopg2
+from psycopg2 import Binary, InterfaceError
+from psycopg2.extras import DictCursor
+from psycopg2.extensions import adapt, AsIs
+import re
 import os
 import logging
 from model import (Summit, SummitImage, Ridge,
-                   InexactDate, User, Image)
+                   InexactDate, User, Image, Point)
 from transliterate import translit
 
 logger = logging.getLogger(__name__)
+
+
+def adapt_point(point):
+    lat = adapt(point.lat).getquoted()
+    lng = adapt(point.lng).getquoted()
+    return AsIs("'(%s, %s)'" % (lat, lng))
+
+
+def cast_point(value, cur):
+    if value is None:
+        return None
+
+    # Convert from (f1, f2) syntax using a regular expression.
+    m = re.match(r"\(([^)]+),([^)]+)\)", value)
+    if m:
+        return Point(float(m.group(1)), float(m.group(2)))
+    else:
+        raise InterfaceError("bad point representation: %r" % value)
 
 
 class DaoException(Exception):
@@ -26,7 +46,7 @@ class Dao(object):
         conn = self.pool.getconn()
         conn.autocommit = True
         try:
-            yield conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            yield conn.cursor(cursor_factory=DictCursor)
         finally:
             self.pool.putconn(conn)
 
@@ -55,17 +75,6 @@ class SummitsDao(Dao):
         self.summits_images_dao = summits_images_dao
         super(self.__class__, self).__init__(pool)
 
-    def __row2summit(self, row):
-            s = Summit()
-            for k in ['id', 'name', 'name_alt', 'height', 'number',
-                      'description', 'interpretation',
-                      'ridge', 'ridge_id', 'color', 'climbed',
-                      'main', 'climbers', 'has_image']:
-                if k in row:
-                    setattr(s, k, row[k])
-            s.coordinates = (row['lat'], row['lng'])
-            return s
-
     def __rate_by_field(self, summits, field):
             index = \
                 [elem[0] for elem in sorted(enumerate(summits),
@@ -80,7 +89,8 @@ class SummitsDao(Dao):
     def __get_many(self, query, params):
         with self.get_cursor() as cur:
             cur.execute(query, params)
-            return self.__rate_by_field(map(self.__row2summit, cur), 'height')
+            return self.__rate_by_field([Summit(**row) for row in cur],
+                                        'height')
 
     def get_all(self, user_id=None, sort='ridge'):
 
@@ -91,11 +101,11 @@ class SummitsDao(Dao):
         elif sort == 'climbers':
             order = "ORDER BY climbers DESC"
         else:
-            order = "ORDER BY r.name, s.lat DESC"
+            order = "ORDER BY r.name, s.coordinates[0] DESC"
 
         query = """
         SELECT s.id, s.name, s.name_alt, s.ridge_id,
-                s.height, s.lng, s.lat, r.name AS ridge, r.color,
+                s.height, s.coordinates, r.name AS ridge, r.color,
                 count(c.user_id) AS climbers,
             EXISTS (
                 SELECT * FROM climbs
@@ -162,7 +172,7 @@ class SummitsDao(Dao):
             cur.execute(
                 """SELECT s.id, s.name, name_alt, height,
                           interpretation, s.description, ridge_id,
-                          r.name AS ridge, lng, lat,
+                          r.name AS ridge, coordinates,
                           (SELECT COUNT(*) FROM summits
                               WHERE height >= s.height ) AS number,
                           (SELECT MAX(height)=s.height FROM summits
@@ -174,7 +184,8 @@ class SummitsDao(Dao):
             if cur.rowcount < 1:
                 return None
 
-            summit = self.__row2summit(cur.fetchone())
+            # summit = self.__row2summit(cur.fetchone())
+            summit = Summit(**cur.fetchone())
             summit.images = []
 
             if images:
@@ -186,10 +197,11 @@ class SummitsDao(Dao):
     def create(self, summit):
         with self.get_cursor() as cur:
             query = """INSERT INTO summits
-                (id, name, name_alt, height, description, ridge_id, lat, lng)
+                (id, name, name_alt, height,
+                description, ridge_id, coordinates)
                 VALUES  (%(id)s, %(name)s, %(name_alt)s, %(height)s,
-                    %(description)s, %(ridge_id)s, round(%(lat)s, 6),
-                    round(%(lng)s, 6))"""
+                    %(description)s, %(ridge_id)s,
+                    %(coordinates)s)"""
             key_base = translit(summit.name, 'ru', reversed=True) \
                 .replace('\'', '') \
                 .replace(' ', '_') \
@@ -209,8 +221,7 @@ class SummitsDao(Dao):
                         'height': summit.height,
                         'description': summit.description,
                         'ridge_id': summit.ridge_id,
-                        'lat': summit.coordinates[0],
-                        'lng': summit.coordinates[1]})
+                        'coordinates': summit.coordinates})
                     summit.id = key
                     return summit
                 key = key_base + '-' + str(i)
@@ -222,17 +233,16 @@ class SummitsDao(Dao):
                     name=%(name)s, name_alt=%(name_alt)s, height=%(height)s,
                     description=%(description)s,
                     interpretation=%(interpretation)s,
-                    ridge_id=%(ridge_id)s, lat=round(%(lat)s, 6),
-                    lng=round(%(lng)s, 6)
-                WHERE id=%(id)s"""
+                    ridge_id=%(ridge_id)s,
+                    coordinates=%(coordinates)s
+                    WHERE id=%(id)s"""
             cur.execute(query, {
                 'name': summit.name,
                 'name_alt': summit.name_alt,
                 'height': summit.height,
                 'description': summit.description,
                 'interpretation': summit.interpretation,
-                'lat': summit.coordinates[0],
-                'lng': summit.coordinates[1],
+                'coordinates': summit.coordinates,
                 'id': summit.id,
                 'ridge_id': summit.ridge_id})
             return summit
@@ -355,7 +365,7 @@ class DatabaseImagesDao(Dao):
         sql = "INSERT INTO images (name, payload) " + \
               "VALUES (%s, %s)"
         with self.get_cursor() as cur:
-            cur.execute(sql, (image.name, psycopg2.Binary(image.payload)))
+            cur.execute(sql, (image.name, Binary(image.payload)))
 
     def get(self, image_id):
         sql = "SELECT * FROM images WHERE name=%s"

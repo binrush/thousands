@@ -67,7 +67,7 @@ class TestSummit():
         summit1.name = "Small Yamantau"
         summit1.height = 1519
         summit1.name_alt = "Kuyantau"
-        summit1.coordinates = (53.1111, 58.2222)
+        summit1.coordinates = model.Point(53.1111, 58.2222)
         summit1.ridge = 'Yamantau'
         summit1.ridge_id = 'yamantau'
         summit1.color = 'aaaaaa'

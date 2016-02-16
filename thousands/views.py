@@ -72,12 +72,12 @@ def index():
 #         ridge=g.ridges_dao.get(ridge_id))
 #
 #
-# @app.route('/ridges')
-# def ridges():
-#     return render_template(
-#         'ridges.html',
-#         active_page='ridges',
-#         ridges=g.ridges_dao.get_all())
+@app.route('/ridges')
+def ridges():
+    return render_template(
+        'ridges.html',
+        active_page='ridges',
+        ridges=g.ridges_dao.get_all())
 
 
 @app.route('/summits')

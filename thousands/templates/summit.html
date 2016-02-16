@@ -40,7 +40,7 @@
         {% else %}
             <img src="/static/mnt_dummy.png" class="img-responsive center-block summit-image-main">
         {% endif %}
-        <p>Есть фотография этой вершины? Можете <a href="">поделиться ей</a> с нашим проектом.</p>
+        <p class="text-center"><a href="">Добавить фотографию</a></p>
     </div>
     <div class="col-md-8">
         {% if summit.name_alt %}
@@ -87,13 +87,6 @@
                 <dd><a class="btn btn-primary" href="{{ url_for('climb_new', ridge_id=summit.ridge_id, summit_id=summit.id) }}">Взошли на эту вершину?</a></dd>
             </dl>
         {% endif %}
-    </div>
-</div>
-<form id="delete-form" method="POST">
-    {{ del_form.csrf_token }}
-</form>
-<div class="row">
-    <div class="col-md-8">
 <h3>Восходители</h3>
 {% if climbers | length == 0 %}
 Никто пока не сообщил о восхождении на эту вершину.
@@ -130,6 +123,11 @@
     </li>
     {% endfor %}
 </ul>
+    </div>
+<form id="delete-form" method="POST">
+    {{ del_form.csrf_token }}
+</form>
+    <div class="col-md-8 col-md-offset-4">
     </div>
 </div>
 <script>

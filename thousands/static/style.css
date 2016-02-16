@@ -149,9 +149,13 @@ a.anchor {
 }
 
 img.summit-image-main {
-    margin-bottom: 20px;
+    margin-bottom: 4px;
 }
 
 .breadcrumb {
     margin-top: 20px;
+}
+
+#summit-images p.text-cener {
+    margin-top: 5px;
 }

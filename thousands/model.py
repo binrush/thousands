@@ -122,7 +122,8 @@ class InexactDate(tuple):
 
 class Ridge(ThousandsObject):
 
-    __slots__ = ('id', 'name', 'description', 'summits_num')
+    __slots__ = ('id', 'name', 'description', 'summits_num',
+                 'color', 'type_', 'image', 'panoram')
 
 
 class Summit(ThousandsObject):
@@ -132,8 +133,12 @@ class Summit(ThousandsObject):
                  'ridge', 'ridge_id', 'color', 'climbed',
                  'main', 'climbers', 'has_image', 'coordinates')
 
-    def format_name(self):
-        return self.name if self.name else str(self.height)
+    def format_name(self, height=False):
+        if not height:
+            return self.name if self.name else str(self.height)
+        else:
+            return u"{} ({})".format(self.name, self.height) \
+                if self.name else str(self.height)
 
     def to_geojson(self):
         ret = {'type': 'Feature',

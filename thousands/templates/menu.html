@@ -1,8 +1,8 @@
 <ul class="nav navbar-nav navbar-right">
 <!-- <li><a href="/admin/summits/new">Добавить</a></li> -->
 <li {%  if active_page == 'index' %} class="active"{% endif %}><a href="{{ url_for('index')}}">Карта</a></li>
-<li {%  if active_page == 'ridges' %} class="active"{% endif %}><a href="{{ url_for('table') }}">Хребты</a></li>
-<li {%  if active_page == 'table' %} class="active"{% endif %}><a href="{{ url_for('table') }}">Вершины</a></li>
+<li {%  if active_page == 'ridges' %} class="active"{% endif %}><a href="{{ url_for('ridges') }}">Хребты</a></li>
+<li {%  if active_page == 'summits' %} class="active"{% endif %}><a href="{{ url_for('summits') }}">Вершины</a></li>
 <li {%  if active_page == 'top' %} class="active"{% endif %}><a href="{{ url_for('top') }}">Восходители</a></li>
 <li {%  if active_page == 'about' %} class="active"{% endif %}><a href="{{ url_for('about') }}">О проекте</a></li>
   {% if not current_user.is_authenticated %}

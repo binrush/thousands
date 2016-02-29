@@ -80,15 +80,58 @@ def ridges():
         ridges=g.ridges_dao.get_all())
 
 
+@app.route('/<ridge_id>')
+def ridge(ridge_id):
+    ridge = g.ridges_dao.get(ridge_id)
+    if not ridge:
+        return abort(404)
+    return render_template('ridge.html',
+                           ridge=ridge)
+
+
+@app.route('/<ridge_id>/edit', methods=['GET', 'POST'])
+def ridge_edit(ridge_id):
+    if not current_user.admin:
+        abort(401)
+
+    ridge = g.ridges_dao.get(ridge_id)
+    if ridge is None:
+        abort(404)
+
+    form = forms.RidgeForm(obj=ridge)
+    if form.validate_on_submit():
+        ridge.name = form.name.data
+        ridge.description = form.description.data
+        ridge.color = form.color.data
+        ridge.type_ = form.type_.data
+        if form.image.data:
+            image = model.Image.fromfd(form.image.data, 'jpg')
+            g.images_dao.create(image)
+            if ridge.image:
+                g.images_dao.delete(ridge.image)
+            ridge.image = image.name
+        if form.panoram.data:
+            panoram = model.Image.fromfd(form.panoram.data, 'jpg')
+            g.images_dao.create(panoram)
+            if ridge.panoram:
+                g.images_dao.delete(ridge.panoram)
+            ridge.panoram = panoram.name
+        g.ridges_dao.update(ridge)
+        return redirect(url_for('ridge',
+                                ridge_id=ridge_id))
+
+    return render_template('ridge_edit.html', form=form)
+
+
 @app.route('/summits')
-def table():
+def summits():
     sort = request.args.get('sort', 'ridge')
     return render_template(
         'table.html',
         summits=g.summits_dao.get_all(
             current_user.get_id(),
             sort),
-        active_page='table',
+        active_page='summits',
         sort=sort)
 
 
@@ -104,7 +147,7 @@ def summit(ridge_id, summit_id):
         summit=s,
         climbers=climbers,
         del_form=forms.DeleteForm(),
-        active_page='table')
+        active_page='summits')
 
 
 @app.route('/summits/new', methods=['GET', 'POST'])
@@ -128,7 +171,6 @@ def summit_new():
 @app.route('/<ridge_id>/<summit_id>/edit', methods=['GET', 'POST'])
 @login_required
 def summit_edit(ridge_id, summit_id):
-    print dir(request.url_rule)
     if not current_user.admin:
         abort(401)
 

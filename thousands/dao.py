@@ -53,8 +53,12 @@ class Dao(object):
 
 class RidgesDao(Dao):
 
+    def __init__(self, pool, summits_dao):
+            self.summits_dao = summits_dao
+            super(self.__class__, self).__init__(pool)
+
     def get_all(self):
-        query = """SELECT r.id, r.name, count(*) as summits_num
+        query = """SELECT r.id, r.name, count(*) as summits_num, r.image
                  FROM ridges r LEFT JOIN summits ON r.id=summits.ridge_id
                  GROUP BY r.id ORDER BY summits_num DESC"""
         with self.get_cursor() as cur:
@@ -62,11 +66,33 @@ class RidgesDao(Dao):
             return [Ridge(**row) for row in cur]
 
     def get(self, ridge_id):
-        query = """SELECT id, name, description FROM ridges
+        query = """SELECT * FROM ridges
                     WHERE id=%s"""
         with self.get_cursor() as cur:
             cur.execute(query, (ridge_id, ))
-            return Ridge(**(cur.fetchone()))
+            if cur.rowcount < 1:
+                return None
+            row = dict(cur.fetchone())
+            ridge = Ridge(**(row))
+            ridge.summits = \
+                self.summits_dao.get_by_ridge([ridge_id])
+            return ridge
+
+    def update(self, ridge):
+        query = """UPDATE ridges SET
+                    name=%(name)s,
+                    description=%(description)s,
+                    color=%(color)s,
+                    image=%(image)s,
+                    panoram=%(panoram)s,
+                    type_=%(type_)s
+                WHERE id=%(id)s
+        """
+        print ridge.__dict__
+        with self.get_cursor() as cur:
+            cur.execute(
+                query,
+                {s: getattr(ridge, s, None) for s in ridge.__slots__})
 
 
 class SummitsDao(Dao):
@@ -92,7 +118,7 @@ class SummitsDao(Dao):
             return self.__rate_by_field([Summit(**row) for row in cur],
                                         'height')
 
-    def get_all(self, user_id=None, sort='ridge'):
+    def get_all(self, user_id=None, sort='ridge', flt=None):
 
         if sort == 'height':
             order = "ORDER BY s.height DESC"
@@ -102,6 +128,11 @@ class SummitsDao(Dao):
             order = "ORDER BY climbers DESC"
         else:
             order = "ORDER BY r.name, s.coordinates[0] DESC"
+
+        if flt is not None:
+            where += 'WHERE {}'.format(flt)
+        else:
+            where = ''
 
         query = """
         SELECT s.id, s.name, s.name_alt, s.ridge_id,
@@ -137,12 +168,16 @@ class SummitsDao(Dao):
 
         query = """
         SELECT s.id, s.name, s.name_alt,
-                s.height, s.lng, s.lat, r.name AS ridge, r.color,
+                s.height, s.coordinates, r.name AS ridge, r.color,
                 count(c.user_id) AS climbers,
             EXISTS (
                 SELECT * FROM climbs
                 WHERE summit_id=s.id AND user_id=%s
             ) AS climbed,
+                        EXISTS (
+                            SELECT * FROM summits_images
+                            WHERE summit_id=s.id
+            ) AS has_image,
             EXISTS (
                 SELECT * FROM
                     (SELECT ridge_id, max(height) AS maxheight
@@ -154,18 +189,13 @@ class SummitsDao(Dao):
                     WHERE id=s.id
             ) AS main
         FROM summits s
-        LEFT JOIN ridges r ON s.rid=r.id
+        LEFT JOIN ridges r ON s.ridge_id=r.id
         LEFT JOIN climbs c ON c.summit_id = s.id
         WHERE ridge_id IN %s
         GROUP BY s.id, s.name, s.name_alt, r.name, r.color
-        ORDER BY r.name, s.lat DESC"""
+        ORDER BY r.name, s.coordinates[0] DESC"""
 
         return self.__get_many(query, (user_id, tuple(rids)))
-
-    def get_ridges(self):
-        with self.get_cursor() as cur:
-            cur.execute("SELECT id, name FROM ridges ORDER BY name")
-            return [{"id": row['id'], "name": row['name']} for row in cur]
 
     def get(self, summit_id, images=False):
         with self.get_cursor() as cur:
@@ -404,6 +434,7 @@ class FilesystemImagesDao():
                 image_id,
                 open(os.path.join(self.directory, image_id)).read())
         except IOError:
+            logger.warn('Unable to open image')
             return None
 
     def delete(self, image_id):

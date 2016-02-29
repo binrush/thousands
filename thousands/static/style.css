@@ -12,9 +12,9 @@ body {
     height: 100%;
 }
 
-#coordinates-pick-map { 
+#coordinates-pick-map {
     margin-top: 15px;
-    height: 300px; 
+    height: 300px;
 }
 
 .dl-horizontal dt {
@@ -158,4 +158,8 @@ img.summit-image-main {
 
 #summit-images p.text-cener {
     margin-top: 5px;
+}
+
+.ridge-description {
+  margin-top: 20px;
 }

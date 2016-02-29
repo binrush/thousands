@@ -11,16 +11,16 @@
     <tr>
         <th class="summit-visited"></th>
         <th class="col-md-8 {% if sort == 'name' %}info{% else %}clickable-cell active{% endif %}">
-            <a {% if sort != 'name' %}href="{{ url_for('table', sort='name') }}"{% endif %}>Название</a>
+            <a {% if sort != 'name' %}href="{{ url_for('summits', sort='name') }}"{% endif %}>Название</a>
         </th>
         <th class="col-md-1 {% if sort == 'height' %}info{% else %}clickable-cell active{% endif %}">
-            <a {% if sort != 'height' %}href="{{ url_for('table', sort='height') }}"{% endif %}>Высота</a>
+            <a {% if sort != 'height' %}href="{{ url_for('summits', sort='height') }}"{% endif %}>Высота</a>
         </th>
         <th class="col-md-2 {% if sort == 'ridge' %}info{% else %}clickable-cell active{% endif %}">
-            <a {% if sort != 'ridge' %}href="{{url_for('table')}}"{% endif %}>Хребет</a>
+            <a {% if sort != 'ridge' %}href="{{url_for('summits')}}"{% endif %}>Хребет</a>
         </th>
         <th class="col-md-1 {% if sort == 'climbers' %}info{% else %}clickable-cell active{% endif %}">
-            <a {% if sort != 'climbers' %}href="{{url_for('table', sort='climbers')}}"{% endif %}>Восходителей</a>
+            <a {% if sort != 'climbers' %}href="{{url_for('summits', sort='climbers')}}"{% endif %}>Восходителей</a>
         </th>
     </tr>
 </thead>

@@ -12,25 +12,23 @@
   {% endif %}
 {% endwith %}
 <h1>Хребты</h1>
-<table class="table">
-<thead>
-    <tr>
-        <th class="{% if sort == 'name' %}info{% else %}clickable-cell active{% endif %}">
-            <a {% if sort != 'name' %}href="{{ url_for('table', sort='name') }}"{% endif %}>Название</a>
-        </th>
-        <th class="{% if sort == 'height' %}info{% else %}clickable-cell active{% endif %}">
-            <a {% if sort != 'height' %}href="{{ url_for('table', sort='height') }}"{% endif %}>Вершин</a>
-        </th>
-    </tr>
-</thead>
-<tbody>
-    {% for r in ridges %}
-    <tr>
-        <td><a href="{{url_for('ridge', ridge_id=r.id)}}">{{ r.name }}</td>
-        <td>{{ r.summits_num }}</td>
-    </tr>
-    {% endfor %}
-</tbody>
-</table>
-
+<div class="row">
+{% for r in ridges %}
+  <div class="col-sm-6 col-md-3">
+    <div class="thumbnail">
+      <a href="{{ url_for('ridge', ridge_id=r.id) }}">
+          {% if r.image %}
+          <img src="{{ url_for('image_get', image_id=r.image)}}" alt="">
+          {% else %}
+          <img src="/static/mnt_dummy.png" alt="">
+          {% endif %}
+      </a>
+      <div class="caption">
+        <a href="{{ url_for('ridge', ridge_id=r.id) }}"><h4>{{ r.name }}</h4></a>
+        <p>{{ r.summits_num }} вершин</p>
+      </div>
+    </div>
+  </div>
+{% endfor %}
+</div>
 {% endblock %}

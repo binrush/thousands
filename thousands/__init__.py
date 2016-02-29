@@ -101,7 +101,7 @@ pool.putconn(conn)
 summits_images_dao = dao.SummitsImagesDao(pool)
 summits_dao = dao.SummitsDao(pool, summits_images_dao)
 users_dao = dao.UsersDao(pool)
-ridges_dao = dao.RidgesDao(pool)
+ridges_dao = dao.RidgesDao(pool, summits_dao)
 
 if app.config['IMAGES_BACKEND'] == 'filesystem':
     images_dao = dao.FilesystemImagesDao(app.config['IMAGES_DIR'])

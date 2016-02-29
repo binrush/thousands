@@ -18,7 +18,7 @@
 </ol>
 #}
 <h1>
-{{ summit.format_name() }} 
+{{ summit.format_name() }}
 {% if current_user.admin %}
 <a href="{{ url_for('summit_edit', ridge_id=summit.ridge_id, summit_id=summit.id) }}"><span class="glyphicon glyphicon-edit"></span></a>
 <a href="{{ url_for('summit_delete', ridge_id=summit.ridge_id, summit_id=summit.id) }}" class="simple-delete-confirm"><span class="glyphicon glyphicon-remove"></span></a>
@@ -87,47 +87,47 @@
                 <dd><a class="btn btn-primary" href="{{ url_for('climb_new', ridge_id=summit.ridge_id, summit_id=summit.id) }}">Взошли на эту вершину?</a></dd>
             </dl>
         {% endif %}
-<h3>Восходители</h3>
-{% if climbers | length == 0 %}
-Никто пока не сообщил о восхождении на эту вершину.
-{% endif %}
-<ul class="media-list">
-    {% for c in climbers %}
-    <li class="media">
-    <div class="media-left">
-        <a href="{{ url_for('user', user_id=c['user'].id) }}">
-        {% if c['user'].preview %}
-        <img src="{{ url_for("image_get", image_id=c['user'].preview)}}" class="media-object">
-        {% else %}
-        <img src="/static/climber_sm.png" class="media-object">
-        {% endif %}
-        </a>
-    </div>
-    <div class="media-body">
-        <h4 class="media-heading">
-            <a href="{{ url_for('user', user_id=c['user'].id) }}">{{ c['user'].name }}</a> 
-        </h4>
-        {% if c['date'] %}<div class="text-muted"><i>{{ c['date'].format() }}</i></div>{% endif %}
-        {% if c['comment'] %}
-            {% for line in c['comment'].splitlines() %}
-            {{ line | forceescape | linkify | safe }}<br>
-            {% endfor %}
-        {% endif %}
-        {% if c['user'] == current_user %}
-        <div>
-        <small><a href="{{ url_for('summit_climb_edit', ridge_id=summit.ridge_id, summit_id=summit.id) }}">Редактировать</a></small>
-        <small><a href="{{ url_for('summit_climb_delete', ridge_id=summit.ridge_id, summit_id=summit.id) }}" class="simple-delete-confirm">Удалить</a></small>
-        </div>
-        {% endif %}
-    </div>
-    </li>
-    {% endfor %}
-</ul>
     </div>
 <form id="delete-form" method="POST">
     {{ del_form.csrf_token }}
 </form>
     <div class="col-md-8 col-md-offset-4">
+      <h3>Восходители</h3>
+      {% if climbers | length == 0 %}
+      Никто пока не сообщил о восхождении на эту вершину.
+      {% endif %}
+      <ul class="media-list">
+          {% for c in climbers %}
+          <li class="media">
+          <div class="media-left">
+              <a href="{{ url_for('user', user_id=c['user'].id) }}">
+              {% if c['user'].preview %}
+              <img src="{{ url_for("image_get", image_id=c['user'].preview)}}" class="media-object">
+              {% else %}
+              <img src="/static/climber_sm.png" class="media-object">
+              {% endif %}
+              </a>
+          </div>
+          <div class="media-body">
+              <h4 class="media-heading">
+                  <a href="{{ url_for('user', user_id=c['user'].id) }}">{{ c['user'].name }}</a>
+              </h4>
+              {% if c['date'] %}<div class="text-muted"><i>{{ c['date'].format() }}</i></div>{% endif %}
+              {% if c['comment'] %}
+                  {% for line in c['comment'].splitlines() %}
+                  {{ line | forceescape | linkify | safe }}<br>
+                  {% endfor %}
+              {% endif %}
+              {% if c['user'] == current_user %}
+              <div>
+              <small><a href="{{ url_for('summit_climb_edit', ridge_id=summit.ridge_id, summit_id=summit.id) }}">Редактировать</a></small>
+              <small><a href="{{ url_for('summit_climb_delete', ridge_id=summit.ridge_id, summit_id=summit.id) }}" class="simple-delete-confirm">Удалить</a></small>
+              </div>
+              {% endif %}
+          </div>
+          </li>
+          {% endfor %}
+      </ul>
     </div>
 </div>
 <script>

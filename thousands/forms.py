@@ -80,6 +80,17 @@ class ClimbDateField(Field):
             raise validators.ValidationError(u'Указана дата в будущем')
 
 
+class RidgeForm(Form):
+    name = TextField(u'Название', validators=[validators.DataRequired()])
+    type_ = TextField(u'Тип')
+    description = TextAreaField(u'Описание')
+    color = TextField(u'Цвет', validators=[validators.DataRequired()])
+    image = FileField(u'Изображение',
+                      validators=[FileAllowed(['jpg', 'jpeg'])])
+    panoram = FileField(u'Панорама',
+                        validators=[FileAllowed(['jpg', 'jpeg'])])
+
+
 class SummitForm(Form):
     name = TextField(u'Название', filters=[lambda x: x or None])
     name_alt = TextField(u'Варианты названия', filters=[lambda x: x or None])

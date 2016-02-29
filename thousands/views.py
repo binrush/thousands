@@ -156,7 +156,7 @@ def summit_new():
         abort(401)
     form = forms.SummitForm()
     form.ridge_id.choices = \
-        [(r['id'], r['name']) for r in g.summits_dao.get_ridges()]
+        [(r.id, r.name) for r in g.ridges_dao.get_all()]
     if form.validate_on_submit():
         summit = dao.Summit()
         form.populate_obj(summit)
@@ -179,7 +179,7 @@ def summit_edit(ridge_id, summit_id):
         abort(404)
     form = forms.SummitForm(obj=summit)
     form.ridge_id.choices = \
-        [(r['id'], r['name']) for r in g.summits_dao.get_ridges()]
+        [(r.id, r.name) for r in g.ridges_dao.get_all()]
     if form.validate_on_submit():
         summit = dao.Summit()
         summit.id = summit_id

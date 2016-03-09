@@ -260,7 +260,7 @@ def summit_climb_edit(ridge_id, summit_id):
 
 @app.route('/climb/<ridge_id>/<summit_id>/edit', methods=['GET', 'POST'])
 @login_required
-def profile_climb_edit(summit_id):
+def profile_climb_edit(ridge_id, summit_id):
     return climb_edit(summit_id,
                       url_for('user', user_id=current_user.get_id(),
                               _anchor=summit_id))

@@ -40,7 +40,7 @@
         {% else %}
             <img src="/static/mnt_dummy.png" class="img-responsive center-block summit-image-main">
         {% endif %}
-        <p class="text-center"><a href="">Добавить фотографию</a></p>
+        <p class="text-center"><a href="{{ config['PHOTO_ADD_LINK'] }}">Добавить фотографию</a></p>
     </div>
     <div class="col-md-8">
         {% if summit.name_alt %}

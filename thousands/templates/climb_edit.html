@@ -1,11 +1,6 @@
 {% extends "layout.html" %}
 {% block title %}Отметить восхождение{% endblock %}
 {% block content %}
-<ol class="breadcrumb">
-    <li><a href="#">хребет {{ summit.ridge }}</a></li>
-    <li><a href="{{ url_for('summit', summit_id=summit.id, ridge_id=summit.ridge_id) }}">вершина  {{ summit.name }}</a></li>
-    <li class="active">Отметить восхождение</li>
-</ol>
 <h1>Отметить восхождение</h1>
 {% if form.errors %}
 <div id="form-errors" class="alert alert-danger">
@@ -20,6 +15,16 @@
 {% endif %}
 <form id="summit_edit_form" method="post" class="form-horizontal">
   {{ form.csrf_token }}
+  <div class="form-group">
+    <label for="name_alt" class="col-md-3 control-label">Вершина</label>
+    <div class="col-md-6">
+        <p class="form-control-static">
+        <a href="{{ url_for('summit', ridge_id=summit.ridge_id, summit_id=summit.id) }}">
+            {% if summit.name %}{{ summit.format_name() }}, {% endif %}{{ summit.height }}, хребет {{ summit.ridge }}
+        </a>
+        </p>
+    </div>
+  </div>
   <div class="form-group">
     <label for="name_alt" class="col-md-3 control-label">Дата</label>
     <div class="col-md-6">

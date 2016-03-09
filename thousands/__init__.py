@@ -23,6 +23,7 @@ MAIL_SUBJECT = "thousands app failed"
 LOGLEVEL = "info"
 MAX_CONTENT_LENGTH = 16 * 1024 * 1024
 IMAGES_BACKEND = "database"
+PHOTO_ADD_LINK = u"mailto:rush.ru@gmail.com?subject=Фотография вершины"
 
 app = Flask(__name__)
 app.config.from_object(__name__)

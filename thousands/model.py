@@ -173,7 +173,7 @@ class SummitImage(ThousandsObject):
     __slots__ = ('image', 'preview', 'summit_id', 'comment', 'main')
 
 
-class User(UserMixin):
+class User(ThousandsObject, UserMixin):
 
     __auth_sources = {
         AUTH_SRC_VK:
@@ -183,6 +183,8 @@ class User(UserMixin):
             u'<a href="http://www.southural.ru/user/{}" target="_blank">' +
             u'Профиль на southural.ru</a>'
     }
+
+    __slots__ = ['id', 'name', 'preview', 'climbs', 'place']
 
     def social_link(self):
         return self.__auth_sources[self.src].format(self.oauth_id)

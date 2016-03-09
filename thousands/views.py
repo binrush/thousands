@@ -457,5 +457,7 @@ def image_upload():
 
 @app.route('/top')
 def top():
-    climbers = g.climbs_dao.top()
-    return render_template('top.html', climbers=climbers, active_page='top')
+    return render_template(
+        'top.html',
+        climbers=g.climbs_dao.top(),
+        active_page='top')

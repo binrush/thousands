@@ -9,6 +9,7 @@ import logging
 from model import (Summit, SummitImage, Ridge,
                    InexactDate, User, Image, Point)
 from transliterate import translit
+import itertools
 
 logger = logging.getLogger(__name__)
 
@@ -500,22 +501,18 @@ class ClimbsDao(Dao):
             return climbed
 
     def top(self):
-        users = []
-        sql = """SELECT users.id, users.name, users.preview, COUNT(climbs.*) AS climbs
-                FROM users LEFT JOIN climbs ON users.id=climbs.user_id
-                GROUP BY users.id, users.name, users.preview
-                ORDER BY climbs DESC
+        sql = """
+            SELECT users.id, users.name, users.preview,
+                COUNT(climbs.*) AS climbs,
+                rank() over (order by COUNT(climbs.*) desc) place,
+                COUNT(*) over (partition by count(climbs.*)) num_on_place
+            FROM users LEFT JOIN climbs ON users.id=climbs.user_id
+            GROUP BY users.id, users.name, users.preview
+            ORDER BY climbs DESC
         """
         with self.get_cursor() as cur:
             cur.execute(sql)
-            for row in cur:
-                u = User()
-                u.id = row['id']
-                u.name = row['name']
-                u.preview = row['preview']
-                u.climbs = row['climbs']
-                users.append(u)
-        return users
+            return (User(**row) for row in cur)
 
     def get(self, user, summit):
         sql = "SELECT year, month, day, comment" + \

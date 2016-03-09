@@ -11,10 +11,11 @@
             <th>Место в рейтинге</th>
     </thead>
     <tbody>
-        {% for c in climbers %}
+        {% for p, g in climbers | groupby('place') %}
+        {% for c in g %}
         <tr>
             <td class="vertical-align">
-                 {% if c.preview%}
+                 {% if c.preview %}
                  <a href="{{ url_for('user', user_id=c.id) }}"><img src="{{ url_for("image_get", image_id=c.preview)}}"></a>
                  {% else %}
                  <a href="{{ url_for('user', user_id=c.id) }}"><img src="/static/climber_sm.png"></a>
@@ -22,8 +23,9 @@
                  <a href="{{ url_for('user', user_id=c.id) }}">{{ c.name }}</a>
             </td>
             <td class="vertical-align"><big>{{ c.climbs }}</big></td>
-            <td class="vertical-align"><big>{{ loop.index }}</big></td>
+            <td class="vertical-align"><big>{{ p }}</big></td>
         </tr>
+        {% endfor %}
         {% endfor %}
     </tbody>
 </table>

@@ -9,7 +9,6 @@ import logging
 from model import (Summit, SummitImage, Ridge,
                    InexactDate, User, Image, Point)
 from transliterate import translit
-import itertools
 
 logger = logging.getLogger(__name__)
 
@@ -89,7 +88,6 @@ class RidgesDao(Dao):
                     type_=%(type_)s
                 WHERE id=%(id)s
         """
-        print ridge.__dict__
         with self.get_cursor() as cur:
             cur.execute(
                 query,
@@ -129,11 +127,6 @@ class SummitsDao(Dao):
             order = "ORDER BY climbers DESC"
         else:
             order = "ORDER BY r.name, s.coordinates[0] DESC"
-
-        if flt is not None:
-            where += 'WHERE {}'.format(flt)
-        else:
-            where = ''
 
         query = """
         SELECT s.id, s.name, s.name_alt, s.ridge_id,
@@ -529,8 +522,9 @@ class ClimbsDao(Dao):
         return climb
 
     def create(self, user, summit, date=None, comment=None):
-        sql = "INSERT INTO climbs (user_id, summit_id, comment, year, month, day)" + \
-            " VALUES (%s, %s, %s, %s, %s, %s)"
+        sql = """INSERT INTO climbs
+            (user_id, summit_id, comment, year, month, day)
+            VALUES (%s, %s, %s, %s, %s, %s)"""
         with self.get_cursor() as cur:
             cur.execute(
                 sql,

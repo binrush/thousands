@@ -42,14 +42,18 @@
   <div class="form-group">
     {{ form.image.label(class_='col-md-3 control-label') }}
     <div class="col-md-6">
-      <img src="{{ url_for('image_get', image_id=form.image.data) }}" class="img-responsive">
+      {% if form.image.data %}
+        <img src="{{ url_for('image_get', image_id=form.image.data) }}" class="img-responsive">
+      {% endif %}
       {{ form.image(class_='form-control') }}
     </div>
   </div>
   <div class="form-group">
     {{ form.panoram.label(class_='col-md-3 control-label') }}
     <div class="col-md-6">
-      <img src="{{ url_for('image_get', image_id=form.panoram.data) }}" class="img-responsive">
+      {% if form.panoram.data %}
+        <img src="{{ url_for('image_get', image_id=form.panoram.data) }}" class="img-responsive">
+      {% endif %}
       {{ form.panoram(class_='form-control') }}
     </div>
   </div>

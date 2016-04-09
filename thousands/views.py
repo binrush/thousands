@@ -90,6 +90,7 @@ def ridge(ridge_id):
 
 
 @app.route('/<ridge_id>/edit', methods=['GET', 'POST'])
+@login_required
 def ridge_edit(ridge_id):
     if not current_user.admin:
         abort(401)

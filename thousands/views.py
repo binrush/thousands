@@ -128,7 +128,6 @@ def summit_new():
 @app.route('/<ridge_id>/<summit_id>/edit', methods=['GET', 'POST'])
 @login_required
 def summit_edit(ridge_id, summit_id):
-    print dir(request.url_rule)
     if not current_user.admin:
         abort(401)
 

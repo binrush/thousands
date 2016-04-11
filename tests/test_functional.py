@@ -150,6 +150,15 @@ def test_summits_api(client_user):
             return
     raise Exception("Summit not found")
 
+def test_summits_gpx(client_user):
+    resp = client_user.get('/api/summits/gpx')
+    assert resp.status == '200 OK'
+    assert 'application/gpx+xml' in resp.content_type
+    assert 'gpx' in resp.data
+    assert '<ele>1010</ele>' in resp.data
+    assert '<wpt lat="53.3" lon="58.3">' in resp.data
+    print resp.data
+
 
 def test_summit_not_climbed(client_user):
     resp = client_user.get('/krykty-tau/' + str('babay'))

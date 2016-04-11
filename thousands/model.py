@@ -164,7 +164,6 @@ class Summit(ThousandsObject):
             elevation=self.height,
             name=self.format_name(),
             description=u'хр. ' + self.ridge)
-        wp.link = url_for('summit', summit_id=self.id, _external=True)
         return wp
 
 

@@ -157,7 +157,7 @@ class Summit(ThousandsObject):
             latitude=self.coordinates[0],
             longitude=self.coordinates[1],
             elevation=self.height,
-            name=self.format_name(),
+            name=self.id,
             description=u'хр. ' + self.ridge)
         return wp
 

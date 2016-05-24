@@ -327,7 +327,7 @@ def summits_get():
 def summits_get_gpx():
     gpx = GPX()
     if 'rids' in request.args:
-        rids = (int(rid) for rid in request.args['rids'].split(','))
+        rids = request.args['rids'].split(',')
         gpx.waypoints = \
             (s.to_gpx() for s in g.summits_dao.get_by_ridge(rids=rids))
     else:

@@ -154,7 +154,7 @@ class SummitsDao(Dao):
                     WHERE id=s.id
             ) AS main
         FROM summits s
-        LEFT JOIN ridges r ON s.rid=r.id
+        LEFT JOIN ridges r ON s.ridge_id=r.id
         LEFT JOIN climbs c ON c.summit_id = s.id
         WHERE ridge_id IN %s
         GROUP BY s.id, s.name, s.name_alt, r.name, r.color

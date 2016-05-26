@@ -137,7 +137,7 @@ class SummitsDao(Dao):
 
         query = """
         SELECT s.id, s.name, s.name_alt,
-                s.height, s.lng, s.lat, r.name AS ridge, r.color,
+                s.height, s.coordinates, r.name AS ridge, r.color,
                 count(c.user_id) AS climbers,
             EXISTS (
                 SELECT * FROM climbs

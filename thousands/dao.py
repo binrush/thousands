@@ -158,7 +158,7 @@ class SummitsDao(Dao):
         LEFT JOIN climbs c ON c.summit_id = s.id
         WHERE ridge_id IN %s
         GROUP BY s.id, s.name, s.name_alt, r.name, r.color
-        ORDER BY r.name, s.lat DESC"""
+        ORDER BY r.name, s.coordinates[0] DESC"""
 
         return self.__get_many(query, (user_id, tuple(rids)))
 

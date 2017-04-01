@@ -1,75 +1,109 @@
 # coding: utf8
-import urlparse
-import json
-import httplib2
-from urllib import urlencode
-from urllib2 import urlopen
+from urllib2 import urlopen, HTTPError, URLError
 
-from flask.ext.login import login_user
-from flask import (request, g, redirect,
-                   url_for, abort, render_template, flash)
-from oauth2client.client import FlowExchangeError, OAuth2WebServerFlow
-
-import dao
-import model
+import functools
 import mimetypes
 
+from flask_oauthlib.client import OAuth, OAuthException
+from flask_login import login_user
+from flask import (request, g, redirect, session,
+                   url_for, abort, render_template, flash)
+
+from thousands import model
 from thousands import app
+
 
 VK_API_VERSION = "5.37"
 
 
-class AuthError(Exception):
+class AuthException(Exception):
     pass
 
-
-def vk_flow(state, redirect_root):
-    return OAuth2WebServerFlow(
-        app.config['VK_CLIENT_ID'],
-        client_secret=app.config['VK_CLIENT_SECRET'],
-        scope='',
-        redirect_uri=urlparse.urljoin(redirect_root, '/login/vk'),
-        auth_uri='https://oauth.vk.com/authorize',
-        token_uri='https://oauth.vk.com/access_token',
-        revoke_uri=None,
-        device_uri=None,
-        state=state,
-        v=VK_API_VERSION)
+@app.errorhandler(OAuthException)
+def oauth_error(error):
+    app.logger.exception("Oauth error: type=%s, data=%s",
+                         error.type, error.data)
+    abort(500)
 
 
-def su_flow(state, redirect_root):
-    return OAuth2WebServerFlow(
-        app.config['SU_CLIENT_ID'],
-        client_secret=app.config['SU_CLIENT_SECRET'],
-        scope='openid profile',
-        redirect_uri=urlparse.urljoin(redirect_root, '/login/su'),
-        auth_uri='http://www.southural.ru/oauth2/authorize',
-        token_uri='http://www.southural.ru/oauth2/token',
-        revoke_uri=None,
-        device_uri=None,
-        state=state)
+@app.errorhandler(AuthException)
+def oauth_error(error):
+    app.logger.exception("Authentication error")
+    abort(401)
+
+
+oauth = OAuth()
+
+
+def tokengetter(key, token=None):
+    return session.get(key)
+
+
+vk = oauth.remote_app(
+    'vk',
+    base_url='https://api.vk.com/method/',
+    request_token_url=None,
+    access_token_url='https://oauth.vk.com/access_token',
+    authorize_url='https://oauth.vk.com/authorize',
+    consumer_key=app.config['VK_CLIENT_ID'],
+    consumer_secret=app.config['VK_CLIENT_SECRET'],
+    request_token_params={'scope': ''}
+)
+
+su = oauth.remote_app(
+    'su',
+    base_url='http://www.southural.ru/oauth2/',
+    request_token_url=None,
+    access_token_url='http://www.southural.ru/oauth2/token',
+    authorize_url='http://www.southural.ru/oauth2/authorize',
+    consumer_key=app.config['SU_CLIENT_ID'],
+    consumer_secret=app.config['SU_CLIENT_SECRET'],
+    request_token_params={'scope': 'openid profile'}
+)
+
+for ra in oauth.remote_apps.values():
+    ra.tokengetter(functools.partial(tokengetter, ra.name + '_token'))
 
 
 @app.route('/login')
 def login_form():
-    state = request.args.get('r')
-    return render_template('/login.html',
-                           vk_flow=vk_flow(state, request.url_root),
-                           su_flow=su_flow(state, request.url_root))
+    return render_template('/login.html', next=request.args.get('next'))
 
 
-@app.route('/login/su')
-def su_login():
-    return oauth_login(request,
-                       su_flow('state', request.url_root),
-                       su_get_user)
+@app.route('/login/<any(vk, su):ra>')
+def login(ra):
+    return oauth.remote_apps[ra].authorize(
+        callback=url_for(
+            'authorized',
+            ra=ra,
+            next=request.args.get('next') or request.referrer or None,
+            _external=True
+        )
+    )
 
 
-@app.route('/login/vk')
-def vk_login():
-    return oauth_login(request,
-                       vk_flow('state', request.url_root),
-                       vk_get_user)
+@app.route('/login/<any(vk, su):ra>/authorized')
+def authorized(ra):
+    next_url = request.args.get('next') or url_for('index')
+    resp = oauth.remote_apps[ra].authorized_response()
+    if resp is None:
+        app.logger.warning("User denied our request")
+        flash(u'Невозможно выполнить вход. Повторите попытку позже', 'error')
+        return redirect(next_url)
+
+    session[ra + '_token'] = (resp['access_token'], None)
+
+    user, created = get_user(resp['user_id'], ra)
+    login_user(user)
+    if created:
+        app.logger.info("New user registration uid=%s, src=%s, name=%s",
+                        user.get_id(),
+                        user.src,
+                        user.name)
+        flash(u'Регистрация завершена')
+        return redirect(url_for('user', user_id=user.get_id()))
+    else:
+        return redirect(next_url)
 
 
 @app.route('/login/as/<int:user_id>')
@@ -80,130 +114,95 @@ def login_as(user_id):
             abort(404)
         login_user(user)
         return redirect(url_for('user', user_id=user_id))
-    else:
-        abort(404)
+
+    abort(404)
 
 
-def oauth_login(req, flow, get_user):
-    if 'error' in req.args.keys():
-        app.logger.warning("Error during oauth process: %s (%s)",
-                           req.args.get('error'),
-                           req.args.get('error_description'))
-        flash(u'Невозможно выполнить вход. Повторите попытку позже',
-              'error')
-        return redirect(req.args.get('state'))
-
-    try:
-        credentials = flow.step2_exchange(req.args.get('code'))
-    except FlowExchangeError, e:
-        raise AuthError('Error getting access token', e)
-
-    user, created = get_user(credentials)
-    if user is not None:
-        login_user(user)
-        if created:
-            app.logger.info("New user registration uid=%s, src=%s, name=%s",
-                            user.get_id(),
-                            user.src,
-                            user.name)
-            flash(u'Регистрация завершена')
-            return redirect(url_for('user', user_id=user.get_id()))
-        else:
-            return redirect(req.args.get('state'))
-
-    abort(401)
-
-
-def vk_get_image(url, images_dao):
-    try:
-        fd = urlopen(url, timeout=2)
-        if fd.getcode() == 200:
-            image = model.Image.fromfd(
-                fd,
-                mimetypes.guess_extension(fd.info().gettype()))
-            images_dao.create(image)
-            return image.name
-        else:
-            return None
-    except IOError:
-        app.logger.exception("Failed to get image from vk: %s", url)
-        return None
-
-
-def vk_get_user(credentials):
-    user = g.users_dao.get(unicode(credentials.token_response['user_id']),
-                           model.AUTH_SRC_VK)
+def get_user(user_id, ra):
+    user = g.users_dao.get(unicode(user_id), model.AUTH_SRC_VK)
     if user is not None:
         return user, False
 
+    fetch_user = vk_fetch_user if ra == 'vk' else su_fetch_user
+    user, image = fetch_user(user_id)
+    if image is not None:
+        full, preview = image
+        g.images_dao.create(full)
+        g.images_dao.create(preview)
+        user.image = full.name
+        user.preview = preview.name
+    else:
+        user.image = None
+        user.preview = None
+    user.id = g.users_dao.create(user)
+    return user, True
+
+
+def check_get(ra, url, params):
+    resp = ra.get(url, data=params)
+    if resp.status != 200:
+        raise AuthException("Error getting user profile from {} api: {:d}, {}"
+                            .format(ra.name, resp.status, resp.data))
+    return resp
+
+
+def vk_fetch_image(url):
+    fd = urlopen(url, timeout=2)
+    if fd.getcode() == 200:
+        image = model.Image.fromfd(
+            fd,
+            mimetypes.guess_extension(fd.info().gettype()))
+        return image
+    else:
+        raise HTTPError(
+            fd.getcode(), url,
+            "non-200 code returned when fetching image from vk",
+            {}, None)
+
+
+def vk_fetch_user(user_id):
     app.logger.debug("Fetching user profile from vk.com")
-    conn = httplib2.Http()
-    credentials.authorize(conn)
     params = {
         'v': '5.37',
         'lang': 'ru',
-        'user_ids': credentials.token_response['user_id'],
+        'user_ids': user_id,
         'fields': 'photo_50, photo_200_orig, has_photo'}
 
-    resp, content = conn.request('https://api.vk.com/method/users.get',
-                                 'POST',
-                                 urlencode(params))
+    resp = check_get(vk, 'users.get', params)
 
-    if resp.status != 200:
-        app.logger.error("Error getting user profile from vk api: %d, %s",
-                         resp.status, content)
-        return None
+    data = resp.data['response'][0]
 
-    data = json.loads(content)['response'][0]
     if 'error' in data:
-        app.logger.error("Error getting profile data: %s", data['error'])
-        return None
+        raise AuthException("Error getting profile data: {}"
+                            .format(data['error']))
 
-    app.logger.debug("Storing user in database")
-    user = dao.User()
-    user.oauth_id = unicode(credentials.token_response['user_id'])
+    user = model.User()
+    user.oauth_id = unicode(user_id)
     user.name = u"{} {}".format(
         data.get('first_name', ''),
         data.get('last_name', ''))
     user.src = model.AUTH_SRC_VK
 
+    images = None
     if data['has_photo']:
-        user.image = vk_get_image(data['photo_200_orig'],
-                                  g.images_dao)
-        user.preview = vk_get_image(data['photo_50'],
-                                    g.images_dao)
-    else:
-        user.image = None
-        user.preview = None
+        try:
+            images = (vk_fetch_image(data['photo_200_orig']),
+                      vk_fetch_image(data['photo_50']))
+        except URLError:
+            app.logger.exception("Failed to fetch images from vk")
 
-    user.id = g.users_dao.create(user)
-
-    return user, True
+    return user, images
 
 
-def su_get_user(credentials):
-    conn = httplib2.Http()
-    credentials.authorize(conn)
-    resp, content = conn.request('http://www.southural.ru/oauth2/UserInfo',
-                                 'POST')
-    if resp.status != 200:
-        app.logger.error("Error getting user profile from su api: %d, %s",
-                         resp.status, content)
-        return None
-    data = json.loads(content)
-    if 'error' in data:
-        app.logger.error("Error getting user data from su: %s", data['error'])
-        return None
+def su_fetch_user(user_id):
+    resp = check_get(su, 'UserInfo', None)
+    if 'error' in resp.data:
+        raise AuthException("Error getting user profile from su api: {:d}, {}"
+                            .format(resp.status, resp.data))
 
-    user = g.users_dao.get(data['sub'], model.AUTH_SRC_SU)
-    if user is not None:
-        return user, False
-    user = dao.User()
-    user.oauth_id = data['sub']
-    user.name = data['name']
+    user = model.User()
+    user.oauth_id = resp.data['sub']
+    user.name = resp.data['name']
     user.src = model.AUTH_SRC_SU
-    user.image = None
-    user.preview = None
-    user.id = g.users_dao.create(user)
 
-    return user, True
+    return user, None

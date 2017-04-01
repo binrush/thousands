@@ -1,7 +1,6 @@
 # coding: utf-8
 from __future__ import division
-from flask.ext.login import UserMixin
-from flask import url_for
+from flask_login import UserMixin
 import datetime
 from gpxpy import gpx
 from PIL import Image as PILImage
@@ -141,10 +140,8 @@ class Summit(ThousandsObject):
                 if self.name else str(self.height)
 
     def to_geojson(self):
-        ret = {'type': 'Feature',
-               'geometry': {"type": "Point"},
-               'properties': {}}
-        ret['id'] = self.id
+        ret = {'type': 'Feature', 'geometry': {"type": "Point"},
+               'properties': {}, 'id': self.id}
         ret['geometry']['coordinates'] = \
             [self.coordinates.lng, self.coordinates.lat]
         ret['properties']['height'] = self.height

@@ -1,47 +1,67 @@
 import mock
 import pytest
-from thousands import auth
+from urlparse import urlparse, parse_qsl, urlunparse
 
-from oauth2client.client import FlowExchangeError
-
-
-@pytest.fixture
-def mock_request():
-    req = mock.MagicMock()
-    req.args = {'code': '12345'}
-    return req
+from thousands import app
+from . import captured_templates
 
 
-@pytest.fixture
-def mock_request_error():
-    req = mock.MagicMock()
-    req.args = {'error':             'some error',
-                'error_description': 'some error description'}
-    return req
+def test_login():
+    templates = []
+    with captured_templates(app, templates):
+        r = app.test_client().get('/login')
+    assert r.status_code == 200
+    assert len(templates) == 1
+    template, context = templates[0]
+    assert template.name == '/login.html'
+    assert context['next'] is None
+
+    templates = []
+    with captured_templates(app, templates):
+        r = app.test_client().get('/login?next=/top')
+    template, context = templates[0]
+    assert context['next'] == '/top'
+    assert 'href="/login/vk?next=%2Ftop"' in r.data
+    assert 'href="/login/su?next=%2Ftop"' in r.data
 
 
-@pytest.fixture
-def mock_flow_exception():
-    flow = mock.MagicMock()
-    flow.step2_exchange.side_effect = FlowExchangeError
-    return flow
+@pytest.mark.parametrize('sn,auth_url,scope', [
+    ['vk', 'https://oauth.vk.com/authorize', None],
+    ['su', 'http://www.southural.ru/oauth2/authorize', 'openid profile']
+])
+def test_login_redirect(sn, auth_url, scope):
+    r = app.test_client().get('/login/' + sn)
+    assert r.status_code == 302
+    redirected_to = urlparse(r.headers['Location'])
+    assert urlunparse(redirected_to._replace(query=None)) == auth_url
+    params = dict(parse_qsl(redirected_to.query, keep_blank_values=True))
+    assert params['client_id'] == app.config[sn.upper() + '_CLIENT_ID']
+    assert params.get('scope', None) == scope
+    assert params['redirect_uri'] == \
+           'http://localhost/login/{}/authorized'.format(sn)
 
 
-@pytest.fixture
-def mock_get_user():
-    return mock.MagicMock(return_value=(mock.MagicMock(), True))
+@pytest.mark.parametrize('url',[
+    '/login/vk/authorized',
+    '/login/su/authorized'
+])
+def test_login_authorized_denied(url):
+    with mock.patch('flask_oauthlib.client.OAuthRemoteApp.authorized_response',
+                    return_value=None):
+        resp = app.test_client().get(url)
+        assert resp.status_code == 302
 
 
-def test_oauth_login_flow_exc(mock_flow_exception, mock_request):
-    with pytest.raises(auth.AuthError):
-        auth.oauth_login(mock_request,
-                         mock_flow_exception,
-                         mock.MagicMock())
-    mock_flow_exception.step2_exchange.assert_called_with('12345')
-
-
-# def test_oauth_login(mock_request, mock_get_user):
-#     response = auth.oauth_login(mock_request,
-#                                 mock.MagicMock(),
-#                                 mock_get_user)
-#     print response
+@pytest.mark.parametrize('url',[
+    '/login/vk/authorized',
+    '/login/su/authorized'
+])
+def test_login_authorized_new_user(url):
+    mock_response = {
+        'user_id': 'mock_uid',
+        'access_token': 'mock_access_token'
+    }
+    with mock.patch('flask_oauthlib.client.OAuthRemoteApp.authorized_response',
+                    return_value=mock_response):
+        resp = app.test_client().get(url)
+        assert resp.status_code == 302

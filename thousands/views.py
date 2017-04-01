@@ -4,8 +4,7 @@ from thousands import app
 from flask import (request, render_template, g, jsonify,
                    redirect, url_for, abort, send_file, flash,
                    make_response)
-from flask.ext.login import (logout_user, current_user,
-                             login_required)
+from flask_login import (logout_user, current_user, login_required)
 import dao
 import model
 import forms

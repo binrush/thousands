@@ -1,19 +1,18 @@
 # coding: utf-8
 import os
 from flask import Flask, g
-import psycopg2
 import psycopg2.pool
 import psycopg2.extensions
 import bleach
 import dao
-from flask.ext.login import LoginManager
+from flask_login import LoginManager
 from yoyo import read_migrations
 import yoyo.exceptions
 import logging
 from logging.handlers import SMTPHandler
 
 
-PG_DSN = "dbname=thousands user=postgres"
+PG_DSN = "dbname=thousands"
 PG_POOL_SIZE = 20
 VK_CLIENT_ID = "4890287"
 VK_CLIENT_SECRET = "fake-vk-client-secret"

@@ -13,12 +13,11 @@ env:
 
 install:
     - "pip install -U setuptools"
-    - "python setup.py develop"
 
 before_script:
     - createdb -O postgres -E UTF-8 thousands_test
 
-script: "py.test"
+script: "python setup.py test"
 deploy:
     provider: openshift
     user: "rush.ru@gmail.com"

@@ -3,6 +3,7 @@ import pytest
 from urlparse import urlparse, parse_qsl, urlunparse
 
 from thousands import app
+from thousands.model import User
 from . import captured_templates
 
 
@@ -27,7 +28,7 @@ def test_login():
 
 @pytest.mark.parametrize('sn,auth_url,scope', [
     ['vk', 'https://oauth.vk.com/authorize', None],
-    ['su', 'http://www.southural.ru/oauth2/authorize', 'openid profile']
+    ['su', 'https://www.southural.ru/oauth2/authorize', 'openid profile']
 ])
 def test_login_redirect(sn, auth_url, scope):
     r = app.test_client().get('/login/' + sn)
@@ -62,6 +63,8 @@ def test_login_authorized_new_user(url):
         'access_token': 'mock_access_token'
     }
     with mock.patch('flask_oauthlib.client.OAuthRemoteApp.authorized_response',
-                    return_value=mock_response):
+                    return_value=mock_response),\
+         mock.patch('thousands.auth.get_user',
+                    return_value=(User(id=1, name='test'), False)):
         resp = app.test_client().get(url)
         assert resp.status_code == 302

@@ -52,10 +52,10 @@ vk = oauth.remote_app(
 
 su = oauth.remote_app(
     'su',
-    base_url='http://www.southural.ru/oauth2/',
+    base_url='https://www.southural.ru/oauth2/',
     request_token_url=None,
-    access_token_url='http://www.southural.ru/oauth2/token',
-    authorize_url='http://www.southural.ru/oauth2/authorize',
+    access_token_url='https://www.southural.ru/oauth2/token',
+    authorize_url='https://www.southural.ru/oauth2/authorize',
     consumer_key=app.config['SU_CLIENT_ID'],
     consumer_secret=app.config['SU_CLIENT_SECRET'],
     request_token_params={'scope': 'openid profile'}

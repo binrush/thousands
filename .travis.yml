@@ -12,7 +12,7 @@ install:
     - "python setup.py develop"
 
 before_script:
-    - createdb -O postgres -E UTF-8 thousands
+    - createdb -O postgres -E UTF-8 thousands-test
 
 script: "py.test"
 deploy:

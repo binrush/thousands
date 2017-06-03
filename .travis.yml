@@ -9,7 +9,7 @@ python:
     - "2.7"
 
 env:
-  - THOUSANDS_CONF=project/thousands-test.conf
+  - THOUSANDS_CONF=$TRAVIS_BUILD_DIR/thousands-test.conf
 
 install:
     - "pip install -U setuptools"

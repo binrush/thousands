@@ -2,7 +2,7 @@
 *.swp
 *.egg-info/*
 *.cfg
-*.conf
+thousands.conf
 .cache
 .idea
 .eggs

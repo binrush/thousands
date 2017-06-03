@@ -7,6 +7,10 @@ services:
 language: python
 python:
     - "2.7"
+
+env:
+  - THOUSANDS_CONF=project/thousands-test.conf
+
 install:
     - "pip install -U setuptools"
     - "python setup.py develop"

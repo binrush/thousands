@@ -17,4 +17,10 @@ setup(name='thousands',
           'Pillow',
           'transliterate'],
       tests_require=['mock'],
-      test_suite="tests")
+      test_suite="tests",
+      packages = ['thousands', 'thousands/migrations'],
+      package_data = {
+          'thousands': ['static/*', 'templates/*']
+      },
+      include_package_data = True
+)

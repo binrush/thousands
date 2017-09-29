@@ -4,3 +4,7 @@
 *.cfg
 *.conf
 .cache
+.idea
+.eggs
+build
+dist
